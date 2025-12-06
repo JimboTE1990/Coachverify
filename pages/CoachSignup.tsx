@@ -1,0 +1,295 @@
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ShieldCheck, CheckCircle, ArrowRight, Loader, Mail, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { verifyCoachLicense, registerCoach } from '../services/mockData';
+
+export const CoachSignup: React.FC = () => {
+  const navigate = useNavigate();
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [verified, setVerified] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [ageError, setAgeError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Form State
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    dobDay: '1',
+    dobMonth: '0',
+    dobYear: '2000',
+    body: 'EMCC',
+    regNumber: '',
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (e.target.name.startsWith('dob')) setAgeError('');
+  };
+
+  const checkAge = () => {
+    const today = new Date();
+    const birthDate = new Date(
+      parseInt(formData.dobYear), 
+      parseInt(formData.dobMonth), 
+      parseInt(formData.dobDay)
+    );
+    
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    
+    if (age < 18) {
+        setAgeError('You must be at least 18 years old to register as a coach.');
+        return false;
+    }
+    return true;
+  };
+
+  const handleStep1Submit = () => {
+    if (checkAge()) {
+        setStep(2);
+    }
+  };
+
+  const handleVerification = async () => {
+    setLoading(true);
+    const isValid = await verifyCoachLicense(formData.body, formData.regNumber);
+    setLoading(false);
+    if (isValid) {
+      setVerified(true);
+    } else {
+      alert("Could not verify license. Please check your number.");
+    }
+  };
+
+  const handleSendEmail = () => {
+    setLoading(true);
+    // Simulate email send
+    setTimeout(() => {
+        setLoading(false);
+        setEmailSent(true);
+    }, 1500);
+  };
+
+  const handleCompleteSignup = () => {
+    // Create coach in mock DB only after all verifications
+    registerCoach({
+      name: formData.name,
+      email: formData.email,
+      certifications: [formData.body + ' Accredited'],
+      isVerified: true, 
+    });
+    
+    // Redirect to dashboard with auto-login param
+    navigate('/for-coaches', { state: { autoLoginEmail: formData.email } });
+  };
+
+  // Date Generators
+  const days = Array.from({length: 31}, (_, i) => i + 1);
+  const months = [
+    "January", "February", "March", "April", "May", "June", 
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({length: 100}, (_, i) => currentYear - i);
+
+  return (
+    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        
+        {/* Progress Tracker */}
+        <div className="mb-10 flex justify-center items-center space-x-4">
+          <div className={`flex items-center space-x-2 ${step >= 1 ? 'text-brand-600' : 'text-slate-400'}`}>
+            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 ${step >= 1 ? 'border-brand-600 bg-brand-50' : 'border-slate-300'}`}>1</span>
+            <span className="hidden sm:inline font-medium">Details</span>
+          </div>
+          <div className="w-12 h-0.5 bg-slate-200"></div>
+          <div className={`flex items-center space-x-2 ${step >= 2 ? 'text-brand-600' : 'text-slate-400'}`}>
+             <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 ${step >= 2 ? 'border-brand-600 bg-brand-50' : 'border-slate-300'}`}>2</span>
+             <span className="hidden sm:inline font-medium">License</span>
+          </div>
+          <div className="w-12 h-0.5 bg-slate-200"></div>
+          <div className={`flex items-center space-x-2 ${step >= 3 ? 'text-brand-600' : 'text-slate-400'}`}>
+             <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 ${step >= 3 ? 'border-brand-600 bg-brand-50' : 'border-slate-300'}`}>3</span>
+             <span className="hidden sm:inline font-medium">Email</span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+          
+          {/* Step 1: Personal Details */}
+          {step === 1 && (
+            <div className="p-8 animate-fade-in">
+              <h2 className="text-2xl font-bold text-slate-900 mb-6">Create your CoachDog account</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="col-span-2 md:col-span-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                  <input name="name" type="text" value={formData.name} onChange={handleChange} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none" placeholder="e.g. Jane Doe" />
+                </div>
+                
+                <div className="col-span-2 md:col-span-1">
+                   <label className="block text-sm font-medium text-slate-700 mb-1">Date of Birth</label>
+                   <div className="flex space-x-2">
+                       <select name="dobDay" value={formData.dobDay} onChange={handleChange} className="w-1/3 px-2 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white">
+                          {days.map(d => <option key={d} value={d}>{d}</option>)}
+                       </select>
+                       <select name="dobMonth" value={formData.dobMonth} onChange={handleChange} className="w-1/3 px-2 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white">
+                          {months.map((m, i) => <option key={i} value={i}>{m}</option>)}
+                       </select>
+                       <select name="dobYear" value={formData.dobYear} onChange={handleChange} className="w-1/3 px-2 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white">
+                          {years.map(y => <option key={y} value={y}>{y}</option>)}
+                       </select>
+                   </div>
+                </div>
+
+                <div className="col-span-2">
+                   <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
+                   <input name="email" type="email" value={formData.email} onChange={handleChange} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none" placeholder="jane@coaching.com" />
+                </div>
+                <div className="col-span-2">
+                   <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                   <div className="relative">
+                     <input 
+                       name="password" 
+                       type={showPassword ? "text" : "password"} 
+                       value={formData.password} 
+                       onChange={handleChange} 
+                       className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none pr-10" 
+                     />
+                     <button 
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                     >
+                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                     </button>
+                   </div>
+                </div>
+              </div>
+
+              {ageError && (
+                  <div className="mt-4 bg-red-50 border border-red-200 p-4 rounded-lg flex items-start text-red-800 shadow-sm animate-fade-in">
+                      <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+                      <div>
+                          <p className="font-bold">Age Restriction</p>
+                          <p className="text-sm">{ageError}</p>
+                      </div>
+                  </div>
+              )}
+
+              <div className="mt-8 flex justify-end">
+                <button 
+                  onClick={handleStep1Submit}
+                  disabled={!formData.name || !formData.email || !formData.password}
+                  className="bg-brand-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Verification */}
+          {step === 2 && (
+            <div className="p-8 animate-fade-in">
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">Verify Accreditation</h2>
+              <p className="text-slate-500 mb-8">We verify all coaches to ensure quality. Please enter your details below.</p>
+              
+              <div className="space-y-6 max-w-lg mx-auto">
+                 <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Accrediting Body</label>
+                    <select name="body" value={formData.body} onChange={handleChange} className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white">
+                       <option value="EMCC">EMCC (European Mentoring & Coaching Council)</option>
+                       <option value="ICF">ICF (International Coaching Federation)</option>
+                       <option value="AC">Association for Coaching</option>
+                    </select>
+                 </div>
+                 
+                 <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Registration / Member Number</label>
+                    <input name="regNumber" type="text" value={formData.regNumber} onChange={handleChange} className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none" placeholder="e.g. 12345-AB" />
+                 </div>
+
+                 {!verified ? (
+                   <button 
+                     onClick={handleVerification}
+                     disabled={loading || !formData.regNumber}
+                     className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 disabled:opacity-50 transition-all flex justify-center items-center shadow-md"
+                   >
+                     {loading ? <Loader className="h-5 w-5 animate-spin mr-2" /> : <ShieldCheck className="h-5 w-5 mr-2" />}
+                     {loading ? 'Verifying...' : 'Verify Now'}
+                   </button>
+                 ) : (
+                   <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-center text-green-700 animate-fade-in shadow-sm">
+                      <CheckCircle className="h-6 w-6 mr-2" />
+                      <span className="font-bold">Verification Successful!</span>
+                   </div>
+                 )}
+              </div>
+
+              <div className="mt-8 flex justify-between border-t border-slate-100 pt-6">
+                 <button onClick={() => setStep(1)} className="text-slate-500 font-medium hover:text-slate-800">Back</button>
+                 <button 
+                  onClick={() => setStep(3)}
+                  disabled={!verified}
+                  className="bg-brand-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                 >
+                   Next Step
+                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Email Verification */}
+          {step === 3 && (
+            <div className="p-8 animate-fade-in bg-slate-50 text-center">
+              <div className="max-w-md mx-auto">
+                 <div className="bg-white rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-6 shadow-sm">
+                    <Mail className="h-10 w-10 text-brand-600" />
+                 </div>
+                 <h2 className="text-2xl font-bold text-slate-900 mb-2">Verify your email</h2>
+                 <p className="text-slate-500 mb-8">
+                   We've prepared your account. Please verify your email address 
+                   <span className="font-bold text-slate-700 block mt-1"> {formData.email} </span> 
+                 </p>
+                 
+                 {!emailSent ? (
+                     <button 
+                        onClick={handleSendEmail}
+                        disabled={loading}
+                        className="w-full bg-brand-600 text-white py-3 rounded-xl font-bold hover:bg-brand-700 transition-colors shadow-md flex justify-center items-center"
+                     >
+                        {loading ? <Loader className="h-5 w-5 animate-spin mr-2" /> : 'Send Verification Link'}
+                     </button>
+                 ) : (
+                    <div className="animate-fade-in space-y-4">
+                        <div className="bg-green-100 text-green-800 px-4 py-3 rounded-lg text-sm font-medium border border-green-200 flex items-center justify-center">
+                            <CheckCircle className="h-4 w-4 mr-2"/> Link sent! Please check your inbox (simulated).
+                        </div>
+                        <button 
+                           onClick={handleCompleteSignup}
+                           className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-md flex items-center justify-center"
+                        >
+                           I have verified my email <ArrowRight className="h-4 w-4 ml-2" />
+                        </button>
+                        <p className="text-xs text-slate-400">
+                           By clicking above, you'll be logged in to set up your profile.
+                        </p>
+                    </div>
+                 )}
+              </div>
+            </div>
+          )}
+
+        </div>
+      </div>
+    </div>
+  );
+};

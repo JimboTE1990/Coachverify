@@ -1,6 +1,16 @@
+
 export type Specialty = 'Career Growth' | 'Stress Relief' | 'Relationships' | 'Health & Wellness' | 'Executive Coaching' | 'General';
 
 export type Format = 'In-Person' | 'Online' | 'Hybrid';
+
+export type SubscriptionStatus = 'active' | 'trial' | 'expired' | 'onboarding';
+
+export type BillingCycle = 'monthly' | 'annual';
+
+export interface SocialLink {
+  platform: string;
+  url: string;
+}
 
 export interface Review {
   id: string;
@@ -14,24 +24,36 @@ export interface Review {
 export interface Coach {
   id: string;
   name: string;
+  email: string;
+  phoneNumber?: string; // New
   photoUrl: string;
   specialties: Specialty[];
   bio: string;
+  socialLinks: SocialLink[]; // New
   hourlyRate: number;
   yearsExperience: number;
   certifications: string[];
-  isVerified: boolean; // Admin verification
+  isVerified: boolean;
   availableFormats: Format[];
   location: string;
   reviews: Review[];
-  documentsSubmitted: boolean; // For admin flow
+  documentsSubmitted: boolean;
+  
+  // Subscription & Billing
+  subscriptionStatus: SubscriptionStatus;
+  trialEndsAt?: string;
+  billingCycle: BillingCycle; // New
+  lastPaymentDate?: string; // New
+  
+  // Security
+  twoFactorEnabled: boolean; // New
 }
 
 export interface QuestionnaireAnswers {
   goal: Specialty | '';
   sessionsPerMonth: 'one' | 'two' | 'unlimited' | '';
   preferredFormat: Format[];
-  budgetRange: number; // Max hourly rate
+  budgetRange: number;
 }
 
 export interface UserState {

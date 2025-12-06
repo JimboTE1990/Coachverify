@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getCoachById } from '../services/mockData';
 import { Coach } from '../types';
-import { BadgeCheck, Star, MapPin, Clock, Award, ShieldCheck, ArrowLeft, Globe, Monitor } from 'lucide-react';
+import { BadgeCheck, Star, MapPin, Clock, Award, ShieldCheck, ArrowLeft, Globe, Monitor, Instagram, Linkedin, Facebook, Twitter, ExternalLink } from 'lucide-react';
 
 export const CoachDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,9 +24,20 @@ export const CoachDetails: React.FC = () => {
     );
   }
 
-  const avgRating = coach.reviews.length 
+  const avgRating = coach.reviews?.length 
     ? (coach.reviews.reduce((acc, r) => acc + r.rating, 0) / coach.reviews.length).toFixed(1)
     : 'New';
+
+  // Helper to get icon for social link
+  const getSocialIcon = (platform: string) => {
+    const p = platform.toLowerCase();
+    if (p.includes('instagram')) return <Instagram className="h-5 w-5" />;
+    if (p.includes('linkedin')) return <Linkedin className="h-5 w-5" />;
+    if (p.includes('facebook')) return <Facebook className="h-5 w-5" />;
+    if (p.includes('twitter') || p.includes('x')) return <Twitter className="h-5 w-5" />;
+    if (p.includes('website')) return <Globe className="h-5 w-5" />;
+    return <ExternalLink className="h-5 w-5" />;
+  };
 
   return (
     <div className="bg-slate-50 min-h-screen pb-12">
@@ -66,7 +77,7 @@ export const CoachDetails: React.FC = () => {
                     <div>
                       <h1 className="text-3xl font-bold text-slate-900">{coach.name}</h1>
                       <div className="mt-2 flex flex-wrap gap-2">
-                        {coach.specialties.map(s => (
+                        {coach.specialties?.map(s => (
                           <span key={s} className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-100">
                             {s}
                           </span>
@@ -76,7 +87,7 @@ export const CoachDetails: React.FC = () => {
                     <div className="mt-4 sm:mt-0 flex items-center bg-slate-50 px-3 py-1 rounded-lg">
                       <Star className="h-5 w-5 text-yellow-400 fill-current" />
                       <span className="ml-1.5 text-lg font-bold text-slate-900">{avgRating}</span>
-                      <span className="ml-1 text-sm text-slate-500">({coach.reviews.length} reviews)</span>
+                      <span className="ml-1 text-sm text-slate-500">({coach.reviews?.length || 0} reviews)</span>
                     </div>
                   </div>
 
@@ -91,7 +102,7 @@ export const CoachDetails: React.FC = () => {
                     </div>
                      <div className="flex items-center">
                       <Monitor className="h-4 w-4 mr-2 text-slate-400" />
-                      {coach.availableFormats.join(', ')}
+                      {coach.availableFormats?.join(', ')}
                     </div>
                   </div>
                 </div>
@@ -108,7 +119,7 @@ export const CoachDetails: React.FC = () => {
                   <Award className="h-4 w-4 mr-2 text-brand-500" /> Credentials & Certifications
                 </h3>
                 <div className="flex flex-wrap gap-3">
-                  {coach.certifications.map((cert, idx) => (
+                  {coach.certifications?.map((cert, idx) => (
                     <div key={idx} className="bg-slate-50 border border-slate-100 px-3 py-2 rounded-lg text-sm text-slate-700 font-medium">
                       {cert}
                     </div>
@@ -120,7 +131,7 @@ export const CoachDetails: React.FC = () => {
             {/* Reviews Section */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
               <h2 className="text-xl font-bold text-slate-900 mb-6">Client Reviews</h2>
-              {coach.reviews.length === 0 ? (
+              {!coach.reviews || coach.reviews.length === 0 ? (
                 <p className="text-slate-500 italic">No reviews yet.</p>
               ) : (
                 <div className="space-y-6">
@@ -159,14 +170,34 @@ export const CoachDetails: React.FC = () => {
                 <button className="w-full bg-brand-600 text-white font-bold py-3 rounded-xl hover:bg-brand-700 transition-colors shadow-sm hover:shadow-md">
                   Book a Session
                 </button>
-                <button className="w-full bg-white text-slate-700 font-bold py-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors">
-                  Message Coach
-                </button>
+
+                {/* Dynamic Contact Links */}
+                {coach.socialLinks && coach.socialLinks.length > 0 ? (
+                  <div className="space-y-2 mt-4">
+                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center mb-2">Contact & Socials</p>
+                     {coach.socialLinks.map((link, idx) => (
+                       <a 
+                         key={idx}
+                         href={link.url}
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         className="w-full flex items-center justify-center space-x-2 bg-white text-slate-700 font-bold py-2.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors"
+                       >
+                         {getSocialIcon(link.platform)}
+                         <span>{link.platform}</span>
+                       </a>
+                     ))}
+                  </div>
+                ) : (
+                  <div className="mt-4 p-3 bg-slate-50 rounded-xl text-center border border-slate-100">
+                     <p className="text-sm text-slate-500">Links available after booking.</p>
+                  </div>
+                )}
               </div>
 
               <div className="mt-6 flex items-center justify-center text-xs text-slate-400">
                 <ShieldCheck className="h-3 w-3 mr-1" />
-                <span>Verified by CoachVerify</span>
+                <span>Verified by CoachDog</span>
               </div>
             </div>
             
