@@ -63,9 +63,6 @@ export const CoachDashboard: React.FC = () => {
   const [newQualification, setNewQualification] = useState<{ degree: string; institution?: string; year?: number }>({ degree: '', institution: '', year: undefined });
   const [newAcknowledgement, setNewAcknowledgement] = useState<{ title: string; icon?: string; year?: number }>({ title: '', icon: '', year: undefined });
 
-  // Payment Method Edit State
-  const [isEditingPayment, setIsEditingPayment] = useState(false);
-
   // 2FA Setup State
   const [isSettingUp2FA, setIsSettingUp2FA] = useState(false);
   const [twoFACode, setTwoFACode] = useState('');
@@ -930,25 +927,25 @@ export const CoachDashboard: React.FC = () => {
                                     </div>
                                     <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
                                         <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4">Payment Method</h4>
-                                        {!isEditingPayment ? (
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center">
-                                                    <div className="h-10 w-14 bg-white border border-slate-200 rounded-lg flex items-center justify-center mr-3 shadow-sm">
-                                                        <span className="text-xs font-black text-slate-700 italic">VISA</span>
-                                                    </div>
-                                                    <span className="font-bold text-slate-800 text-lg">•••• 4242</span>
-                                                </div>
-                                                <button onClick={() => setIsEditingPayment(true)} className="text-sm text-brand-600 font-bold hover:underline">Update</button>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-3">
-                                                <input type="text" placeholder="Card Number" className="w-full border p-2 rounded-lg text-sm" />
-                                                <div className="flex gap-2">
-                                                    <button onClick={() => setIsEditingPayment(false)} className="flex-1 bg-brand-600 text-white text-xs py-2 rounded-lg font-bold">Save</button>
-                                                    <button onClick={() => setIsEditingPayment(false)} className="flex-1 bg-slate-200 text-slate-700 text-xs py-2 rounded-lg font-bold">Cancel</button>
-                                                </div>
-                                            </div>
-                                        )}
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-sm text-slate-600">
+                                                Payment method managed securely by Stripe
+                                            </p>
+                                            <a
+                                                href="https://dashboard.stripe.com"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-sm text-brand-600 font-bold hover:underline flex items-center"
+                                            >
+                                                Manage in Stripe
+                                                <svg className="h-3 w-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                </svg>
+                                            </a>
+                                        </div>
+                                        <p className="text-xs text-slate-500 mt-3">
+                                            Your payment details are securely stored by Stripe. No card information is stored on our servers.
+                                        </p>
                                     </div>
                                 </div>
 
