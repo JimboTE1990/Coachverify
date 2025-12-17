@@ -17,7 +17,8 @@ export const CoachLogin: React.FC = () => {
       console.log('[CoachLogin] User already logged in, redirecting to dashboard');
       navigate('/for-coaches', { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, authLoading]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
