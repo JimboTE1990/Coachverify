@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, ArrowLeft, AlertCircle, Zap } from 'lucide-react';
-import { PaymentForm } from '../../components/checkout/PaymentForm';
+import { CheckCircle, ArrowLeft, Loader, Lock, Zap } from 'lucide-react';
 import { SUBSCRIPTION_CONSTANTS } from '../../constants/subscription';
 import { supabase } from '../../lib/supabase';
+import { createCheckoutSession, getPriceId } from '../../services/stripeService';
 import type { Coach } from '../../types';
-import type { PaymentFormData, PaymentResult } from '../../types/payment';
 
 // Checkout page for annual subscription plan
 export const CheckoutAnnual: React.FC = () => {
@@ -72,94 +71,34 @@ export const CheckoutAnnual: React.FC = () => {
     }
   };
 
-  const handlePaymentSubmit = async (formData: PaymentFormData): Promise<PaymentResult> => {
+  const handleCheckout = async () => {
     setIsProcessing(true);
     setError(null);
 
     try {
-      // Mock payment processing
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      console.log('[CheckoutAnnual] Initiating Stripe Checkout for coach:', currentCoach?.id);
 
-      // Check for test failure card
-      const cardNumber = formData.cardNumber.replace(/\s/g, '');
-      if (cardNumber === '4000000000000002') {
-        throw new Error('Your card was declined. Please try a different payment method.');
+      // Get coach email from session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.email) {
+        throw new Error('Unable to retrieve your email. Please try logging in again.');
       }
 
-      // Calculate ACTUAL billing dates based on trial status
-      const now = new Date();
-      let trialEndDate: Date | null = null;
-      let firstChargeDate: Date;
-      let isTrialIncluded: boolean;
-
-      // If user has an ACTIVE trial (trial started on email verification)
-      if (currentCoach?.subscriptionStatus === 'trial' && currentCoach?.trialEndsAt) {
-        trialEndDate = new Date(currentCoach.trialEndsAt);
-        firstChargeDate = trialEndDate;
-        isTrialIncluded = true;
-        console.log('[CheckoutAnnual] Using existing trial end date:', trialEndDate);
-      }
-      // Legacy: User hasn't used trial yet (old flow)
-      else if (!currentCoach?.trialUsed) {
-        trialEndDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-        firstChargeDate = trialEndDate;
-        isTrialIncluded = true;
-        console.log('[CheckoutAnnual] Creating new 30-day trial');
-      }
-      // No trial available - immediate billing
-      else {
-        firstChargeDate = now;
-        isTrialIncluded = false;
-        console.log('[CheckoutAnnual] No trial - immediate billing');
-      }
-
-      // Update coach subscription in database
-      const updateData: any = {
-        subscription_status: isTrialIncluded ? 'trial' : 'active',
-        billing_cycle: 'annual',
-        trial_used: true,
-        profile_visible: true,
-        dashboard_access: true,
-      };
-
-      if (isTrialIncluded) {
-        updateData.trial_ends_at = trialEndDate?.toISOString();
-      } else {
-        updateData.last_payment_date = now.toISOString();
-        updateData.subscription_ends_at = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString();
-      }
-
-      const { error: updateError } = await supabase
-        .from('coaches')
-        .update(updateData)
-        .eq('id', currentCoach?.id);
-
-      if (updateError) throw updateError;
-
-      // Navigate to success page
-      navigate('/checkout/success', {
-        state: {
-          billingCycle: 'annual',
-          amount: SUBSCRIPTION_CONSTANTS.ANNUAL_PRICE_GBP,
-          isTrialIncluded,
-          firstChargeDate: firstChargeDate?.toISOString(),
-        },
+      // Create Stripe Checkout Session
+      await createCheckoutSession({
+        priceId: getPriceId('annual'),
+        coachId: currentCoach!.id,
+        coachEmail: session.user.email,
+        billingCycle: 'annual',
+        trialEndsAt: currentCoach?.trialEndsAt
       });
 
-      return {
-        success: true,
-        paymentMethodId: 'pm_mock_' + Date.now(),
-        subscriptionId: 'sub_mock_' + Date.now(),
-      };
+      // Note: Stripe will redirect to checkout page
+      // This code won't execute after redirect
     } catch (err: any) {
-      const errorMessage = err.message || 'Payment failed. Please try again.';
-      setError(errorMessage);
-      return {
-        success: false,
-        error: errorMessage,
-      };
-    } finally {
+      console.error('[CheckoutAnnual] Checkout error:', err);
       setIsProcessing(false);
+      setError(err.message || 'Failed to initiate checkout. Please try again.');
     }
   };
 
@@ -330,24 +269,91 @@ export const CheckoutAnnual: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column - Payment Form */}
+          {/* Right Column - Checkout Button */}
           <div>
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
               <h2 className="text-2xl font-display font-bold text-slate-900 mb-6">
-                Payment Details
+                Secure Checkout
               </h2>
 
-              {/* Error messages hidden - logged to console for debugging */}
+              {/* Error Display */}
+              {error && (
+                <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+                  <p className="text-sm text-red-700 font-medium">{error}</p>
+                </div>
+              )}
 
-              <PaymentForm
-                amount={SUBSCRIPTION_CONSTANTS.ANNUAL_PRICE_GBP}
-                billingCycle="annual"
-                isTrialIncluded={isTrialIncluded}
-                onSubmit={handlePaymentSubmit}
-                isProcessing={isProcessing}
-              />
+              {/* Payment Summary */}
+              <div className="bg-slate-50 rounded-xl p-6 mb-6">
+                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">
+                  Payment Summary
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-slate-700">
+                    <span>Plan:</span>
+                    <span className="font-bold">Annual</span>
+                  </div>
+                  <div className="flex justify-between text-slate-700">
+                    <span>Price:</span>
+                    <span className="font-bold">£{SUBSCRIPTION_CONSTANTS.ANNUAL_PRICE_GBP}/year</span>
+                  </div>
+                  <div className="flex justify-between text-green-700 font-medium">
+                    <span>Savings vs Monthly:</span>
+                    <span>£{monthlySavings}/year</span>
+                  </div>
+                  {hasActiveTrial && (
+                    <div className="pt-3 border-t border-slate-200">
+                      <div className="flex justify-between text-green-700 font-medium">
+                        <span>Trial continues until:</span>
+                        <span>{formattedTrialEndDate}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-700 mt-2">
+                        <span>First charge:</span>
+                        <span className="font-bold">£{SUBSCRIPTION_CONSTANTS.ANNUAL_PRICE_GBP} on {formattedTrialEndDate}</span>
+                      </div>
+                    </div>
+                  )}
+                  {!hasActiveTrial && isTrialIncluded && (
+                    <div className="pt-3 border-t border-slate-200">
+                      <div className="flex justify-between text-green-700 font-medium">
+                        <span>Free trial:</span>
+                        <span>30 days</span>
+                      </div>
+                      <div className="flex justify-between text-slate-700 mt-2">
+                        <span>First charge:</span>
+                        <span className="font-bold">In 30 days</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
 
-              <div className="mt-6 text-center">
+              {/* Secure Checkout Button */}
+              <button
+                onClick={handleCheckout}
+                disabled={isProcessing}
+                className="w-full bg-brand-600 text-white py-4 rounded-xl font-bold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg hover:shadow-xl"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader className="animate-spin h-5 w-5 mr-2" />
+                    Redirecting to secure checkout...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-5 w-5 mr-2" />
+                    Continue to Secure Payment
+                  </>
+                )}
+              </button>
+
+              {/* Security Badge */}
+              <div className="mt-6 flex items-center justify-center text-slate-500 text-xs">
+                <Lock className="h-3 w-3 mr-2" />
+                <span>Secured by Stripe - Your payment details are encrypted and never stored on our servers</span>
+              </div>
+
+              <div className="mt-4 text-center">
                 <p className="text-xs text-slate-500">
                   By proceeding, you agree to our Terms of Service and Privacy Policy
                 </p>

@@ -19,108 +19,73 @@
 
 ---
 
-## 🔨 Current Implementation: Mock Payments
+## ✅ Current Implementation: Real Stripe Checkout
 
-The app currently uses **mock payments** which simulate the entire payment flow without actually charging cards. This allows you to test the complete user journey.
+The app now uses **real Stripe Checkout** which redirects users to Stripe's secure hosted payment page.
 
-### What Works with Mock Payments:
-- ✅ Full checkout flow (Monthly & Annual)
-- ✅ Trial-aware billing (respects trial_ends_at date)
-- ✅ Subscription status updates in database
-- ✅ Success/failure scenarios
-- ✅ All subscription management features
+### What's Implemented:
+- ✅ Full Stripe Checkout integration (Monthly & Annual)
+- ✅ Trial-aware billing (defers billing to trial_ends_at date)
+- ✅ Secure payment processing - no card data stored locally
+- ✅ Professional checkout UI with payment summary
+- ✅ Error handling for failed checkout sessions
+- ✅ Email capture for customer creation
 
-### Mock Test Cards:
-- **Success**: `4242 4242 4242 4242`
-- **Decline**: `4000 0000 0000 0002`
+### Key Features:
+- **Security**: All payment details encrypted and processed by Stripe
+- **Trial Handling**: Billing automatically starts at end of free trial
+- **User Experience**: Clear payment summary with trial information
+- **No Card Storage**: Stripe handles all card tokenization (PCI compliant)
 
 ---
 
-## 🚀 Next Step: Replace Mock Payments with Real Stripe
+## 🧪 Testing Stripe Integration
 
-To switch from mock payments to real Stripe Checkout, follow these steps:
+You can now test the integration with Stripe test cards:
 
-### Option 1: Simple Button Integration (Recommended for MVP)
+### How It Works:
 
-Update the pricing page to use Stripe Payment Links instead of custom checkout:
+1. User selects a plan from pricing page
+2. Clicks "Continue to Secure Payment" on checkout page
+3. `createCheckoutSession()` is called with:
+   - Price ID (monthly or annual from Stripe)
+   - Coach ID and email
+   - Trial end date (if applicable)
+4. Stripe redirects to hosted checkout page
+5. User enters payment details securely on Stripe
+6. After successful payment, Stripe redirects back to success page
 
-1. **Create Payment Links in Stripe Dashboard**:
-   - Go to: Stripe Dashboard → Payment Links
-   - Create link for Monthly plan (£15/mo)
-   - Create link for Annual plan (£150/yr)
+### Implementation Details:
 
-2. **Update Pricing Page Buttons**:
-   Replace current button onClick handlers with direct links to Stripe Payment Links
+**Files Modified:**
+- `/pages/checkout/CheckoutMonthly.tsx` - Replaced mock payment with Stripe redirect
+- `/pages/checkout/CheckoutAnnual.tsx` - Replaced mock payment with Stripe redirect
 
-**Pros**: Fastest implementation, fully hosted by Stripe, automatic invoice management
-**Cons**: Less customization, external redirect
-
-### Option 2: Embedded Checkout (Full Custom Integration)
-
-Replace mock payment code in checkout pages with real Stripe Checkout:
-
-**Files to Update**:
-1. `/pages/checkout/CheckoutMonthly.tsx` (lines 75-150)
-2. `/pages/checkout/CheckoutAnnual.tsx` (same structure)
-
-**Replace this code block** (lines 75-150 in CheckoutMonthly.tsx):
-
-```typescript
-const handlePaymentSubmit = async (formData: PaymentFormData): Promise<PaymentResult> => {
-  setIsProcessing(true);
-  setError(null);
-
-  try {
-    // OLD: Mock payment processing
-    // Replace with real Stripe checkout:
-
-    await createCheckoutSession({
-      priceId: getPriceId('monthly'),
-      coachId: currentCoach!.id,
-      coachEmail: currentCoach!.email,
-      billingCycle: 'monthly',
-      trialEndsAt: currentCoach?.trialEndsAt
-    });
-
-    // Stripe will redirect to checkout page
-    // This code won't execute (redirect happens)
-
-    return { success: true };
-  } catch (err: any) {
-    setIsProcessing(false);
-    setError(err.message);
-    return { success: false, error: err.message };
-  }
-};
-```
-
-**Repeat for CheckoutAnnual.tsx** with `billingCycle: 'annual'`
+**Key Changes:**
+- Removed PaymentForm component (card input fields)
+- Added simple "Continue to Secure Payment" button
+- Button calls `createCheckoutSession()` which redirects to Stripe
+- Added clear payment summary with trial information
+- Added security badge: "Secured by Stripe"
 
 ---
 
 ## 📋 Implementation Checklist
 
-### Phase 1: Testing with Mock Payments (DONE ✅)
+### Phase 1: Stripe Infrastructure (DONE ✅)
 - [x] Environment variables configured
-- [x] Stripe keys added
-- [x] Test checkout flow with mock cards
-- [x] Verify subscription states work
+- [x] Stripe keys added (test mode)
+- [x] Stripe client setup (`lib/stripe.ts`)
+- [x] Stripe service layer (`services/stripeService.ts`)
 
-### Phase 2: Enable Real Stripe (TODO)
-Choose ONE approach:
-
-**Approach A: Payment Links (Quick)**
-- [ ] Create Payment Links in Stripe Dashboard
-- [ ] Update Pricing page buttons with Payment Link URLs
-- [ ] Test with test cards
-- [ ] Verify redirects work
-
-**Approach B: Custom Checkout (Advanced)**
-- [ ] Import `createCheckoutSession` from `/services/stripeService`
-- [ ] Replace `handlePaymentSubmit` function in CheckoutMonthly.tsx
-- [ ] Replace `handlePaymentSubmit` function in CheckoutAnnual.tsx
-- [ ] Test with test cards (4242 4242 4242 4242)
-- [ ] Verify trial billing works correctly
+### Phase 2: Custom Checkout Integration (DONE ✅)
+- [x] Import `createCheckoutSession` from `/services/stripeService`
+- [x] Replace `handlePaymentSubmit` function in CheckoutMonthly.tsx
+- [x] Replace `handlePaymentSubmit` function in CheckoutAnnual.tsx
+- [x] Remove PaymentForm component (card storage UI)
+- [x] Add "Continue to Secure Payment" button
+- [x] Add payment summary with trial information
+- [x] Add security badge and messaging
 
 ### Phase 3: Webhook Integration (For Production)
 - [ ] Create webhook endpoint (currently not needed for testing)
@@ -197,28 +162,42 @@ VITE_STRIPE_ANNUAL_PRICE_ID=price_...
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Environment Variables | ✅ Done | All Stripe keys configured |
+| Environment Variables | ✅ Done | All Stripe keys configured (test mode) |
 | Stripe Client Setup | ✅ Done | `/lib/stripe.ts` created |
 | Stripe Service Layer | ✅ Done | `/services/stripeService.ts` created |
-| Mock Payment Flow | ✅ Working | Full checkout simulation |
-| Real Stripe Integration | ⏳ Ready | Use Option 1 or 2 above |
+| Checkout Integration | ✅ Done | Custom Stripe Checkout implemented |
+| Trial-Aware Billing | ✅ Done | Defers billing to trial end date |
+| Card Storage Removed | ✅ Done | All payment data handled by Stripe |
 | Webhook Handling | ⏳ Not Started | Needed for production |
 | Production Launch | ⏳ Pending | Switch to live keys |
 
 ---
 
-## 🎯 Recommended Next Step
+## 🎯 Next Steps: Testing
 
-**Test the current mock payment flow first** to ensure everything works:
+**Test the Stripe Checkout integration:**
 
 1. Run `npm run dev`
-2. Navigate to http://localhost:3000
-3. Sign up for a new account
-4. Select a pricing plan
-5. Enter mock card: `4242 4242 4242 4242`
-6. Complete checkout
-7. Verify subscription status updated
+2. Navigate to http://localhost:5173
+3. Sign up for a new account (or log in)
+4. Select a pricing plan (Monthly or Annual)
+5. Click "Continue to Secure Payment"
+6. You'll be redirected to Stripe's hosted checkout page
+7. Enter test card: `4242 4242 4242 4242`
+   - Expiry: Any future date (e.g., 12/28)
+   - CVC: Any 3 digits (e.g., 123)
+   - ZIP: Any 5 digits (e.g., 12345)
+8. Complete payment
+9. You'll be redirected back to success page
 
-Once you're happy with the mock flow, we can switch to real Stripe using **Option 1 (Payment Links)** for the quickest implementation, or **Option 2 (Custom Checkout)** for more control.
+**Verify in Stripe Dashboard:**
+- Go to Stripe Dashboard → Payments
+- You should see the test payment
+- Check that subscription is created
+- Verify trial end date is set correctly
 
-**Let me know when you're ready to switch to real Stripe!**
+**Important Notes:**
+- This is in TEST MODE - no real charges are made
+- Trial billing is automatically deferred to trial_ends_at
+- All payment data is handled securely by Stripe
+- No card details are stored in your database
