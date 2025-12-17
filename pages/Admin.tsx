@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCoaches, toggleVerifyCoach, toggleFlagReview } from '../services/mockData';
+import { getCoaches, toggleVerifyCoach, toggleFlagReview } from '../services/supabaseService';
 import { Coach } from '../types';
 import { Lock, FileText, CheckCircle, XCircle, Flag, AlertTriangle } from 'lucide-react';
 
@@ -10,7 +10,11 @@ export const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      setCoaches(getCoaches());
+      const loadCoaches = async () => {
+        const data = await getCoaches();
+        setCoaches(data);
+      };
+      loadCoaches();
     }
   }, [isAuthenticated]);
 
@@ -23,14 +27,18 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleVerify = (id: string) => {
-    const updated = toggleVerifyCoach(id);
+  const handleVerify = async (id: string) => {
+    await toggleVerifyCoach(id);
+    // Reload coaches after update
+    const updated = await getCoaches();
     setCoaches(updated);
   };
 
-  const handleFlag = (coachId: string, reviewId: string) => {
-      const updated = toggleFlagReview(coachId, reviewId);
-      setCoaches(updated);
+  const handleFlag = async (coachId: string, reviewId: string) => {
+    await toggleFlagReview(coachId, reviewId);
+    // Reload coaches after update
+    const updated = await getCoaches();
+    setCoaches(updated);
   }
 
   if (!isAuthenticated) {

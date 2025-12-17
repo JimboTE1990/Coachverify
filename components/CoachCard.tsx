@@ -6,9 +6,10 @@ import { BadgeCheck, Star, MapPin, ArrowRight, Sparkles } from 'lucide-react';
 interface CoachCardProps {
   coach: Coach;
   matchReason?: string;
+  matchPercentage?: number;
 }
 
-export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason }) => {
+export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchPercentage }) => {
   const navigate = useNavigate();
   const avgRating = coach.reviews?.length 
     ? (coach.reviews.reduce((acc, r) => acc + r.rating, 0) / coach.reviews.length).toFixed(1)
@@ -49,7 +50,7 @@ export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason }) => {
             <p className="text-brand-600 font-bold text-xs uppercase tracking-wide mb-2">{coach.specialties?.[0] || 'General'}</p>
           </div>
           <div className="text-right">
-              <span className="text-xl font-bold text-slate-900">${coach.hourlyRate}</span>
+              <span className="text-xl font-bold text-slate-900">£{coach.hourlyRate}</span>
               <span className="text-xs text-slate-400 block font-medium">/hr</span>
           </div>
         </div>
@@ -66,9 +67,16 @@ export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason }) => {
 
         <div className="flex justify-between items-end">
             {matchReason ? (
-            <div className="bg-gradient-to-r from-brand-50 to-indigo-50 border border-brand-100 rounded-lg px-3 py-1.5 flex items-center shadow-sm">
-                <Sparkles className="h-3.5 w-3.5 text-brand-600 mr-2" />
-                <span className="text-xs font-bold text-brand-800 line-clamp-1">{matchReason}</span>
+            <div className="flex items-center gap-2">
+              {matchPercentage !== undefined && (
+                <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-1.5 flex items-center shadow-sm">
+                  <span className="text-xs font-bold text-green-800">{matchPercentage}% Match</span>
+                </div>
+              )}
+              <div className="bg-gradient-to-r from-brand-50 to-indigo-50 border border-brand-100 rounded-lg px-3 py-1.5 flex items-center shadow-sm">
+                  <Sparkles className="h-3.5 w-3.5 text-brand-600 mr-2" />
+                  <span className="text-xs font-bold text-brand-800 line-clamp-1">{matchReason}</span>
+              </div>
             </div>
             ) : (
             <div className="flex flex-wrap gap-2">

@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { getCoaches, updateCoach } from '../services/mockData';
-import { Coach, SocialLink, Specialty, Format } from '../types';
-import { 
-  User, Settings, CreditCard, Lock, LogOut, Sparkles, 
-  Plus, Trash2, Link as LinkIcon, CheckCircle, Shield, 
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { updateCoach, getCoachAnalytics, type CoachAnalytics } from '../services/supabaseService';
+import { Coach, Specialty, Format } from '../types';
+import {
+  User, Settings, CreditCard, Lock, LogOut,
+  Plus, Trash2, Link as LinkIcon, CheckCircle, Shield,
   AlertTriangle, Mail, Smartphone, RefreshCw, Eye, EyeOff,
-  Tag, Monitor, LayoutDashboard
+  Tag, Monitor, LayoutDashboard, Sparkles, BarChart, TrendingUp, Calendar,
+  Award, GraduationCap, Trophy
 } from 'lucide-react';
-import { DalmatianHeadLogo, CoachDogBrand } from '../components/Layout';
+import { CoachDogFullLogo } from '../components/Layout';
+import { useAuth } from '../hooks/useAuth';
+import { useDeviceDetection } from '../hooks/useDeviceDetection';
+import { ViewModeToggle } from '../components/common/ViewModeToggle';
+import { TrialCountdownBanner } from '../components/subscription/TrialCountdownBanner';
+import { CancelSubscriptionModal } from '../components/subscription/CancelSubscriptionModal';
+import { ProfileViewsChart } from '../components/analytics/ProfileViewsChart';
 
 const AVAILABLE_SPECIALTIES: Specialty[] = [
   'Career Growth', 
@@ -22,20 +29,39 @@ const AVAILABLE_FORMATS: Format[] = ['Online', 'In-Person', 'Hybrid'];
 
 export const CoachDashboard: React.FC = () => {
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'subscription'>('profile');
-  
-  // Auth State
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  
-  // User Session
-  const [currentCoach, setCurrentCoach] = useState<Coach | null>(null);
+  const navigate = useNavigate();
+  const { coach: currentCoach, logout, loading: authLoading, refreshCoach } = useAuth();
+  const { viewMode, setViewMode, isMobile, isTablet } = useDeviceDetection();
+
+  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'subscription' | 'analytics'>('profile');
+
+  // Local form state for profile editing (prevents auto-save on every keystroke)
+  const [localProfile, setLocalProfile] = useState<Partial<Coach> | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Analytics state
+  const [analytics, setAnalytics] = useState<CoachAnalytics | null>(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+
+  // Initialize local profile state when coach data loads
+  useEffect(() => {
+    if (currentCoach && !localProfile) {
+      setLocalProfile({
+        name: currentCoach.name,
+        bio: currentCoach.bio,
+        hourlyRate: currentCoach.hourlyRate,
+        specialties: currentCoach.specialties || [],
+        availableFormats: currentCoach.availableFormats || [],
+        socialLinks: currentCoach.socialLinks || []
+      });
+    }
+  }, [currentCoach, localProfile]);
 
   // New Link State
   const [newLink, setNewLink] = useState({ platform: '', url: '' });
+  const [newQualification, setNewQualification] = useState<{ degree: string; institution?: string; year?: number }>({ degree: '', institution: '', year: undefined });
+  const [newAcknowledgement, setNewAcknowledgement] = useState<{ title: string; icon?: string; year?: number }>({ title: '', icon: '', year: undefined });
 
   // Payment Method Edit State
   const [isEditingPayment, setIsEditingPayment] = useState(false);
@@ -48,91 +74,184 @@ export const CoachDashboard: React.FC = () => {
   const [passState, setPassState] = useState({ current: '', new: '', confirm: '' });
   const [showPassState, setShowPassState] = useState({ current: false, new: false, confirm: false });
 
-  // Auto Login Check on Mount
+  // Cancel Subscription Modal State
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+
+  // Redirect to login if not authenticated
   useEffect(() => {
-    const state = location.state as any;
-    if (state && state.autoLoginEmail) {
-       setEmail(state.autoLoginEmail);
+    console.log('[CoachDashboard] Auth state:', { authLoading, hasCoach: !!currentCoach });
+
+    if (!authLoading && !currentCoach) {
+      console.log('[CoachDashboard] Not authenticated, redirecting to login');
+      navigate('/coach-login', { state: { from: location } });
     }
-  }, [location]);
+  }, [authLoading, currentCoach, navigate, location]);
 
-  // Login Logic
-  const handleLogin = (e: React.FormEvent | null) => {
-    if (e) e.preventDefault();
-    setError('');
-    setLoading(true);
+  // Check for pending checkout after login
+  useEffect(() => {
+    if (currentCoach && !authLoading) {
+      const pendingCheckout = sessionStorage.getItem('pendingCheckout');
 
-    setTimeout(() => {
+      if (pendingCheckout) {
         try {
-            const coaches = getCoaches();
-            if (!coaches) throw new Error("Data unavailable");
+          const { plan, timestamp } = JSON.parse(pendingCheckout);
 
-            let found = coaches.find(c => c && c.email && c.email.toLowerCase() === email.toLowerCase());
-            
-            if (!found && email.toLowerCase().includes('sarah')) {
-                found = coaches.find(c => c.id === 'c1');
-            }
-
-            if (found) {
-                setCurrentCoach(found);
-            } else {
-                setError('Coach not found. Please check email or sign up.');
-            }
+          // Expire after 30 minutes
+          const thirtyMinutes = 30 * 60 * 1000;
+          if (Date.now() - timestamp < thirtyMinutes) {
+            console.log('[CoachDashboard] Redirecting to pending checkout:', plan);
+            sessionStorage.removeItem('pendingCheckout');
+            navigate(`/checkout/${plan}`, { replace: true });
+          } else {
+            sessionStorage.removeItem('pendingCheckout');
+          }
         } catch (err) {
-            setError('System error. Try resetting data.');
-            console.error(err);
-        } finally {
-            setLoading(false);
+          console.error('[CoachDashboard] Error parsing pending checkout:', err);
+          sessionStorage.removeItem('pendingCheckout');
         }
-    }, 600);
+      }
+    }
+  }, [currentCoach, authLoading, navigate]);
+
+  // Load analytics when analytics tab is selected
+  useEffect(() => {
+    if (activeTab === 'analytics' && currentCoach && !analytics) {
+      const loadAnalytics = async () => {
+        setLoadingAnalytics(true);
+        const data = await getCoachAnalytics(currentCoach.id);
+        setAnalytics(data);
+        setLoadingAnalytics(false);
+      };
+      loadAnalytics();
+    }
+  }, [activeTab, currentCoach, analytics]);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/coach-login');
   };
 
-  const handleLogout = () => {
-    setCurrentCoach(null);
-    setEmail('');
-    setPassword('');
-    setError('');
-    setShowLoginPassword(false);
+  // Update local profile state (doesn't save to database)
+  const updateLocalProfile = (updates: Partial<Coach>) => {
+    setLocalProfile(prev => ({ ...prev, ...updates }));
+    setHasUnsavedChanges(true);
   };
 
-  const handleUpdateCoach = (updates: Partial<Coach>) => {
+  // Save changes to database (only called when user clicks "Save Changes")
+  const handleSaveProfile = async () => {
+    if (!currentCoach || !localProfile) return;
+
+    setIsSaving(true);
+    const updated = { ...currentCoach, ...localProfile };
+
+    const success = await updateCoach(updated);
+    if (success) {
+      await refreshCoach(); // Refresh auth context with updated data
+      setHasUnsavedChanges(false);
+      alert('✓ Profile updated successfully!');
+    } else {
+      alert('⚠ Failed to save changes. Please try again.');
+    }
+    setIsSaving(false);
+  };
+
+  // For subscription/account changes that still need immediate saves
+  const handleUpdateCoach = async (updates: Partial<Coach>) => {
     if (!currentCoach) return;
     const updated = { ...currentCoach, ...updates };
-    setCurrentCoach(updated); 
-    updateCoach(updated); 
+
+    const success = await updateCoach(updated);
+    if (success) {
+      await refreshCoach(); // Refresh auth context with updated data
+      alert('✓ Profile updated successfully!');
+    } else {
+      alert('⚠ Failed to save changes. Please try again.');
+    }
   };
 
-  // --- Profile Helpers ---
+  // Cancel subscription handler
+  const handleCancelSubscription = async (reason: string, feedback: string) => {
+    if (!currentCoach) return;
+
+    // Prevent duplicate cancellations
+    if (currentCoach.cancelledAt) {
+      alert('This subscription has already been cancelled.');
+      setIsCancelModalOpen(false);
+      return;
+    }
+
+    // Calculate subscription end date (30 days from now for monthly, 365 days for annual)
+    const now = new Date();
+    const daysToAdd = currentCoach.billingCycle === 'annual' ? 365 : 30;
+    const subscriptionEndsAt = new Date(now.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+
+    const updates = {
+      cancelledAt: now.toISOString(),
+      subscriptionEndsAt: subscriptionEndsAt.toISOString(),
+      cancelReason: reason,
+      cancelFeedback: feedback || undefined
+    };
+
+    const success = await updateCoach({ ...currentCoach, ...updates });
+    if (success) {
+      await refreshCoach();
+      setIsCancelModalOpen(false);
+    } else {
+      throw new Error('Failed to cancel subscription');
+    }
+  };
+
+  // Reactivate subscription handler
+  const handleReactivateSubscription = async () => {
+    if (!currentCoach) return;
+
+    const updates = {
+      cancelledAt: null,
+      subscriptionEndsAt: null,
+      cancelReason: null,
+      cancelFeedback: null
+    };
+
+    const success = await updateCoach({ ...currentCoach, ...updates });
+    if (success) {
+      await refreshCoach();
+      alert('✓ Subscription reactivated successfully!');
+    } else {
+      alert('⚠ Failed to reactivate subscription. Please try again.');
+    }
+  };
+
+  // --- Profile Helpers (use local state, not immediate saves) ---
   const addLink = () => {
     if (newLink.platform && newLink.url) {
-      const updatedLinks = [...(currentCoach?.socialLinks || []), newLink];
-      handleUpdateCoach({ socialLinks: updatedLinks });
+      const updatedLinks = [...(localProfile?.socialLinks || []), newLink];
+      updateLocalProfile({ socialLinks: updatedLinks });
       setNewLink({ platform: '', url: '' });
     }
   };
 
   const removeLink = (index: number) => {
-    const updatedLinks = [...(currentCoach?.socialLinks || [])];
+    const updatedLinks = [...(localProfile?.socialLinks || [])];
     updatedLinks.splice(index, 1);
-    handleUpdateCoach({ socialLinks: updatedLinks });
+    updateLocalProfile({ socialLinks: updatedLinks });
   };
 
   const toggleSpecialty = (s: Specialty) => {
-    if (!currentCoach) return;
-    const current = currentCoach.specialties || [];
-    const updated = current.includes(s) 
+    if (!localProfile) return;
+    const current = localProfile.specialties || [];
+    const updated = current.includes(s)
         ? current.filter(item => item !== s)
         : [...current, s];
-    handleUpdateCoach({ specialties: updated });
+    updateLocalProfile({ specialties: updated });
   };
 
   const toggleFormat = (f: Format) => {
-    if (!currentCoach) return;
-    const current = currentCoach.availableFormats || [];
-    const updated = current.includes(f) 
+    if (!localProfile) return;
+    const current = localProfile.availableFormats || [];
+    const updated = current.includes(f)
         ? current.filter(item => item !== f)
         : [...current, f];
-    handleUpdateCoach({ availableFormats: updated });
+    updateLocalProfile({ availableFormats: updated });
   };
 
   const handleForgotPassword = () => {
@@ -149,109 +268,21 @@ export const CoachDashboard: React.FC = () => {
       }
   };
 
-  // ---------------- LOGIN SCREEN ----------------
-  if (!currentCoach) {
-      return (
-        <div className="min-h-[calc(100vh-80px)] flex items-center justify-center bg-slate-50 px-4 py-12">
-          <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 border border-slate-100 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-brand-500 to-indigo-600"></div>
-            <div className="text-center mb-8">
-              <div className="mx-auto w-24 h-24 bg-gradient-to-b from-indigo-500 to-teal-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg p-2 transform rotate-3">
-                  <DalmatianHeadLogo className="h-full w-full drop-shadow-md" />
-              </div>
-              <h1 className="text-3xl font-display font-bold text-slate-900">Coach Portal</h1>
-              <p className="text-slate-500 mt-2">Manage your practice in one place.</p>
-            </div>
-            
-            <form onSubmit={handleLogin} className="space-y-5">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5">Email Address</label>
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
-                  placeholder="name@example.com"
-                />
-              </div>
-              <div className="relative">
-                <label className="block text-sm font-bold text-slate-700 mb-1.5">Password</label>
-                <div className="relative">
-                  <input 
-                    type={showLoginPassword ? "text" : "password"} 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none pr-10 transition-all"
-                    placeholder="••••••••"
-                  />
-                  <button 
-                    type="button"
-                    onClick={() => setShowLoginPassword(!showLoginPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
-                  >
-                    {showLoginPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-              </div>
-              
-              {error && (
-                  <div className="bg-red-50 text-red-600 text-sm p-4 rounded-xl flex items-center border border-red-100">
-                      <Lock className="h-4 w-4 mr-2" /> {error}
-                  </div>
-              )}
-
-              <button 
-                  type="submit" 
-                  disabled={loading || !email}
-                  className="w-full bg-slate-900 text-white py-3.5 rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-70 flex justify-center items-center"
-              >
-                {loading ? 'Accessing Portal...' : 'Enter Dashboard'}
-              </button>
-            </form>
-
-            <div className="mt-4">
-               <button
-                 type="button"
-                 onClick={() => { setEmail('sarah@example.com'); setPassword('demo123'); }}
-                 className="w-full py-2.5 border border-dashed border-slate-300 rounded-xl text-sm text-slate-500 font-medium hover:bg-slate-50 hover:text-slate-700 transition-colors"
-               >
-                 Auto-Fill Demo Credentials
-               </button>
-            </div>
-            
-            <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-              <p className="text-sm text-slate-500">
-                  New to CoachDog? <Link to="/coach-signup" className="text-brand-600 font-bold hover:underline">Join the network</Link>
-              </p>
-            </div>
-          </div>
-        </div>
-      );
-  }
-
-  // ---------------- ONBOARDING / EXPIRED ----------------
-  if (currentCoach.subscriptionStatus === 'onboarding') {
+  // Loading state
+  if (authLoading) {
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-4">
-            <div className="bg-white max-w-lg w-full rounded-3xl shadow-2xl p-10 text-center border border-slate-100 animate-fade-in-up">
-                <div className="w-24 h-24 bg-gradient-to-tr from-brand-400 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg">
-                    <Sparkles className="h-12 w-12 text-white" />
-                </div>
-                <h1 className="text-4xl font-display font-bold text-slate-900 mb-4">Welcome, {currentCoach.name?.split(' ')[0]}!</h1>
-                <p className="text-slate-500 mb-10 text-lg">
-                    Your account is fully verified. Unlock your dashboard with a free 14-day trial.
-                </p>
-                <button 
-                    onClick={() => handleUpdateCoach({ subscriptionStatus: 'trial', trialEndsAt: new Date(Date.now() + 12096e5).toISOString() })}
-                    className="w-full bg-brand-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-brand-700 transition-all shadow-lg hover:shadow-brand-500/30"
-                >
-                    Activate Free Trial
-                </button>
-            </div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
+      </div>
     );
   }
 
+  // Not authenticated - redirect handled by useEffect
+  if (!currentCoach) {
+    return null;
+  }
+
+  // ---------------- EXPIRED ----------------
   if (currentCoach.subscriptionStatus === 'expired') {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-4">
@@ -260,10 +291,24 @@ export const CoachDashboard: React.FC = () => {
                 <Lock className="h-10 w-10 text-red-500" />
              </div>
              <h2 className="text-3xl font-display font-bold text-slate-900 mb-3">Trial Expired</h2>
-             <p className="text-slate-500 mb-8">Your dashboard is locked. Upgrade to continue managing your profile.</p>
-             <button onClick={() => handleUpdateCoach({ subscriptionStatus: 'active', trialEndsAt: undefined })} className="w-full bg-slate-900 text-white py-3.5 rounded-xl font-bold mb-4 shadow-lg">
-                 Upgrade Membership
-             </button>
+             <p className="text-slate-500 mb-8">Your dashboard is locked. Choose a plan to continue managing your profile.</p>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <Link
+                  to="/checkout/monthly"
+                  className="bg-slate-100 border-2 border-transparent hover:border-slate-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all block"
+                >
+                  <span className="block font-bold text-slate-900 text-xl">Monthly</span>
+                  <span className="block text-slate-500">£15/mo</span>
+                </Link>
+                <Link
+                  to="/checkout/annual"
+                  className="bg-slate-900 border-2 border-slate-900 p-5 rounded-2xl relative shadow-lg hover:-translate-y-1 transition-all block text-white"
+                >
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-600 text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-sm">SAVE 17%</div>
+                  <span className="block font-bold text-xl">Annual</span>
+                  <span className="block text-slate-300">£150/yr</span>
+                </Link>
+             </div>
              <button onClick={handleLogout} className="text-slate-400 hover:text-slate-600 font-medium text-sm">Log Out</button>
          </div>
       </div>
@@ -271,16 +316,81 @@ export const CoachDashboard: React.FC = () => {
   }
 
   // ---------------- MAIN DASHBOARD ----------------
+  // Determine if we should show sidebar or mobile tabs based on view mode
+  const showSidebar = viewMode === 'desktop' || (!isMobile && !isTablet);
+  const showMobileTabs = viewMode === 'mobile' || isMobile;
+
   return (
     <div className="bg-slate-50 min-h-screen">
-      
+
       {/* Dashboard Banner Gradient */}
       <div className="bg-gradient-to-r from-teal-600 to-indigo-700 h-48 w-full absolute top-20 left-0 z-0"></div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-12">
-        <div className="flex flex-col md:flex-row md:items-start gap-8">
-          
-          {/* Sidebar */}
+
+        {/* View Mode Toggle - Show on tablet and desktop */}
+        {!isMobile && (
+          <div className="flex justify-end mb-4">
+            <ViewModeToggle viewMode={viewMode} onToggle={setViewMode} />
+          </div>
+        )}
+
+        {/* Mobile Tab Bar - Show only in mobile view */}
+        {showMobileTabs && (
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-2 mb-6 overflow-x-auto">
+            <div className="flex space-x-2 min-w-max">
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
+                  activeTab === 'profile'
+                    ? 'bg-brand-50 text-brand-700 shadow-sm'
+                    : 'text-slate-500 hover:bg-slate-50'
+                }`}
+              >
+                <User className="h-4 w-4 inline mr-2" />
+                Profile
+              </button>
+              <button
+                onClick={() => setActiveTab('subscription')}
+                className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
+                  activeTab === 'subscription'
+                    ? 'bg-indigo-50 text-indigo-700 shadow-sm'
+                    : 'text-slate-500 hover:bg-slate-50'
+                }`}
+              >
+                <CreditCard className="h-4 w-4 inline mr-2" />
+                Subscription
+              </button>
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
+                  activeTab === 'analytics'
+                    ? 'bg-green-50 text-green-700 shadow-sm'
+                    : 'text-slate-500 hover:bg-slate-50'
+                }`}
+              >
+                <BarChart className="h-4 w-4 inline mr-2" />
+                Analytics
+              </button>
+              <button
+                onClick={() => setActiveTab('account')}
+                className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
+                  activeTab === 'account'
+                    ? 'bg-slate-100 text-slate-800 shadow-sm'
+                    : 'text-slate-500 hover:bg-slate-50'
+                }`}
+              >
+                <Settings className="h-4 w-4 inline mr-2" />
+                Account
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className={`flex flex-col ${showSidebar ? 'md:flex-row' : ''} md:items-start gap-8`}>
+
+          {/* Sidebar - Show only in desktop view */}
+          {showSidebar && (
           <div className="md:w-72 flex-shrink-0">
             <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden sticky top-24">
               
@@ -308,14 +418,20 @@ export const CoachDashboard: React.FC = () => {
                 >
                   <User className={`h-5 w-5 mr-3 ${activeTab === 'profile' ? 'text-brand-600' : 'text-slate-400'}`} /> Edit Profile
                 </button>
-                <button 
-                  onClick={() => setActiveTab('subscription')} 
+                <button
+                  onClick={() => setActiveTab('subscription')}
                   className={`w-full flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'subscription' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
                 >
                   <CreditCard className={`h-5 w-5 mr-3 ${activeTab === 'subscription' ? 'text-indigo-600' : 'text-slate-400'}`} /> Subscription
                 </button>
-                <button 
-                  onClick={() => setActiveTab('account')} 
+                <button
+                  onClick={() => setActiveTab('analytics')}
+                  className={`w-full flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'analytics' ? 'bg-green-50 text-green-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
+                >
+                  <BarChart className={`h-5 w-5 mr-3 ${activeTab === 'analytics' ? 'text-green-600' : 'text-slate-400'}`} /> Analytics
+                </button>
+                <button
+                  onClick={() => setActiveTab('account')}
                   className={`w-full flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'account' ? 'bg-slate-100 text-slate-800 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
                 >
                   <Settings className={`h-5 w-5 mr-3 ${activeTab === 'account' ? 'text-slate-700' : 'text-slate-400'}`} /> Account
@@ -329,10 +445,14 @@ export const CoachDashboard: React.FC = () => {
               </div>
             </div>
           </div>
+          )}
 
           {/* Content Area */}
           <div className="flex-grow space-y-6">
-            
+
+            {/* Trial Countdown Banner */}
+            {currentCoach && <TrialCountdownBanner coach={currentCoach} />}
+
             {/* ---------------- PROFILE TAB ---------------- */}
             {activeTab === 'profile' && (
               <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-8 space-y-8 animate-fade-in-up">
@@ -346,14 +466,45 @@ export const CoachDashboard: React.FC = () => {
                             <p className="text-slate-500 text-sm">Update how clients see you.</p>
                         </div>
                     </div>
-                    <button className="bg-brand-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 hover:-translate-y-0.5 transition-all">Save Changes</button>
+                    <div className="flex items-center gap-3">
+                      {hasUnsavedChanges && (
+                        <span className="text-xs font-bold text-amber-600 flex items-center">
+                          <AlertTriangle className="h-4 w-4 mr-1" /> Unsaved changes
+                        </span>
+                      )}
+                      <button
+                        onClick={() => navigate(`/coach/${currentCoach?.id}`)}
+                        className="bg-slate-100 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all flex items-center"
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Preview Profile
+                      </button>
+                      <button
+                        onClick={handleSaveProfile}
+                        disabled={!hasUnsavedChanges || isSaving}
+                        className="bg-brand-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                      >
+                        {isSaving ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Saving...
+                          </>
+                        ) : (
+                          'Save Changes'
+                        )}
+                      </button>
+                    </div>
                   </div>
-                  
+
                   {/* Basic Info */}
                   <div className="grid grid-cols-1 gap-6">
                     <div>
                         <label className="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
-                        <input type="text" value={currentCoach.name || ''} onChange={(e) => handleUpdateCoach({name: e.target.value})} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors" />
+                        <input
+                          type="text"
+                          value={localProfile?.name || ''}
+                          onChange={(e) => updateLocalProfile({name: e.target.value})}
+                          className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
+                        />
                     </div>
                   </div>
 
@@ -370,11 +521,11 @@ export const CoachDashboard: React.FC = () => {
                         </label>
                         <div className="flex flex-wrap gap-2">
                            {AVAILABLE_SPECIALTIES.map(s => (
-                             <button 
+                             <button
                                key={s}
                                onClick={() => toggleSpecialty(s)}
                                className={`px-4 py-2 rounded-lg text-xs font-bold border transition-all duration-200 ${
-                                 currentCoach.specialties?.includes(s)
+                                 localProfile?.specialties?.includes(s)
                                  ? 'bg-brand-600 text-white border-brand-600 shadow-md transform scale-105'
                                  : 'bg-white text-slate-600 border-slate-200 hover:border-brand-300 hover:text-brand-600'
                                }`}
@@ -394,9 +545,9 @@ export const CoachDashboard: React.FC = () => {
                             <div className="space-y-2">
                                 {AVAILABLE_FORMATS.map(f => (
                                 <label key={f} className="flex items-center cursor-pointer p-2 rounded-lg hover:bg-white/50 transition-colors">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={currentCoach.availableFormats?.includes(f)}
+                                    <input
+                                        type="checkbox"
+                                        checked={localProfile?.availableFormats?.includes(f)}
                                         onChange={() => toggleFormat(f)}
                                         className="h-5 w-5 text-brand-600 focus:ring-brand-500 border-gray-300 rounded"
                                     />
@@ -411,11 +562,11 @@ export const CoachDashboard: React.FC = () => {
                             <label className="block text-sm font-bold text-slate-700 mb-3">Hourly Rate ($)</label>
                             <div className="relative">
                                 <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 font-bold">$</span>
-                                <input 
-                                    type="number" 
-                                    value={currentCoach.hourlyRate || 0} 
-                                    onChange={(e) => handleUpdateCoach({hourlyRate: parseInt(e.target.value) || 0})} 
-                                    className="w-full border border-slate-200 rounded-xl pl-8 pr-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-lg font-bold text-slate-800" 
+                                <input
+                                    type="number"
+                                    value={localProfile?.hourlyRate || 0}
+                                    onChange={(e) => updateLocalProfile({hourlyRate: parseInt(e.target.value) || 0})}
+                                    className="w-full border border-slate-200 rounded-xl pl-8 pr-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-lg font-bold text-slate-800"
                                 />
                             </div>
                             <p className="text-xs text-slate-500 mt-2">Used to match with client budget ranges.</p>
@@ -426,7 +577,238 @@ export const CoachDashboard: React.FC = () => {
                   {/* Bio */}
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-2">Bio</label>
-                    <textarea rows={4} value={currentCoach.bio || ''} onChange={(e) => handleUpdateCoach({bio: e.target.value})} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors" />
+                    <textarea rows={4} value={localProfile?.bio || ''} onChange={(e) => updateLocalProfile({bio: e.target.value})} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors" />
+                  </div>
+
+                  {/* Professional Credentials Section */}
+                  <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-100 space-y-6">
+                      <h3 className="text-sm font-extrabold text-indigo-900 flex items-center uppercase tracking-widest">
+                        <Award className="h-4 w-4 mr-2" /> Professional Credentials
+                      </h3>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Accreditation Level */}
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-3">Accreditation Level</label>
+                            <select
+                              value={localProfile?.accreditationLevel || ''}
+                              onChange={(e) => updateLocalProfile({accreditationLevel: e.target.value as any})}
+                              className="w-full border border-slate-200 bg-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-slate-800"
+                            >
+                              <option value="">Select accreditation...</option>
+                              <option value="Foundation">Foundation</option>
+                              <option value="Practitioner">Practitioner</option>
+                              <option value="Senior Practitioner">Senior Practitioner</option>
+                              <option value="Master Practitioner">Master Practitioner</option>
+                              <option value="Certified">Certified</option>
+                              <option value="Advanced Certified">Advanced Certified</option>
+                            </select>
+                          </div>
+
+                          {/* Coaching Hours */}
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-3">Coaching Hours</label>
+                            <input
+                              type="number"
+                              value={localProfile?.coachingHours || ''}
+                              onChange={(e) => updateLocalProfile({coachingHours: parseInt(e.target.value) || 0})}
+                              placeholder="e.g., 500"
+                              className="w-full border border-slate-200 bg-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-slate-800"
+                            />
+                            <p className="text-xs text-slate-500 mt-2">Total hours of coaching experience</p>
+                          </div>
+                      </div>
+
+                      {/* Additional Certifications */}
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-3">Additional Certifications</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {['Mental Health First Aid Trained', 'Trauma Informed', 'Diversity & Inclusion Certified', 'Child & Adolescent Specialist', 'Corporate Coaching Certified', 'NLP Practitioner', 'CBT Trained'].map(cert => (
+                            <label key={cert} className="flex items-center cursor-pointer p-3 rounded-lg bg-white hover:bg-indigo-50 border border-slate-200 transition-colors">
+                              <input
+                                type="checkbox"
+                                checked={localProfile?.additionalCertifications?.includes(cert as any) || false}
+                                onChange={(e) => {
+                                  const current = localProfile?.additionalCertifications || [];
+                                  const updated = e.target.checked
+                                    ? [...current, cert as any]
+                                    : current.filter(c => c !== cert);
+                                  updateLocalProfile({additionalCertifications: updated});
+                                }}
+                                className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300 rounded"
+                              />
+                              <span className="ml-3 text-xs font-medium text-slate-700">{cert}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Location Radius */}
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-3">Location Radius (for in-person coaching)</label>
+                        <input
+                          type="text"
+                          value={localProfile?.locationRadius || ''}
+                          onChange={(e) => updateLocalProfile({locationRadius: e.target.value})}
+                          placeholder="e.g., within 5 miles of London"
+                          className="w-full border border-slate-200 bg-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-slate-800"
+                        />
+                      </div>
+
+                      {/* Languages */}
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-3">Languages</label>
+                        <input
+                          type="text"
+                          value={localProfile?.languages?.join(', ') || ''}
+                          onChange={(e) => updateLocalProfile({languages: e.target.value.split(',').map(l => l.trim()).filter(Boolean)})}
+                          placeholder="e.g., English, Spanish, French"
+                          className="w-full border border-slate-200 bg-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-slate-800"
+                        />
+                        <p className="text-xs text-slate-500 mt-2">Separate multiple languages with commas</p>
+                      </div>
+                  </div>
+
+                  {/* Qualifications Section */}
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                        <div className="bg-slate-100 p-1.5 rounded mr-2 text-slate-600"><GraduationCap className="h-4 w-4" /></div> Qualifications
+                    </h3>
+                    <div className="space-y-3 mb-4">
+                        {localProfile?.qualifications?.map((qual, idx) => (
+                            <div key={idx} className="flex items-start space-x-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                <div className="flex-grow">
+                                    <p className="text-sm font-bold text-slate-900">{qual.degree}</p>
+                                    {qual.institution && <p className="text-xs text-slate-600 mt-1">{qual.institution}</p>}
+                                    {qual.year && <p className="text-xs text-slate-500 mt-1">{qual.year}</p>}
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    const updated = (localProfile?.qualifications || []).filter((_, i) => i !== idx);
+                                    updateLocalProfile({qualifications: updated});
+                                  }}
+                                  className="text-slate-400 hover:text-red-500 p-2 transition-colors"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex flex-col gap-3 bg-white p-4 rounded-xl border border-slate-200">
+                        <input
+                            type="text"
+                            placeholder="Degree (e.g., Masters in Law)"
+                            className="border border-slate-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
+                            value={newQualification.degree}
+                            onChange={(e) => setNewQualification({...newQualification, degree: e.target.value})}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Institution (optional)"
+                            className="border border-slate-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
+                            value={newQualification.institution}
+                            onChange={(e) => setNewQualification({...newQualification, institution: e.target.value})}
+                        />
+                        <input
+                            type="number"
+                            placeholder="Year (optional)"
+                            className="border border-slate-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
+                            value={newQualification.year || ''}
+                            onChange={(e) => setNewQualification({...newQualification, year: parseInt(e.target.value) || undefined})}
+                        />
+                        <button
+                            onClick={() => {
+                              if (newQualification.degree) {
+                                const updated = [...(localProfile?.qualifications || []), {
+                                  id: `qual_${Date.now()}`,
+                                  degree: newQualification.degree,
+                                  institution: newQualification.institution,
+                                  year: newQualification.year
+                                }];
+                                updateLocalProfile({qualifications: updated});
+                                setNewQualification({degree: '', institution: '', year: undefined});
+                              }
+                            }}
+                            disabled={!newQualification.degree}
+                            className="bg-slate-900 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center shadow-md"
+                        >
+                            <Plus className="h-4 w-4 mr-1" /> Add Qualification
+                        </button>
+                    </div>
+                  </div>
+
+                  {/* Acknowledgements Section */}
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                        <div className="bg-slate-100 p-1.5 rounded mr-2 text-slate-600"><Trophy className="h-4 w-4" /></div> Acknowledgements & Awards
+                    </h3>
+                    <div className="space-y-3 mb-4">
+                        {localProfile?.acknowledgements?.map((ack, idx) => (
+                            <div key={idx} className="flex items-start space-x-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                <div className="flex-grow">
+                                    <p className="text-sm font-bold text-slate-900">{ack.title}</p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      {ack.icon && <span className="text-xs text-slate-500">Icon: {ack.icon}</span>}
+                                      {ack.year && <span className="text-xs text-slate-500">{ack.year}</span>}
+                                    </div>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    const updated = (localProfile?.acknowledgements || []).filter((_, i) => i !== idx);
+                                    updateLocalProfile({acknowledgements: updated});
+                                  }}
+                                  className="text-slate-400 hover:text-red-500 p-2 transition-colors"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex flex-col gap-3 bg-white p-4 rounded-xl border border-slate-200">
+                        <input
+                            type="text"
+                            placeholder="Title (e.g., Coach of the Year 2025)"
+                            className="border border-slate-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
+                            value={newAcknowledgement.title}
+                            onChange={(e) => setNewAcknowledgement({...newAcknowledgement, title: e.target.value})}
+                        />
+                        <div className="grid grid-cols-2 gap-3">
+                          <input
+                              type="text"
+                              placeholder="Icon (e.g., star, trophy)"
+                              className="border border-slate-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
+                              value={newAcknowledgement.icon || ''}
+                              onChange={(e) => setNewAcknowledgement({...newAcknowledgement, icon: e.target.value})}
+                          />
+                          <input
+                              type="number"
+                              placeholder="Year (optional)"
+                              className="border border-slate-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
+                              value={newAcknowledgement.year || ''}
+                              onChange={(e) => setNewAcknowledgement({...newAcknowledgement, year: parseInt(e.target.value) || undefined})}
+                          />
+                        </div>
+                        <button
+                            onClick={() => {
+                              if (newAcknowledgement.title) {
+                                const updated = [...(localProfile?.acknowledgements || []), {
+                                  id: `ack_${Date.now()}`,
+                                  title: newAcknowledgement.title,
+                                  icon: newAcknowledgement.icon,
+                                  year: newAcknowledgement.year
+                                }];
+                                updateLocalProfile({acknowledgements: updated});
+                                setNewAcknowledgement({title: '', icon: '', year: undefined});
+                              }
+                            }}
+                            disabled={!newAcknowledgement.title}
+                            className="bg-slate-900 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center shadow-md"
+                        >
+                            <Plus className="h-4 w-4 mr-1" /> Add Acknowledgement
+                        </button>
+                    </div>
                   </div>
 
                   {/* Social Links */}
@@ -435,7 +817,7 @@ export const CoachDashboard: React.FC = () => {
                         <div className="bg-slate-100 p-1.5 rounded mr-2 text-slate-600"><LinkIcon className="h-4 w-4" /></div> Social & Web Links
                     </h3>
                     <div className="space-y-3 mb-4">
-                        {currentCoach.socialLinks?.map((link, idx) => (
+                        {localProfile?.socialLinks?.map((link, idx) => (
                             <div key={idx} className="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
                                 <div className="flex-grow">
                                     <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">{link.platform}</p>
@@ -500,25 +882,25 @@ export const CoachDashboard: React.FC = () => {
                             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-8 text-center">
                                 <h3 className="text-xl font-bold text-indigo-900 mb-3">Upgrade to Keep Access</h3>
                                 <p className="text-sm text-indigo-700/80 mb-8 max-w-md mx-auto">
-                                    Your trial ends on <span className="font-bold">{currentCoach.trialEndsAt ? new Date(currentCoach.trialEndsAt).toLocaleDateString() : 'soon'}</span>. 
+                                    Your trial ends on <span className="font-bold">{currentCoach.trialEndsAt ? new Date(currentCoach.trialEndsAt).toLocaleDateString() : 'soon'}</span>.
                                     Lock in your early bird rate now.
                                 </p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto">
-                                    <button 
-                                        onClick={() => handleUpdateCoach({ subscriptionStatus: 'active', billingCycle: 'monthly', trialEndsAt: undefined })}
-                                        className="bg-white border-2 border-transparent hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all group"
+                                    <Link
+                                        to="/checkout/monthly"
+                                        className="bg-white border-2 border-transparent hover:border-indigo-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all group block"
                                     >
                                         <span className="block font-bold text-slate-900 text-xl">Monthly</span>
                                         <span className="block text-slate-500">£15/mo</span>
-                                    </button>
-                                    <button 
-                                        onClick={() => handleUpdateCoach({ subscriptionStatus: 'active', billingCycle: 'annual', trialEndsAt: undefined })}
-                                        className="bg-white border-2 border-brand-500 p-5 rounded-2xl relative shadow-lg transform hover:-translate-y-1 transition-all"
+                                    </Link>
+                                    <Link
+                                        to="/checkout/annual"
+                                        className="bg-white border-2 border-brand-500 p-5 rounded-2xl relative shadow-lg hover:-translate-y-1 transition-all block"
                                     >
                                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-600 text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-sm">SAVE 17%</div>
                                         <span className="block font-bold text-slate-900 text-xl">Annual</span>
                                         <span className="block text-slate-500">£150/yr</span>
-                                    </button>
+                                    </Link>
                                 </div>
                             </div>
                         ) : (
@@ -527,18 +909,23 @@ export const CoachDashboard: React.FC = () => {
                                     <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
                                         <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4">Billing Cycle</h4>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-2xl font-bold text-slate-900 capitalize">{currentCoach.billingCycle}</span>
-                                            <button 
-                                                onClick={() => {
-                                                    const newCycle = currentCoach.billingCycle === 'monthly' ? 'annual' : 'monthly';
-                                                    if(window.confirm(`Switch to ${newCycle} billing? Changes apply next cycle.`)) {
-                                                        handleUpdateCoach({ billingCycle: newCycle });
-                                                    }
-                                                }}
-                                                className="text-sm text-brand-600 font-bold hover:underline flex items-center bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm"
-                                            >
-                                                <RefreshCw className="h-3 w-3 mr-2" /> Switch
-                                            </button>
+                                            <div>
+                                                <span className="text-2xl font-bold text-slate-900 capitalize">{currentCoach.billingCycle || 'monthly'}</span>
+                                                {/* Show pending change indicator */}
+                                                {currentCoach.pendingPlanChange && (
+                                                    <div className="mt-1 text-xs text-blue-600 font-bold">
+                                                        → Changing to {currentCoach.pendingPlanChange.newBillingCycle}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {!currentCoach.pendingPlanChange && (
+                                                <Link
+                                                    to={`/subscription/change-plan?to=${(currentCoach.billingCycle || 'monthly') === 'monthly' ? 'annual' : 'monthly'}`}
+                                                    className="text-sm text-brand-600 font-bold hover:underline flex items-center bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm hover:shadow transition-all"
+                                                >
+                                                    <RefreshCw className="h-3 w-3 mr-2" /> Change Plan
+                                                </Link>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
@@ -564,10 +951,157 @@ export const CoachDashboard: React.FC = () => {
                                         )}
                                     </div>
                                 </div>
+
+                                {/* Pending Plan Change Banner (if plan change is scheduled) */}
+                                {currentCoach.pendingPlanChange && (
+                                    <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                                <h4 className="text-lg font-bold text-blue-900 mb-2">
+                                                    Plan Change Scheduled
+                                                </h4>
+                                                <p className="text-sm text-blue-800 mb-1">
+                                                    Your plan will change from{' '}
+                                                    <span className="font-bold capitalize">{currentCoach.billingCycle}</span> to{' '}
+                                                    <span className="font-bold capitalize">{currentCoach.pendingPlanChange.newBillingCycle}</span> on{' '}
+                                                    <span className="font-bold">
+                                                        {new Date(currentCoach.pendingPlanChange.effectiveDate).toLocaleDateString('en-GB', {
+                                                            day: 'numeric',
+                                                            month: 'long',
+                                                            year: 'numeric'
+                                                        })}
+                                                    </span>
+                                                </p>
+                                                <p className="text-sm text-blue-700">
+                                                    You can cancel this change anytime before the effective date.
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={async () => {
+                                                    if (window.confirm('Are you sure you want to cancel this plan change?')) {
+                                                        const success = await updateCoach({
+                                                            ...currentCoach,
+                                                            pendingPlanChange: null
+                                                        });
+                                                        if (success) {
+                                                            await refreshCoach();
+                                                            alert('✓ Plan change cancelled successfully!');
+                                                        } else {
+                                                            alert('⚠ Failed to cancel plan change. Please try again.');
+                                                        }
+                                                    }
+                                                }}
+                                                className="ml-4 bg-blue-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-blue-700 transition-colors flex-shrink-0"
+                                            >
+                                                Cancel Change
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Cancellation Banner (if subscription is cancelled) */}
+                                {currentCoach.cancelledAt && currentCoach.subscriptionEndsAt && (
+                                    <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 mt-6">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                                <h4 className="text-lg font-bold text-yellow-900 mb-2">
+                                                    Subscription Scheduled for Cancellation
+                                                </h4>
+                                                <p className="text-sm text-yellow-800 mb-1">
+                                                    Your subscription will end on{' '}
+                                                    <span className="font-bold">
+                                                        {new Date(currentCoach.subscriptionEndsAt).toLocaleDateString('en-GB', {
+                                                            day: 'numeric',
+                                                            month: 'long',
+                                                            year: 'numeric'
+                                                        })}
+                                                    </span>
+                                                </p>
+                                                <p className="text-sm text-yellow-700">
+                                                    You'll continue to have access until then. You can reactivate your subscription at any time.
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={handleReactivateSubscription}
+                                                className="ml-4 bg-yellow-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-yellow-700 transition-colors flex-shrink-0"
+                                            >
+                                                Reactivate
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Cancel Subscription Button (only show if not already cancelled) */}
+                                {!currentCoach.cancelledAt && (
+                                    <div className="mt-6 pt-6 border-t border-slate-200">
+                                        <button
+                                            onClick={() => setIsCancelModalOpen(true)}
+                                            className="w-full bg-white border-2 border-red-200 text-red-600 py-3 rounded-xl font-bold hover:bg-red-50 hover:border-red-300 transition-all flex items-center justify-center"
+                                        >
+                                            <AlertTriangle className="h-5 w-5 mr-2" />
+                                            Cancel Subscription
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                    </div>
+
+                   {/* Cancel Subscription Modal */}
+                   <CancelSubscriptionModal
+                       coach={currentCoach}
+                       isOpen={isCancelModalOpen}
+                       onClose={() => setIsCancelModalOpen(false)}
+                       onConfirm={handleCancelSubscription}
+                   />
                </div>
+            )}
+
+            {/* ---------------- ANALYTICS TAB ---------------- */}
+            {activeTab === 'analytics' && (
+              <div className="space-y-6 animate-fade-in-up">
+                {loadingAnalytics ? (
+                  <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-8">
+                    <div className="flex items-center justify-center py-12">
+                      <RefreshCw className="h-8 w-8 animate-spin text-brand-600" />
+                    </div>
+                  </div>
+                ) : analytics ? (
+                  <>
+                    {/* Profile Views Chart with Time Period Selector */}
+                    <ProfileViewsChart
+                      viewsByDay={analytics.viewsByDay || []}
+                      totalViews={analytics.totalViews}
+                    />
+
+                    {/* Top Referrers Card */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-8">
+                      <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                        <TrendingUp className="h-5 w-5 mr-2 text-slate-600" />
+                        Top Traffic Sources
+                      </h3>
+                      {analytics.topReferrers && analytics.topReferrers.length > 0 ? (
+                        <div className="space-y-2">
+                          {analytics.topReferrers.map((ref, idx) => (
+                            <div key={idx} className="flex justify-between items-center py-3 px-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+                              <span className="text-sm text-slate-700 font-medium truncate max-w-xs">
+                                {ref.referrer === 'direct' ? '🔗 Direct visits' : `🌐 ${ref.referrer}`}
+                              </span>
+                              <span className="font-bold text-slate-900">{ref.count} views</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-slate-500 text-sm text-center py-8">No referrer data available yet</p>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-8">
+                    <p className="text-center text-slate-500 py-12">No analytics data available</p>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* ---------------- ACCOUNT TAB ---------------- */}

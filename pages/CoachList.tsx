@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Search, SlidersHorizontal, X, Sparkles } from 'lucide-react';
-import { getCoaches } from '../services/mockData';
+import { getCoaches, searchCoaches } from '../services/supabaseService';
 import { Coach, QuestionnaireAnswers } from '../types';
 import { CoachCard } from '../components/CoachCard';
+import { calculateMatchScore, getMatchReason as getEnhancedMatchReason, sortCoachesByMatch } from '../utils/matchCalculator';
 
 export const CoachList: React.FC = () => {
   const location = useLocation();
   const [coaches, setCoaches] = useState<Coach[]>([]);
+  const [isLoading, setIsLoading] = useState(true); // NEW: Track loading state
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // State for filters
   const [specialtyFilter, setSpecialtyFilter] = useState('');
   const [maxPrice, setMaxPrice] = useState<number>(300);
@@ -18,8 +20,14 @@ export const CoachList: React.FC = () => {
   const [matchData, setMatchData] = useState<QuestionnaireAnswers | null>(null);
 
   useEffect(() => {
-    // Load initial data
-    setCoaches(getCoaches());
+    // Load initial data from Supabase
+    const loadCoaches = async () => {
+      setIsLoading(true);
+      const data = await getCoaches();
+      setCoaches(data);
+      setIsLoading(false); // Set to false after data loads
+    };
+    loadCoaches();
 
     // Check for navigation state (Questionnaire results)
     if (location.state && (location.state as any).questionnaireResults) {
@@ -39,12 +47,12 @@ export const CoachList: React.FC = () => {
 
   const filteredCoaches = useMemo(() => {
     if (!coaches) return [];
-    
+
     let result = coaches.filter(coach => {
       if (!coach) return false;
-      
-      // 0. Filter out expired subscriptions
-      if (coach.subscriptionStatus === 'expired') return false;
+
+      // Note: Expired subscriptions are now filtered at the database level via profile_visible field
+      // No need to filter client-side anymore
 
       // 1. Text Search (Defensive check for name/location existence)
       // Use optional chaining for safety
@@ -65,37 +73,13 @@ export const CoachList: React.FC = () => {
       return textMatch && specMatch && priceMatch;
     });
 
-    // 4. Sort by Match Relevance if matchData exists
+    // 4. Sort by Match Relevance if matchData exists - using enhanced calculator
     if (matchData) {
-      result = result.sort((a, b) => {
-        // Simple scoring
-        const scoreA = ((a.specialties || []).includes(matchData.goal as any) ? 10 : 0) + 
-                       ((a.hourlyRate || 0) <= matchData.budgetRange ? 5 : 0) +
-                       ((a.availableFormats || []).some(f => matchData.preferredFormat.includes(f)) ? 3 : 0);
-                       
-        const scoreB = ((b.specialties || []).includes(matchData.goal as any) ? 10 : 0) + 
-                       ((b.hourlyRate || 0) <= matchData.budgetRange ? 5 : 0) +
-                       ((b.availableFormats || []).some(f => matchData.preferredFormat.includes(f)) ? 3 : 0);
-        
-        return scoreB - scoreA;
-      });
+      result = sortCoachesByMatch(result, matchData);
     }
 
     return result;
   }, [coaches, searchTerm, specialtyFilter, maxPrice, matchData]);
-
-  const getMatchReason = (coach: Coach) => {
-    if (!matchData) return undefined;
-    
-    const reasons = [];
-    if (coach.specialties?.includes(matchData.goal as any)) reasons.push(`Specializes in ${matchData.goal}`);
-    if ((coach.hourlyRate || 0) <= matchData.budgetRange) reasons.push("Fits your budget");
-    const formatMatch = coach.availableFormats?.filter(f => matchData.preferredFormat.includes(f)) || [];
-    if (formatMatch.length > 0) reasons.push(`Available ${formatMatch[0].toLowerCase()}`);
-
-    if (reasons.length === 0) return "General recommendation";
-    return reasons.join(" • ");
-  };
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -117,7 +101,7 @@ export const CoachList: React.FC = () => {
                </div>
                <div>
                   <p className="text-sm font-bold text-brand-900">Personalized Results</p>
-                  <p className="text-xs text-brand-700 mt-1">Goal: <span className="font-semibold">{matchData.goal}</span> • Max Budget: <span className="font-semibold">${matchData.budgetRange}</span></p>
+                  <p className="text-xs text-brand-700 mt-1">Goal: <span className="font-semibold">{matchData.goal}</span> • Max Budget: <span className="font-semibold">£{matchData.budgetRange}</span></p>
                </div>
             </div>
             <button onClick={clearMatch} className="text-sm text-slate-500 hover:text-slate-800 font-bold flex items-center bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm hover:shadow">
@@ -156,12 +140,12 @@ export const CoachList: React.FC = () => {
                   </select>
 
                   <div className="flex items-center space-x-3 px-4 bg-slate-50 rounded-xl min-w-[180px]">
-                    <span className="text-xs font-bold text-slate-500 w-16">Max ${maxPrice}</span>
-                    <input 
-                      type="range" 
-                      min="50" 
-                      max="500" 
-                      step="10" 
+                    <span className="text-xs font-bold text-slate-500 w-16">Max £{maxPrice}</span>
+                    <input
+                      type="range"
+                      min="50"
+                      max="500"
+                      step="10"
                       value={maxPrice}
                       onChange={(e) => setMaxPrice(Number(e.target.value))}
                       className="flex-grow h-1.5 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-brand-600"
@@ -173,12 +157,29 @@ export const CoachList: React.FC = () => {
 
         {/* Results */}
         <div className="space-y-6 max-w-4xl mx-auto">
-          {filteredCoaches.length > 0 ? (
+          {isLoading ? (
+            // Loading skeleton - show while data is being fetched
+            <>
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 animate-pulse">
+                  <div className="flex items-start gap-6">
+                    <div className="w-24 h-24 bg-slate-200 rounded-2xl flex-shrink-0"></div>
+                    <div className="flex-1">
+                      <div className="h-6 bg-slate-200 rounded w-1/3 mb-3"></div>
+                      <div className="h-4 bg-slate-200 rounded w-1/2 mb-2"></div>
+                      <div className="h-4 bg-slate-200 rounded w-2/3"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : filteredCoaches.length > 0 ? (
             filteredCoaches.map((coach, index) => (
               <div key={coach.id} className="animate-fade-in-up" style={{ animationDelay: `${index * 50}ms` }}>
-                  <CoachCard 
-                    coach={coach} 
-                    matchReason={getMatchReason(coach)}
+                  <CoachCard
+                    coach={coach}
+                    matchReason={matchData ? getEnhancedMatchReason(coach, matchData) : undefined}
+                    matchPercentage={matchData ? calculateMatchScore(coach, matchData) : undefined}
                   />
               </div>
             ))
@@ -189,7 +190,7 @@ export const CoachList: React.FC = () => {
               </div>
               <h3 className="text-lg font-bold text-slate-900">No coaches found</h3>
               <p className="text-slate-500 mt-2">Try adjusting your filters or search terms.</p>
-              <button 
+              <button
                 onClick={() => {setSpecialtyFilter(''); setMaxPrice(500); setSearchTerm('')}}
                 className="mt-6 text-brand-600 font-bold hover:underline"
               >
