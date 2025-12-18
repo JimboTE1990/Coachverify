@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { getCoachByUserId } from '../services/supabaseService';
@@ -29,7 +29,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // Fetch coach profile by user ID with timeout
-  const fetchCoachProfile = async (userId: string) => {
+  const fetchCoachProfile = useCallback(async (userId: string) => {
     try {
       console.log('[AuthContext] Fetching coach profile for user:', userId);
 
@@ -60,7 +60,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('[AuthContext] Could not fetch profile (likely new user):', error.message);
       setCoach(null);
     }
-  };
+  }, []); // Empty dependency array - function doesn't depend on any props or state
 
   // Initialize auth state and set up listener
   useEffect(() => {
@@ -157,11 +157,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Refresh coach profile (useful after updates)
-  const refreshCoach = async () => {
+  const refreshCoach = useCallback(async () => {
     if (user) {
       await fetchCoachProfile(user.id);
     }
-  };
+  }, [user, fetchCoachProfile]);
 
   const value: AuthContextType = {
     user,
