@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Lock, Eye, EyeOff } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
@@ -8,13 +8,15 @@ export const CoachLogin: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, loading: authLoading, isAuthenticated } = useAuth();
+  const hasRedirected = useRef(false);
 
   // Redirect if already logged in (wait for auth to finish loading)
   useEffect(() => {
-    console.log('[CoachLogin] Auth state:', { authLoading, isAuthenticated });
+    console.log('[CoachLogin] Auth state:', { authLoading, isAuthenticated, hasRedirected: hasRedirected.current });
 
-    if (!authLoading && isAuthenticated) {
+    if (!authLoading && isAuthenticated && !hasRedirected.current) {
       console.log('[CoachLogin] User already logged in, redirecting to dashboard');
+      hasRedirected.current = true;
       navigate('/for-coaches', { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
