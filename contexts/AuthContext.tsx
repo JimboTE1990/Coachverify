@@ -122,7 +122,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchCoachProfile]);
 
   // Login function
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
