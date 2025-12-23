@@ -34,9 +34,9 @@ export const CheckoutAnnual: React.FC = () => {
 
       // User is authenticated, fetch their coach profile
       const { data: coach, error } = await supabase
-        .from('coaches')
-        .select('id, subscription_status, trial_used, billing_cycle, trial_ends_at')
-        .eq('id', session.user.id)
+        .from('coach_profiles')
+        .select('id, subscription_status, billing_cycle, trial_ends_at')
+        .eq('user_id', session.user.id)
         .single();
 
       if (error) {
@@ -53,9 +53,10 @@ export const CheckoutAnnual: React.FC = () => {
         return;
       }
 
-      // Check if already has active subscription - redirect to dashboard to manage
-      if (coach.subscription_status === 'active' || coach.subscription_status === 'trial') {
-        console.log('User already has active subscription - redirecting to dashboard');
+      // Check if already has active PAID subscription - redirect to dashboard to manage
+      // Trial users should be allowed to upgrade!
+      if (coach.subscription_status === 'active') {
+        console.log('User already has active paid subscription - redirecting to dashboard');
         navigate('/for-coaches', { replace: true });
         return;
       }

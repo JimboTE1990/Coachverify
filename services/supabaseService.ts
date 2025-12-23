@@ -57,16 +57,24 @@ export const getCoachById = async (id: string): Promise<Coach | null> => {
 };
 
 export const getCoachByUserId = async (userId: string): Promise<Coach | null> => {
+  console.log('[getCoachByUserId] Fetching coach profile for user_id:', userId);
+
   const { data: coach, error } = await supabase
-    .from('coaches')
+    .from('coach_profiles')
     .select('*')
     .eq('user_id', userId)
     .single();
 
   if (error) {
-    console.error('Error fetching coach by user_id:', error);
+    console.error('[getCoachByUserId] Error fetching coach by user_id:', error);
+    console.error('[getCoachByUserId] Error code:', error.code);
+    console.error('[getCoachByUserId] Error message:', error.message);
+    console.error('[getCoachByUserId] Error details:', error.details);
+    console.error('[getCoachByUserId] Error hint:', error.hint);
     return null;
   }
+
+  console.log('[getCoachByUserId] Successfully fetched coach:', coach ? 'YES' : 'NO');
 
   if (!coach) return null;
 

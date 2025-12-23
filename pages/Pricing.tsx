@@ -7,8 +7,11 @@ export const Pricing: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, coach } = useAuth();
 
-  // Check if user already has an active subscription
-  const hasActiveSubscription = coach && (coach.subscriptionStatus === 'active' || coach.subscriptionStatus === 'trial');
+  // Check if user already has a paid subscription (not trial)
+  const hasActiveSubscription = coach && coach.subscriptionStatus === 'active';
+
+  // Check if user is on trial
+  const isOnTrial = coach && coach.subscriptionStatus === 'trial';
 
   const handlePlanSelection = (plan: 'monthly' | 'annual') => {
     // If already subscribed, don't allow checkout
@@ -177,7 +180,7 @@ export const Pricing: React.FC = () => {
                 disabled={hasActiveSubscription}
                 className="mt-8 w-full bg-brand-600 text-white py-4 rounded-xl font-bold hover:bg-brand-700 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {hasActiveSubscription ? 'Already Subscribed' : 'Select Monthly'}
+                {hasActiveSubscription ? 'Already Subscribed' : isOnTrial ? 'Upgrade to Monthly' : 'Select Monthly'}
               </button>
             </div>
 
@@ -221,7 +224,7 @@ export const Pricing: React.FC = () => {
                 disabled={hasActiveSubscription}
                 className="mt-8 w-full bg-gradient-to-r from-brand-600 to-indigo-600 text-white py-4 rounded-xl font-bold hover:from-brand-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {hasActiveSubscription ? 'Already Subscribed' : 'Select Annual'}
+                {hasActiveSubscription ? 'Already Subscribed' : isOnTrial ? 'Upgrade to Annual' : 'Select Annual'}
               </button>
             </div>
           </div>

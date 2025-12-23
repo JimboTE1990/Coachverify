@@ -69,12 +69,12 @@ export const VerifyEmail: React.FC = () => {
         // We just show success and redirect to login
 
         setStatus('success');
-        setMessage('Your email has been verified! Your 30-day free trial is now active. Please log in to access your dashboard.');
+        setMessage('Your email has been verified! Your 30-day free trial is now active. Redirecting to your dashboard...');
 
-        // Redirect to login after 2 seconds (faster than before)
+        // Redirect directly to dashboard after 2 seconds (user is already authenticated)
         setTimeout(() => {
-          console.log('[VerifyEmail] Redirecting to login...');
-          navigate('/coach-login');
+          console.log('[VerifyEmail] Redirecting to dashboard...');
+          navigate('/for-coaches', { replace: true });
         }, 2000);
 
       } catch (err: any) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { updateCoach, getCoachAnalytics, type CoachAnalytics } from '../services/supabaseService';
 import { Coach, Specialty, Format } from '../types';
@@ -32,6 +32,7 @@ export const CoachDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { coach: currentCoach, logout, loading: authLoading, refreshCoach } = useAuth();
   const { viewMode, setViewMode, isMobile, isTablet } = useDeviceDetection();
+  const hasRedirected = useRef(false);
 
   const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'subscription' | 'analytics'>('profile');
 
@@ -76,13 +77,24 @@ export const CoachDashboard: React.FC = () => {
 
   // Redirect to login if not authenticated
   useEffect(() => {
-    console.log('[CoachDashboard] Auth state:', { authLoading, hasCoach: !!currentCoach });
+    console.log('[CoachDashboard] Auth state:', { authLoading, hasCoach: !!currentCoach, hasRedirected: hasRedirected.current });
 
-    if (!authLoading && !currentCoach) {
-      console.log('[CoachDashboard] Not authenticated, redirecting to login');
-      navigate('/coach-login', { state: { from: location } });
+    // CRITICAL FIX: Only redirect if authLoading is false AND we've waited at least 3 seconds
+    // This prevents redirect loops when profile fetch is slow or fails
+    if (!authLoading && !currentCoach && !hasRedirected.current) {
+      // Add a delay to give profile fetch time to complete
+      const timeoutId = setTimeout(() => {
+        if (!currentCoach) {
+          console.log('[CoachDashboard] Not authenticated after delay, redirecting to login');
+          hasRedirected.current = true;
+          navigate('/coach-login', { state: { from: location } });
+        }
+      }, 2000); // Wait 2 seconds before redirecting
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [authLoading, currentCoach, navigate, location]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, currentCoach]);
 
   // Check for pending checkout after login
   useEffect(() => {

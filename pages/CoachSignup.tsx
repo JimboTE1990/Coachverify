@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, CheckCircle, ArrowRight, Loader, Mail, AlertTriangle, Eye, EyeOff, XCircle } from 'lucide-react';
 import { verifyCoachLicense } from '../services/supabaseService';
@@ -18,14 +18,17 @@ export const CoachSignup: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [signupError, setSignupError] = useState('');
   const [checkingEmail, setCheckingEmail] = useState(false);
+  const hasRedirected = useRef(false);
 
   // Redirect if already logged in (wait for auth to finish loading)
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    if (!authLoading && isAuthenticated && !hasRedirected.current) {
       console.log('[CoachSignup] User already logged in, redirecting to dashboard');
+      hasRedirected.current = true;
       navigate('/for-coaches', { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, authLoading]);
 
   // Form State
   const [formData, setFormData] = useState({

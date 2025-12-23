@@ -25,6 +25,7 @@ export const ResendVerification: React.FC = () => {
 
     try {
       console.log('[ResendVerification] Resending verification email to:', email);
+      console.log('[ResendVerification] Using redirect URL:', `${window.location.origin}/verify-email`);
 
       const { data, error } = await supabase.auth.resend({
         type: 'signup',
@@ -34,27 +35,54 @@ export const ResendVerification: React.FC = () => {
         }
       });
 
-      console.log('[ResendVerification] Resend result:', { data, error });
+      console.log('[ResendVerification] Resend result:', {
+        data,
+        error,
+        hasData: !!data,
+        hasError: !!error,
+        dataKeys: data ? Object.keys(data) : null,
+        fullData: data,
+        fullError: error
+      });
 
       if (error) {
         console.error('[ResendVerification] Resend error:', error);
+        console.error('[ResendVerification] Error details:', {
+          message: error.message,
+          status: error.status,
+          code: (error as any).code
+        });
 
         if (error.message.includes('rate limit') || error.message.includes('too many')) {
           setMessage('Please wait a few minutes before requesting another verification email.');
         } else if (error.message.includes('not found') || error.message.includes('invalid')) {
           setMessage('Email address not found. Please check your email or sign up again.');
+        } else if (error.message.includes('already confirmed') || error.message.includes('already verified')) {
+          setMessage('This email is already verified. You can log in directly.');
         } else {
           setMessage(error.message || 'Failed to send verification email. Please try again.');
         }
         return;
       }
 
+      // Check if data is null (Supabase sometimes returns success with null data)
+      if (!data) {
+        console.warn('[ResendVerification] Resend returned null data - email may not have been sent');
+        setMessage('Email may already be verified, or the account does not exist. Please try logging in or signing up again.');
+        return;
+      }
+
       setSuccess(true);
-      setMessage('Verification email sent successfully! Please check your inbox (and spam folder).');
+      setMessage('✅ Verification email sent successfully! Please check your inbox (and spam folder). The email may take a few minutes to arrive.');
       setEmail('');
 
     } catch (err: any) {
       console.error('[ResendVerification] Resend failed with exception:', err);
+      console.error('[ResendVerification] Exception details:', {
+        message: err.message,
+        name: err.name,
+        stack: err.stack
+      });
       setMessage('An unexpected error occurred. Please try again or contact support.');
     } finally {
       setResending(false);

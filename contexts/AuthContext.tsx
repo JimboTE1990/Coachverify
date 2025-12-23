@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { getCoachByUserId } from '../services/supabaseService';
@@ -124,8 +124,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, [fetchCoachProfile]);
 
-  // Login function
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  // Login function - memoized to prevent recreation on every render
+  const login = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -143,10 +143,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (err: any) {
       return { success: false, error: err.message || 'An unexpected error occurred' };
     }
-  };
+  }, [fetchCoachProfile]);
 
-  // Logout function
-  const logout = async () => {
+  // Logout function - memoized to prevent recreation on every render
+  const logout = useCallback(async () => {
     try {
       await supabase.auth.signOut();
       setUser(null);
@@ -154,7 +154,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('[AuthContext] Error logging out:', error);
     }
-  };
+  }, []);
 
   // Refresh coach profile (useful after updates)
   const refreshCoach = useCallback(async () => {
@@ -163,7 +163,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [user, fetchCoachProfile]);
 
-  const value: AuthContextType = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo<AuthContextType>(() => ({
     user,
     coach,
     loading,
@@ -171,7 +172,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     refreshCoach,
-  };
+  }), [user, coach, loading, login, logout, refreshCoach]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

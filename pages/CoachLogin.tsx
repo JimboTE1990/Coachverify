@@ -14,10 +14,16 @@ export const CoachLogin: React.FC = () => {
   useEffect(() => {
     console.log('[CoachLogin] Auth state:', { authLoading, isAuthenticated, hasRedirected: hasRedirected.current });
 
+    // CRITICAL FIX: Add a delay before redirecting to prevent redirect loops
+    // This gives the dashboard time to load the coach profile
     if (!authLoading && isAuthenticated && !hasRedirected.current) {
       console.log('[CoachLogin] User already logged in, redirecting to dashboard');
       hasRedirected.current = true;
-      navigate('/for-coaches', { replace: true });
+
+      // Add a small delay to prevent race conditions
+      setTimeout(() => {
+        navigate('/for-coaches', { replace: true });
+      }, 500);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, authLoading]);
