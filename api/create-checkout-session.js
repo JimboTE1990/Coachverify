@@ -6,14 +6,14 @@
  * It runs on Vercel's serverless infrastructure and keeps your Stripe secret key secure.
  */
 
-const Stripe = require('stripe');
+import Stripe from 'stripe';
 
 // Initialize Stripe with secret key from environment variable
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2024-12-18.acacia',
 });
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // Set CORS headers
   const origin = req.headers.origin || process.env.VITE_APP_URL || '*';
   res.setHeader('Access-Control-Allow-Origin', origin);
