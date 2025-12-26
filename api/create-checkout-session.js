@@ -6,12 +6,19 @@
  * It runs on Vercel's serverless infrastructure and keeps your Stripe secret key secure.
  */
 
-import Stripe from 'stripe';
+// Vercel serverless functions work best with dynamic imports for packages
+// We'll initialize Stripe lazily on first request
+let stripe = null;
 
-// Initialize Stripe with secret key from environment variable
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-12-18.acacia',
-});
+async function getStripe() {
+  if (!stripe) {
+    const Stripe = (await import('stripe')).default;
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+      apiVersion: '2024-12-18.acacia',
+    });
+  }
+  return stripe;
+}
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -94,7 +101,8 @@ export default async function handler(req, res) {
     }
 
     // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    const stripeClient = await getStripe();
+    const session = await stripeClient.checkout.sessions.create(sessionParams);
 
     console.log('[Stripe API] Checkout session created:', session.id);
 
