@@ -33,7 +33,7 @@ export const createCheckoutSession = async (params: CreateCheckoutSessionParams)
     // In development, use localhost:3001 (dev-server.js)
     // In production, use same origin (Vercel serverless function)
     const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const apiUrl = isDevelopment ? 'http://localhost:3001' : (import.meta.env.VITE_APP_URL || window.location.origin);
+    const apiUrl = isDevelopment ? 'http://localhost:3001' : window.location.origin;
 
     console.log('[StripeService] API URL:', apiUrl);
 
