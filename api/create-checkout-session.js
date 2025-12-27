@@ -12,10 +12,30 @@ let stripe = null;
 
 async function getStripe() {
   if (!stripe) {
+    // Debug: Log environment variable state
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    console.log('[Stripe API] Environment check:', {
+      hasSecretKey: !!secretKey,
+      keyPrefix: secretKey ? secretKey.substring(0, 7) + '...' : 'undefined',
+      allEnvKeys: Object.keys(process.env).filter(k => k.includes('STRIPE'))
+    });
+
+    // Validate secret key exists
+    if (!secretKey) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is not set. Please configure it in Vercel dashboard.');
+    }
+
+    // Validate secret key format
+    if (!secretKey.startsWith('sk_')) {
+      throw new Error('Invalid STRIPE_SECRET_KEY format. Key should start with "sk_test_" or "sk_live_".');
+    }
+
     const Stripe = (await import('stripe')).default;
-    stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+    stripe = new Stripe(secretKey, {
       apiVersion: '2024-12-18.acacia',
     });
+
+    console.log('[Stripe API] Stripe client initialized successfully');
   }
   return stripe;
 }
