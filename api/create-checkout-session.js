@@ -6,6 +6,7 @@
  * It runs on Vercel's serverless infrastructure and keeps your Stripe secret key secure.
  *
  * Updated: 2024-12-27 - Added comprehensive environment variable validation
+ * Rebuild: Force new deployment to pick up STRIPE_SECRET_KEY
  */
 
 // Vercel serverless functions work best with dynamic imports for packages
