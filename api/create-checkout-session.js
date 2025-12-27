@@ -4,6 +4,8 @@
  *
  * This function creates a Stripe Checkout Session for subscription payments.
  * It runs on Vercel's serverless infrastructure and keeps your Stripe secret key secure.
+ *
+ * Updated: 2024-12-27 - Added comprehensive environment variable validation
  */
 
 // Vercel serverless functions work best with dynamic imports for packages
