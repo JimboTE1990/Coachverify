@@ -14,7 +14,7 @@ const PORT = 3001; // Run on different port than Vite
 
 // Middleware
 app.use(cors({
-  origin: process.env.VITE_APP_URL || 'http://localhost:5173',
+  origin: ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173', 'http://127.0.0.1:3000'],
   credentials: true
 }));
 app.use(express.json());

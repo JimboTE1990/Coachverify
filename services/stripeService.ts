@@ -31,13 +31,15 @@ export const createCheckoutSession = async (params: CreateCheckoutSessionParams)
   try {
     // Call backend API to create Stripe session
     // In development, use localhost:3001 (dev-server.js)
-    // In production, use same origin (Vercel serverless function)
+    // In production, use Supabase Edge Function
     const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const apiUrl = isDevelopment ? 'http://localhost:3001' : window.location.origin;
+    const apiUrl = isDevelopment
+      ? 'http://localhost:3001/api'
+      : 'https://whhwvuugrzbyvobwfmce.supabase.co/functions/v1';
 
     console.log('[StripeService] API URL:', apiUrl);
 
-    const response = await fetch(`${apiUrl}/api/create-checkout-session`, {
+    const response = await fetch(`${apiUrl}/create-checkout-session`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
