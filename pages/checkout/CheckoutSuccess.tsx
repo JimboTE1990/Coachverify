@@ -1,32 +1,44 @@
-import React, { useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { CheckCircle, ArrowRight, Calendar, CreditCard } from 'lucide-react';
-
-interface LocationState {
-  billingCycle: 'monthly' | 'annual';
-  amount: number;
-  isTrialIncluded: boolean;
-  firstChargeDate: string;
-}
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { CheckCircle, ArrowRight, Calendar, CreditCard, Loader } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 export const CheckoutSuccess: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const state = location.state as LocationState;
+  const [searchParams] = useSearchParams();
+  const { coach, loading: authLoading } = useAuth();
+  const [loading, setLoading] = useState(true);
+
+  const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
-    // If no state, redirect to pricing
-    if (!state) {
-      navigate('/pricing');
+    // Wait for auth to load
+    if (!authLoading) {
+      setLoading(false);
     }
-  }, [state, navigate]);
+  }, [authLoading]);
 
-  if (!state) {
+  if (loading || authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="h-12 w-12 animate-spin text-brand-600 mx-auto mb-4" />
+          <p className="text-slate-600">Loading subscription details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!sessionId) {
+    navigate('/for-coaches');
     return null;
   }
 
-  const { billingCycle, amount, isTrialIncluded, firstChargeDate } = state;
-  const firstCharge = new Date(firstChargeDate);
+  // Use coach data to determine subscription details
+  const billingCycle = coach?.billingCycle || 'monthly';
+  const amount = billingCycle === 'monthly' ? 15 : 150;
+  const isTrialIncluded = coach?.subscriptionStatus === 'trial';
+  const firstCharge = coach?.trialEndsAt ? new Date(coach.trialEndsAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4">
