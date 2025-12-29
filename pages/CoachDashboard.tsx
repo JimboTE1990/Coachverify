@@ -881,13 +881,14 @@ export const CoachDashboard: React.FC = () => {
                                 </div>
                             </div>
                             <span className={`px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wide ${
-                                currentCoach.subscriptionStatus === 'active' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-blue-100 text-blue-700 border border-blue-200'
+                                (currentCoach.subscriptionStatus === 'active' || currentCoach.billingCycle) ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-blue-100 text-blue-700 border border-blue-200'
                             }`}>
-                                {currentCoach.subscriptionStatus === 'active' ? 'Premium Active' : 'Free Trial'}
+                                {(currentCoach.subscriptionStatus === 'active' || currentCoach.billingCycle) ? 'Premium' : 'Free Trial'}
                             </span>
                         </div>
 
-                        {currentCoach.subscriptionStatus === 'trial' ? (
+                        {/* Show upgrade CTA only if no billing cycle is set (unpaid trial) */}
+                        {currentCoach.subscriptionStatus === 'trial' && !currentCoach.billingCycle ? (
                             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-8 text-center">
                                 <h3 className="text-xl font-bold text-indigo-900 mb-3">Upgrade to Keep Access</h3>
                                 <p className="text-sm text-indigo-700/80 mb-8 max-w-md mx-auto">
@@ -960,6 +961,29 @@ export const CoachDashboard: React.FC = () => {
                                         </p>
                                     </div>
                                 </div>
+
+                                {/* Trial information for paid users */}
+                                {currentCoach.subscriptionStatus === 'trial' && currentCoach.trialEndsAt && (
+                                    <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+                                        <div className="flex items-start">
+                                            <div className="flex-shrink-0">
+                                                <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                            <div className="ml-4 flex-1">
+                                                <h4 className="text-sm font-bold text-blue-900 mb-2">Free Trial Active</h4>
+                                                <p className="text-sm text-blue-800">
+                                                    Your free trial continues until <span className="font-bold">{new Date(currentCoach.trialEndsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>.
+                                                    After your trial ends, your {currentCoach.billingCycle} subscription will begin and you'll be charged automatically.
+                                                </p>
+                                                <p className="text-xs text-blue-700 mt-2">
+                                                    You can cancel anytime before {new Date(currentCoach.trialEndsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })} from the options below.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Pending Plan Change Banner (if plan change is scheduled) */}
                                 {currentCoach.pendingPlanChange && (

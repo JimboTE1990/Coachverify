@@ -63,8 +63,11 @@ export const ProfileDropdown: React.FC = () => {
         <div className="hidden md:flex items-center space-x-2">
           <div className="text-left">
             <p className="text-sm font-bold text-slate-900">{coach.name ? coach.name.split(' ')[0] : 'Coach'}</p>
-            {coach.subscriptionStatus === 'trial' && (
-              <p className="text-xs text-brand-600 font-semibold">Trial Active</p>
+            {(coach.subscriptionStatus === 'active' || coach.billingCycle) && (
+              <p className="text-xs text-green-600 font-semibold">Premium</p>
+            )}
+            {coach.subscriptionStatus === 'trial' && !coach.billingCycle && (
+              <p className="text-xs text-brand-600 font-semibold">Free Trial</p>
             )}
           </div>
           <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -78,14 +81,14 @@ export const ProfileDropdown: React.FC = () => {
           <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
             <p className="text-sm font-bold text-slate-900">{coach.name || 'Coach'}</p>
             <p className="text-xs text-slate-500 truncate">{coach.email || ''}</p>
-            {coach.subscriptionStatus === 'trial' && (
-              <div className="mt-2 inline-flex items-center bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded-full">
-                Free Trial Active
+            {(coach.subscriptionStatus === 'active' || coach.billingCycle) && (
+              <div className="mt-2 inline-flex items-center bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded-full">
+                Premium Member
               </div>
             )}
-            {coach.subscriptionStatus === 'active' && (
-              <div className="mt-2 inline-flex items-center bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded-full">
-                Active Subscription
+            {coach.subscriptionStatus === 'trial' && !coach.billingCycle && (
+              <div className="mt-2 inline-flex items-center bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded-full">
+                Free Trial
               </div>
             )}
           </div>
