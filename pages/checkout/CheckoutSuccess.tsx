@@ -37,8 +37,21 @@ export const CheckoutSuccess: React.FC = () => {
   // Use coach data to determine subscription details
   const billingCycle = coach?.billingCycle || 'monthly';
   const amount = billingCycle === 'monthly' ? 15 : 150;
-  const isTrialIncluded = coach?.subscriptionStatus === 'trial';
-  const firstCharge = coach?.trialEndsAt ? new Date(coach.trialEndsAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  const hasActiveTrial = coach?.subscriptionStatus === 'trial' && coach?.trialEndsAt;
+  const trialEndDate = coach?.trialEndsAt ? new Date(coach.trialEndsAt) : null;
+
+  // Calculate next billing date
+  const getNextBillingDate = () => {
+    if (hasActiveTrial && trialEndDate) {
+      return trialEndDate;
+    }
+    // If no trial, billing starts from today + billing period
+    const nextDate = new Date();
+    nextDate.setDate(nextDate.getDate() + (billingCycle === 'monthly' ? 30 : 365));
+    return nextDate;
+  };
+
+  const nextBillingDate = getNextBillingDate();
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4">
@@ -54,25 +67,25 @@ export const CheckoutSuccess: React.FC = () => {
 
           {/* Heading */}
           <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-4">
-            {isTrialIncluded ? 'Your Free Trial Has Started!' : 'Payment Successful!'}
+            Payment Confirmed!
           </h1>
 
           <p className="text-lg text-slate-600 mb-8">
-            {isTrialIncluded
-              ? 'Welcome to CoachVerify! Your 30-day free trial is now active.'
-              : 'Thank you for subscribing to CoachVerify. Your account is now active.'}
+            {hasActiveTrial
+              ? `You're now a premium CoachVerify user. Your plan starts after your free trial ends on ${trialEndDate?.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}.`
+              : 'Thank you for subscribing to CoachVerify. Your premium account is now active.'}
           </p>
 
           {/* Subscription Details */}
           <div className="bg-slate-50 rounded-2xl p-6 mb-8 text-left">
             <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">
-              Subscription Details
+              Your Plan
             </h2>
 
             <div className="space-y-4">
               {/* Plan Type */}
               <div className="flex items-center justify-between">
-                <span className="text-slate-700">Plan</span>
+                <span className="text-slate-700">Billing Cycle</span>
                 <span className="font-semibold text-slate-900">
                   {billingCycle === 'monthly' ? 'Monthly' : 'Annual'}
                 </span>
@@ -80,9 +93,9 @@ export const CheckoutSuccess: React.FC = () => {
 
               {/* Amount */}
               <div className="flex items-center justify-between">
-                <span className="text-slate-700">Amount</span>
+                <span className="text-slate-700">Price</span>
                 <span className="font-semibold text-slate-900">
-                  £{amount.toFixed(2)}/{billingCycle === 'monthly' ? 'mo' : 'yr'}
+                  £{amount.toFixed(2)}/{billingCycle === 'monthly' ? 'month' : 'year'}
                 </span>
               </div>
 
@@ -90,41 +103,24 @@ export const CheckoutSuccess: React.FC = () => {
               <div className="flex items-center justify-between">
                 <span className="text-slate-700">Status</span>
                 <span className="inline-flex items-center bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded-full">
-                  {isTrialIncluded ? 'Trial Active' : 'Active'}
+                  {hasActiveTrial ? 'Premium (Free Trial Active)' : 'Active'}
                 </span>
               </div>
 
-              {/* First Charge Date */}
-              {isTrialIncluded && (
-                <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-                  <div className="flex items-center text-slate-700">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    <span>First Charge</span>
-                  </div>
-                  <span className="font-semibold text-slate-900">
-                    {firstCharge.toLocaleDateString('en-GB', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
-                  </span>
-                </div>
-              )}
-
               {/* Next Billing Date */}
-              {!isTrialIncluded && (
-                <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-                  <div className="flex items-center text-slate-700">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    <span>Next Billing</span>
-                  </div>
-                  <span className="font-semibold text-slate-900">
-                    {billingCycle === 'monthly'
-                      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB')
-                      : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB')}
-                  </span>
+              <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+                <div className="flex items-center text-slate-700">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  <span>Next Billing Date</span>
                 </div>
-              )}
+                <span className="font-semibold text-slate-900">
+                  {nextBillingDate.toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -135,30 +131,36 @@ export const CheckoutSuccess: React.FC = () => {
             </h2>
 
             <ul className="space-y-3 text-sm text-slate-700">
-              {isTrialIncluded ? (
+              {hasActiveTrial ? (
                 <>
                   <li className="flex items-start">
                     <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
                     <span>
-                      Your profile is now live and visible to athletes looking for coaches
+                      Your profile is now live and visible to users looking for coaches
                     </span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
                     <span>
-                      You have full access to all features for the next 30 days
+                      Your free trial continues until {trialEndDate?.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
                     <span>
-                      We'll remind you before your trial ends on {firstCharge.toLocaleDateString('en-GB')}
+                      You have full access to all premium features during your trial
                     </span>
                   </li>
                   <li className="flex items-start">
                     <CreditCard className="h-5 w-5 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
                     <span>
-                      Your card will be charged £{amount.toFixed(2)} on {firstCharge.toLocaleDateString('en-GB')}
+                      After your trial ends, you'll be charged £{amount.toFixed(2)} on {trialEndDate?.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <span>
+                      You can cancel anytime before {trialEndDate?.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} from your dashboard settings
                     </span>
                   </li>
                 </>
@@ -167,17 +169,23 @@ export const CheckoutSuccess: React.FC = () => {
                   <li className="flex items-start">
                     <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
                     <span>
-                      Your profile is now live and visible to athletes looking for coaches
+                      Your profile is now live and visible to users looking for coaches
                     </span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
                     <span>
-                      You have full access to all CoachVerify features
+                      You have full access to all CoachVerify premium features
                     </span>
                   </li>
                   <li className="flex items-start">
                     <CreditCard className="h-5 w-5 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <span>
+                      Your next billing date is {nextBillingDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} (£{amount.toFixed(2)})
+                    </span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
                     <span>
                       Your subscription will automatically renew {billingCycle === 'monthly' ? 'monthly' : 'annually'}
                     </span>
