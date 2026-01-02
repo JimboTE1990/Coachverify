@@ -97,6 +97,8 @@ export interface Coach {
   subscriptionEndsAt?: string; // When access actually ends (billing period end)
   cancelReason?: string; // Dropdown value from CANCELLATION_REASONS
   cancelFeedback?: string; // Optional text feedback
+  dataRetentionPreference?: 'keep' | 'delete'; // User preference for data after cancellation
+  scheduledDeletionAt?: string; // When data will be auto-deleted
 
   // Profile Visibility & Access
   profileVisible?: boolean; // Auto-managed by DB trigger based on subscription status

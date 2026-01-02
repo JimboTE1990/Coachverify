@@ -126,6 +126,13 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
       trial_ends_at: coach.trialEndsAt,
       last_payment_date: coach.lastPaymentDate,
       two_factor_enabled: coach.twoFactorEnabled,
+      // Cancellation fields
+      cancelled_at: coach.cancelledAt,
+      subscription_ends_at: coach.subscriptionEndsAt,
+      cancel_reason: coach.cancelReason,
+      cancel_feedback: coach.cancelFeedback,
+      data_retention_preference: coach.dataRetentionPreference,
+      scheduled_deletion_at: coach.scheduledDeletionAt,
     })
     .eq('id', coach.id)
     .eq('user_id', user.id);
@@ -458,6 +465,8 @@ const mapCoachProfile = (data: any): Coach => {
     subscriptionEndsAt: data.subscription_ends_at,
     cancelReason: data.cancel_reason,
     cancelFeedback: data.cancel_feedback,
+    dataRetentionPreference: data.data_retention_preference,
+    scheduledDeletionAt: data.scheduled_deletion_at,
 
     // Profile visibility & access (Phase 2)
     profileVisible: data.profile_visible,

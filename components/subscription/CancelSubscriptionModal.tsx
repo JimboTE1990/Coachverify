@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { X, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { X, AlertTriangle, CheckCircle, Info, Save, Trash2 } from 'lucide-react';
 import type { Coach } from '../../types';
 
 interface CancelSubscriptionModalProps {
   coach: Coach;
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (reason: string, feedback?: string) => Promise<void>;
+  onConfirm: (reason: string, feedback: string, dataPreference: 'keep' | 'delete') => Promise<void>;
 }
 
 const CANCEL_REASONS = [
@@ -15,10 +15,11 @@ const CANCEL_REASONS = [
   'Switching to another platform',
   'Technical issues',
   'No longer coaching',
+  'Taking a break',
   'Other'
 ];
 
-type CancelStep = 'confirm' | 'reason' | 'success';
+type CancelStep = 'confirm' | 'reason' | 'data' | 'success';
 
 export const CancelSubscriptionModal: React.FC<CancelSubscriptionModalProps> = ({
   coach,
@@ -29,6 +30,7 @@ export const CancelSubscriptionModal: React.FC<CancelSubscriptionModalProps> = (
   const [step, setStep] = useState<CancelStep>('confirm');
   const [selectedReason, setSelectedReason] = useState<string>('');
   const [feedback, setFeedback] = useState('');
+  const [dataPreference, setDataPreference] = useState<'keep' | 'delete'>('keep');
   const [isProcessing, setIsProcessing] = useState(false);
 
   if (!isOpen) return null;
@@ -86,7 +88,7 @@ export const CancelSubscriptionModal: React.FC<CancelSubscriptionModalProps> = (
 
     setIsProcessing(true);
     try {
-      await onConfirm(selectedReason, feedback);
+      await onConfirm(selectedReason, feedback, dataPreference);
       setStep('success');
     } catch (error) {
       console.error('Error cancelling subscription:', error);
@@ -100,6 +102,7 @@ export const CancelSubscriptionModal: React.FC<CancelSubscriptionModalProps> = (
     setStep('confirm');
     setSelectedReason('');
     setFeedback('');
+    setDataPreference('keep');
     onClose();
   };
 
@@ -269,9 +272,128 @@ export const CancelSubscriptionModal: React.FC<CancelSubscriptionModalProps> = (
                 Back
               </button>
               <button
+                onClick={() => setStep('data')}
+                disabled={!selectedReason}
+                className="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Data Retention */}
+        {step === 'data' && (
+          <div className="p-8">
+            {/* Header */}
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-display font-bold text-slate-900">
+                  Data Retention
+                </h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  What should we do with your data?
+                </p>
+              </div>
+              <button
+                onClick={handleClose}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Info Banner */}
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-5 mb-6">
+              <p className="text-blue-900 text-sm">
+                <strong>Your subscription is now being cancelled.</strong>
+                <br /><br />
+                Access continues until: <strong>{formattedEndDate}</strong>
+                <br />
+                After this date, your profile will be hidden from search.
+              </p>
+            </div>
+
+            {/* Data Preference Options */}
+            <div className="space-y-4 mb-6">
+              {/* Keep Data */}
+              <label
+                className={`block p-6 rounded-2xl border-2 cursor-pointer transition-all ${
+                  dataPreference === 'keep'
+                    ? 'border-brand-500 bg-brand-50'
+                    : 'border-slate-200 bg-white hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-start">
+                  <input
+                    type="radio"
+                    name="dataPreference"
+                    value="keep"
+                    checked={dataPreference === 'keep'}
+                    onChange={(e) => setDataPreference(e.target.value as 'keep')}
+                    className="mt-1 mr-4 h-5 w-5 text-brand-600"
+                  />
+                  <div>
+                    <div className="flex items-center mb-2">
+                      <Save className="h-5 w-5 text-brand-600 mr-2" />
+                      <span className="font-bold text-slate-900">Keep my data (Recommended)</span>
+                    </div>
+                    <ul className="space-y-1 text-sm text-slate-600 ml-7">
+                      <li>• Your profile and settings are saved</li>
+                      <li>• Easy to reactivate anytime</li>
+                      <li>• Data retained for 2 years of inactivity</li>
+                      <li>• You can delete it anytime from account settings</li>
+                    </ul>
+                  </div>
+                </div>
+              </label>
+
+              {/* Delete Data */}
+              <label
+                className={`block p-6 rounded-2xl border-2 cursor-pointer transition-all ${
+                  dataPreference === 'delete'
+                    ? 'border-red-500 bg-red-50'
+                    : 'border-slate-200 bg-white hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-start">
+                  <input
+                    type="radio"
+                    name="dataPreference"
+                    value="delete"
+                    checked={dataPreference === 'delete'}
+                    onChange={(e) => setDataPreference(e.target.value as 'delete')}
+                    className="mt-1 mr-4 h-5 w-5 text-red-600"
+                  />
+                  <div>
+                    <div className="flex items-center mb-2">
+                      <Trash2 className="h-5 w-5 text-red-600 mr-2" />
+                      <span className="font-bold text-slate-900">Delete my data immediately</span>
+                    </div>
+                    <ul className="space-y-1 text-sm text-slate-600 ml-7">
+                      <li>• Permanent deletion within 30 days</li>
+                      <li>• Cannot be undone</li>
+                      <li>• Will need to recreate profile if you return</li>
+                      <li>• You can always request deletion later</li>
+                    </ul>
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setStep('reason')}
+                disabled={isProcessing}
+                className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors disabled:opacity-50"
+              >
+                Back
+              </button>
+              <button
                 onClick={handleCancel}
-                disabled={!selectedReason || isProcessing}
-                className="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                disabled={isProcessing}
+                className="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center"
               >
                 {isProcessing ? (
                   <>
@@ -279,14 +401,14 @@ export const CancelSubscriptionModal: React.FC<CancelSubscriptionModalProps> = (
                     Cancelling...
                   </>
                 ) : (
-                  'Cancel Subscription'
+                  'Confirm Cancellation'
                 )}
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 3: Success */}
+        {/* Step 4: Success */}
         {step === 'success' && (
           <div className="p-8 text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -294,23 +416,80 @@ export const CancelSubscriptionModal: React.FC<CancelSubscriptionModalProps> = (
             </div>
 
             <h2 className="text-2xl font-display font-bold text-slate-900 mb-2">
-              Cancellation Confirmed
+              Your subscription has been cancelled
             </h2>
 
             <p className="text-slate-600 mb-6">
-              Your subscription is now scheduled to cancel on <strong>{formattedEndDate}</strong>
+              We're sorry to see you go, but we're here whenever you're ready to come back.
             </p>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-sm text-blue-800">
-              <p className="font-medium mb-1">You still have access until {formattedEndDate}</p>
-              <p>To undo this cancellation, look for the yellow "Reactivate" button in your Subscription tab on the dashboard.</p>
+            {/* Cancellation Summary */}
+            <div className="bg-slate-50 rounded-2xl p-6 mb-6 text-left">
+              <h4 className="font-bold text-slate-900 mb-4">Cancellation Summary</h4>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Cancelled on:</span>
+                  <span className="font-semibold text-slate-900">
+                    {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Access continues until:</span>
+                  <span className="font-semibold text-slate-900">{formattedEndDate}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Final charge:</span>
+                  <span className="font-semibold text-green-600">£0 (already paid)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Profile becomes hidden after:</span>
+                  <span className="font-semibold text-slate-900">{formattedEndDate}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Data retention:</span>
+                  <span className="font-semibold text-slate-900">
+                    {dataPreference === 'keep' ? '2 years (you chose to keep your data)' : 'Deleted within 30 days'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* What Happens Next */}
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-left">
+              <h4 className="font-bold text-blue-900 mb-3">What happens next:</h4>
+              <ul className="space-y-2 text-sm text-blue-800">
+                <li className="flex items-start">
+                  <CheckCircle className="h-5 w-5 mr-3 flex-shrink-0 mt-0.5" />
+                  <span>Full access continues until {formattedEndDate}</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-5 w-5 mr-3 flex-shrink-0 mt-0.5" />
+                  <span>No further charges</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-5 w-5 mr-3 flex-shrink-0 mt-0.5" />
+                  <span>Profile becomes hidden on {formattedEndDate}</span>
+                </li>
+                {dataPreference === 'keep' && (
+                  <li className="flex items-start">
+                    <CheckCircle className="h-5 w-5 mr-3 flex-shrink-0 mt-0.5" />
+                    <span>Data retained for 2 years - you can reactivate anytime</span>
+                  </li>
+                )}
+                {dataPreference === 'delete' && (
+                  <li className="flex items-start">
+                    <Trash2 className="h-5 w-5 mr-3 flex-shrink-0 mt-0.5" />
+                    <span>Data will be permanently deleted within 30 days</span>
+                  </li>
+                )}
+              </ul>
             </div>
 
             <button
               onClick={handleClose}
               className="w-full bg-brand-600 text-white py-3 rounded-xl font-bold hover:bg-brand-700 transition-colors"
             >
-              Go to Dashboard
+              Close
             </button>
           </div>
         )}

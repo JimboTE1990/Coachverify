@@ -179,7 +179,7 @@ export const CoachDashboard: React.FC = () => {
   };
 
   // Cancel subscription handler
-  const handleCancelSubscription = async (reason: string, feedback: string) => {
+  const handleCancelSubscription = async (reason: string, feedback: string, dataPreference: 'keep' | 'delete') => {
     if (!currentCoach) return;
 
     // Prevent duplicate cancellations
@@ -194,11 +194,25 @@ export const CoachDashboard: React.FC = () => {
     const daysToAdd = currentCoach.billingCycle === 'annual' ? 365 : 30;
     const subscriptionEndsAt = new Date(now.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
 
+    // Calculate scheduled deletion date based on preference
+    let scheduledDeletionAt: string | undefined;
+    if (dataPreference === 'delete') {
+      // Delete within 30 days after subscription ends
+      const deletionDate = new Date(subscriptionEndsAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+      scheduledDeletionAt = deletionDate.toISOString();
+    } else {
+      // Keep for 2 years after subscription ends
+      const deletionDate = new Date(subscriptionEndsAt.getTime() + 2 * 365 * 24 * 60 * 60 * 1000);
+      scheduledDeletionAt = deletionDate.toISOString();
+    }
+
     const updates = {
       cancelledAt: now.toISOString(),
       subscriptionEndsAt: subscriptionEndsAt.toISOString(),
       cancelReason: reason,
-      cancelFeedback: feedback || undefined
+      cancelFeedback: feedback || undefined,
+      dataRetentionPreference: dataPreference,
+      scheduledDeletionAt
     };
 
     const success = await updateCoach({ ...currentCoach, ...updates });
@@ -218,7 +232,9 @@ export const CoachDashboard: React.FC = () => {
       cancelledAt: null,
       subscriptionEndsAt: null,
       cancelReason: null,
-      cancelFeedback: null
+      cancelFeedback: null,
+      dataRetentionPreference: null,
+      scheduledDeletionAt: null
     };
 
     const success = await updateCoach({ ...currentCoach, ...updates });
