@@ -25,6 +25,8 @@ import { CheckoutSuccess } from './pages/checkout/CheckoutSuccess';
 import { ChangePlan } from './pages/subscription/ChangePlan';
 import { ChangePlanConfirm } from './pages/subscription/ChangePlanConfirm';
 import { ChangePlanSuccess } from './pages/subscription/ChangePlanSuccess';
+import { PrivacyPolicy } from './pages/PrivacyPolicy';
+import { TermsOfService } from './pages/TermsOfService';
 
 interface ErrorBoundaryProps {
   children?: ReactNode;
@@ -118,6 +120,8 @@ const App: React.FC = () => {
               <Route path="/coach-benefits" element={<CoachInfo />} />
               <Route path="/client-benefits" element={<ClientInfo />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
             </Routes>
           </Layout>
         </AuthProvider>

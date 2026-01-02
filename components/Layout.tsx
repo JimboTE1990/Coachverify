@@ -240,8 +240,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-            <div className="col-span-1 md:col-span-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+            <div className="col-span-1 md:col-span-2 lg:col-span-1">
                <div className="mb-4">
                   <CoachDogFullLogo className="h-16 w-auto" />
                </div>
@@ -273,9 +273,24 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                  <li><a href="mailto:accounts@coachdog.com" className="hover:text-brand-600">accounts@coachdog.com</a></li>
                </ul>
             </div>
+
+            <div>
+               <h4 className="font-bold text-slate-900 mb-4">Legal</h4>
+               <ul className="space-y-2 text-sm text-slate-500 font-medium">
+                 <li><Link to="/privacy" className="hover:text-brand-600">Privacy Policy</Link></li>
+                 <li><Link to="/terms" className="hover:text-brand-600">Terms of Service</Link></li>
+               </ul>
+            </div>
           </div>
           <div className="border-t border-slate-100 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-slate-400 text-sm font-medium">© 2024 CoachDog. All rights reserved.</p>
+            <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
+              <p className="text-slate-400 text-sm font-medium">© 2024 CoachDog. All rights reserved.</p>
+              <div className="flex space-x-4 text-xs text-slate-400">
+                <Link to="/privacy" className="hover:text-brand-600 font-medium">Privacy</Link>
+                <span>·</span>
+                <Link to="/terms" className="hover:text-brand-600 font-medium">Terms</Link>
+              </div>
+            </div>
             <div className="flex space-x-6 mt-4 md:mt-0">
                {/* Mock Socials */}
                <div className="h-8 w-8 bg-slate-100 rounded-full"></div>
