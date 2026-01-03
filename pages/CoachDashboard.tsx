@@ -1,7 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { updateCoach, getCoachAnalytics, type CoachAnalytics } from '../services/supabaseService';
-import { Coach, Specialty, Format } from '../types';
+import {
+  Coach,
+  Specialty,
+  Format,
+  CoachingExpertise,
+  CoachingExpertiseCategory,
+  CareerProfessionalExpertise,
+  BusinessEntrepreneurshipExpertise,
+  HealthWellnessExpertise,
+  PersonalLifeExpertise,
+  FinancialExpertise,
+  NicheDemographicExpertise,
+  MethodologyModalityExpertise,
+  CPDQualification,
+  CoachingLanguage
+} from '../types';
 import {
   User, Settings, CreditCard, Lock, LogOut,
   Plus, Trash2, Link as LinkIcon, CheckCircle, Shield,
@@ -20,14 +35,98 @@ import { ProfileViewsChart } from '../components/analytics/ProfileViewsChart';
 import { useTrialStatus } from '../hooks/useTrialStatus';
 
 const AVAILABLE_SPECIALTIES: Specialty[] = [
-  'Career Growth', 
-  'Stress Relief', 
-  'Relationships', 
-  'Health & Wellness', 
+  'Career Growth',
+  'Stress Relief',
+  'Relationships',
+  'Health & Wellness',
   'Executive Coaching'
 ];
 
 const AVAILABLE_FORMATS: Format[] = ['Online', 'In-Person', 'Hybrid'];
+
+// Coaching Expertise by Category
+const COACHING_EXPERTISE_BY_CATEGORY: Record<CoachingExpertiseCategory, CoachingExpertise[]> = {
+  'Career & Professional Development': [
+    'Career Transition', 'Leadership Development', 'Executive Coaching',
+    'Team Coaching', 'Performance Coaching', 'Communication Skills',
+    'Public Speaking', 'Interview Preparation', 'Networking',
+    'Personal Branding', 'Work-Life Balance', 'Time Management',
+    'Productivity', 'Confidence Building'
+  ] as CareerProfessionalExpertise[],
+  'Business & Entrepreneurship': [
+    'Business Start-up', 'Business Growth & Scaling', 'Strategic Planning',
+    'Sales Coaching', 'Marketing & Branding', 'Negotiation Skills',
+    'Innovation & Creativity', 'Succession Planning'
+  ] as BusinessEntrepreneurshipExpertise[],
+  'Health & Wellness': [
+    'Stress Management', 'Mindfulness & Meditation', 'Sleep Improvement',
+    'Nutrition & Healthy Eating', 'Fitness & Exercise', 'Weight Management',
+    'Chronic Illness Management', 'Mental Health & Wellbeing',
+    'Addiction Recovery', 'Grief & Loss', 'Burnout Recovery'
+  ] as HealthWellnessExpertise[],
+  'Personal & Life': [
+    'Life Purpose & Meaning', 'Goal Setting & Achievement', 'Relationship Coaching',
+    'Parenting', 'Family Dynamics', 'Divorce & Separation',
+    'Self-Esteem & Confidence', 'Personal Growth', 'Spiritual Development',
+    'Retirement Planning (Life)', 'Lifestyle Design', 'Creative Expression'
+  ] as PersonalLifeExpertise[],
+  'Financial': [
+    'Financial Planning & Budgeting', 'Debt Management', 'Investment Coaching',
+    'Retirement Planning (Financial)', 'Money Mindset'
+  ] as FinancialExpertise[],
+  'Niche & Demographic': [
+    'LGBTQ+ Coaching', 'Neurodiversity (ADHD, Autism, etc.)',
+    'Youth & Students (Ages 16-25)', 'Mid-Career Professionals',
+    'Senior Professionals (50+)', 'Women in Leadership',
+    'Veterans & Military Transition', 'Expats & Relocation',
+    'Artists & Creatives', 'Athletes & Sports Performance'
+  ] as NicheDemographicExpertise[],
+  'Methodology & Modality': [
+    'Cognitive Behavioral Coaching (CBC)', 'Neuro-Linguistic Programming (NLP)',
+    'Solution-Focused Coaching', 'Positive Psychology', 'Ontological Coaching',
+    'Systemic Coaching', 'Gestalt Coaching', 'Psychodynamic Coaching',
+    'Narrative Coaching', 'Somatic Coaching', 'Mindfulness-Based Coaching',
+    'Acceptance and Commitment Therapy (ACT)', 'Transactional Analysis (TA)'
+  ] as MethodologyModalityExpertise[]
+};
+
+// CPD Qualifications
+const CPD_QUALIFICATIONS: CPDQualification[] = [
+  'ICF Associate Certified Coach (ACC)', 'ICF Professional Certified Coach (PCC)',
+  'ICF Master Certified Coach (MCC)', 'EMCC Foundation Level',
+  'EMCC Practitioner Level', 'EMCC Senior Practitioner Level',
+  'EMCC Master Practitioner Level', 'AC Accredited Coach',
+  'ILM Level 5 Coaching', 'ILM Level 7 Executive Coaching',
+  'CMI Level 5 Coaching', 'CMI Level 7 Executive Coaching',
+  'Certificate in Coaching Supervision', 'Diploma in Coaching Supervision',
+  'Mental Health First Aid (MHFA)', 'Trauma-Informed Coaching Certificate',
+  'Diversity & Inclusion Coaching Certificate', 'Corporate Coaching Certification',
+  'Team Coaching Certification', 'Career Coaching Certification',
+  'Executive Coaching Certification', 'Life Coaching Certification',
+  'Health & Wellness Coaching Certification', 'Financial Coaching Certification',
+  'Relationship Coaching Certification', 'NLP Practitioner Certification',
+  'NLP Master Practitioner Certification', 'CBT (Cognitive Behavioral Therapy) Training',
+  'Solution-Focused Brief Therapy (SFBT) Training', 'Positive Psychology Practitioner',
+  'Mindfulness Teacher Training', 'Somatic Experiencing Practitioner',
+  'Gestalt Coaching Certification', 'Systemic Team Coaching',
+  'Ontological Coaching Certification', 'Transactional Analysis (TA) 101',
+  'Leadership Coaching Certification', 'Performance Coaching Certification',
+  'Business Coaching Certification', 'Parenting Coach Certification',
+  'Retirement Coaching Certification', 'ADHD Coaching Certification',
+  'Nutrition Coaching Certification'
+];
+
+// Coaching Languages
+const COACHING_LANGUAGES: CoachingLanguage[] = [
+  'English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese',
+  'Dutch', 'Polish', 'Romanian', 'Greek', 'Swedish', 'Danish',
+  'Norwegian', 'Finnish', 'Czech', 'Hungarian', 'Bulgarian', 'Croatian',
+  'Slovak', 'Lithuanian', 'Latvian', 'Estonian', 'Slovenian',
+  'Arabic', 'Hebrew', 'Turkish', 'Russian', 'Ukrainian',
+  'Mandarin Chinese', 'Cantonese', 'Japanese', 'Korean',
+  'Hindi', 'Urdu', 'Bengali', 'Punjabi', 'Tamil',
+  'Tagalog', 'Vietnamese', 'Thai', 'Indonesian', 'Malay', 'Swahili'
+];
 
 export const CoachDashboard: React.FC = () => {
   const location = useLocation();
@@ -733,18 +832,102 @@ export const CoachDashboard: React.FC = () => {
                         />
                       </div>
 
-                      {/* Languages */}
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-3">Languages</label>
-                        <input
-                          type="text"
-                          value={localProfile?.languages?.join(', ') || ''}
-                          onChange={(e) => updateLocalProfile({languages: e.target.value.split(',').map(l => l.trim()).filter(Boolean)})}
-                          placeholder="e.g., English, Spanish, French"
-                          className="w-full border border-slate-200 bg-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-slate-800"
-                        />
-                        <p className="text-xs text-slate-500 mt-2">Separate multiple languages with commas</p>
+                  </div>
+
+                  {/* Coaching Expertise Section */}
+                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100 space-y-6">
+                    <h3 className="text-sm font-extrabold text-purple-900 flex items-center uppercase tracking-widest">
+                      <Sparkles className="h-4 w-4 mr-2" /> Coaching Areas of Expertise
+                    </h3>
+                    <p className="text-xs text-slate-600">Select specific areas where you specialize (helps clients find you)</p>
+
+                    {Object.entries(COACHING_EXPERTISE_BY_CATEGORY).map(([category, options]) => (
+                      <div key={category} className="bg-white rounded-xl p-4 border border-purple-100">
+                        <h4 className="text-sm font-bold text-slate-900 mb-3">{category}</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                          {options.map(expertise => (
+                            <label key={expertise} className="flex items-center cursor-pointer p-2 rounded-lg hover:bg-purple-50 transition-colors">
+                              <input
+                                type="checkbox"
+                                checked={localProfile?.coachingExpertise?.includes(expertise) || false}
+                                onChange={(e) => {
+                                  const current = localProfile?.coachingExpertise || [];
+                                  const updated = e.target.checked
+                                    ? [...current, expertise]
+                                    : current.filter(c => c !== expertise);
+                                  updateLocalProfile({coachingExpertise: updated});
+                                }}
+                                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                              />
+                              <span className="ml-2 text-xs font-medium text-slate-700">{expertise}</span>
+                            </label>
+                          ))}
+                        </div>
                       </div>
+                    ))}
+                  </div>
+
+                  {/* CPD Qualifications Section */}
+                  <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl p-6 border border-teal-100 space-y-4">
+                    <h3 className="text-sm font-extrabold text-teal-900 flex items-center uppercase tracking-widest">
+                      <Award className="h-4 w-4 mr-2" /> CPD Qualifications & Certifications
+                    </h3>
+                    <p className="text-xs text-slate-600">Additional professional development certifications you hold</p>
+
+                    <div className="bg-white rounded-xl p-4 border border-teal-100">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {CPD_QUALIFICATIONS.map(qual => (
+                          <label key={qual} className="flex items-center cursor-pointer p-2 rounded-lg hover:bg-teal-50 transition-colors">
+                            <input
+                              type="checkbox"
+                              checked={localProfile?.cpdQualifications?.includes(qual) || false}
+                              onChange={(e) => {
+                                const current = localProfile?.cpdQualifications || [];
+                                const updated = e.target.checked
+                                  ? [...current, qual]
+                                  : current.filter(c => c !== qual);
+                                updateLocalProfile({cpdQualifications: updated});
+                              }}
+                              className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                            />
+                            <span className="ml-2 text-xs font-medium text-slate-700">{qual}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Languages Section (Enhanced) */}
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100 space-y-4">
+                    <h3 className="text-sm font-extrabold text-blue-900 flex items-center uppercase tracking-widest">
+                      <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                      </svg>
+                      Coaching Languages
+                    </h3>
+                    <p className="text-xs text-slate-600">Languages in which you offer coaching sessions</p>
+
+                    <div className="bg-white rounded-xl p-4 border border-blue-100">
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                        {COACHING_LANGUAGES.map(lang => (
+                          <label key={lang} className="flex items-center cursor-pointer p-2 rounded-lg hover:bg-blue-50 transition-colors">
+                            <input
+                              type="checkbox"
+                              checked={localProfile?.coachingLanguages?.includes(lang) || false}
+                              onChange={(e) => {
+                                const current = localProfile?.coachingLanguages || [];
+                                const updated = e.target.checked
+                                  ? [...current, lang]
+                                  : current.filter(c => c !== lang);
+                                updateLocalProfile({coachingLanguages: updated});
+                              }}
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <span className="ml-2 text-xs font-medium text-slate-700">{lang}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Qualifications Section */}
