@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { AlertCircle, X, Calendar } from 'lucide-react';
+import { X, Calendar, AlertTriangle, Clock, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Coach } from '../../types';
+import { useTrialStatus } from '../../hooks/useTrialStatus';
 
 interface TrialCountdownBannerProps {
   coach: Coach;
@@ -9,122 +10,119 @@ interface TrialCountdownBannerProps {
 
 export const TrialCountdownBanner: React.FC<TrialCountdownBannerProps> = ({ coach }) => {
   const navigate = useNavigate();
+  const trialStatus = useTrialStatus(coach);
   const [isDismissed, setIsDismissed] = useState(false);
 
-  // Don't show if not on trial or if trial end date is missing
-  if (coach.subscriptionStatus !== 'trial' || !coach.trialEndsAt) {
+  // Don't show if not in trial or if no countdown needed
+  if (!trialStatus.showCountdownBanner || isDismissed) {
     return null;
   }
 
-  // Calculate days remaining
-  const trialEndDate = new Date(coach.trialEndsAt);
-  const now = new Date();
-  const daysRemaining = Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
-  // Don't show if more than 7 days remaining or already expired
-  if (daysRemaining > 7 || daysRemaining < 0) {
-    return null;
-  }
-
-  // Don't show if dismissed (only for informational banners, not urgent ones)
-  if (isDismissed && daysRemaining > 1) {
-    return null;
-  }
-
-  // Format the trial end date
-  const formattedDate = trialEndDate.toLocaleDateString('en-GB', {
+  const { daysRemaining, bannerSeverity, trialEndsAt } = trialStatus;
+  const formattedEndDate = trialEndsAt?.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
-    year: 'numeric'
+    year: 'numeric',
   });
 
-  // Determine banner style based on days remaining
-  const getBannerStyle = () => {
-    if (daysRemaining <= 1) {
+  // Banner styling based on severity
+  const getBannerStyles = () => {
+    switch (bannerSeverity) {
+      case 'urgent': // 1-2 days
+        return {
+          bg: 'bg-orange-600',
+          border: 'border-orange-700',
+          text: 'text-white',
+          subtext: 'text-orange-100',
+          button: 'bg-white text-orange-600 hover:bg-orange-50',
+          icon: AlertTriangle,
+        };
+      case 'warning': // 3-6 days
+        return {
+          bg: 'bg-yellow-500',
+          border: 'border-yellow-600',
+          text: 'text-yellow-900',
+          subtext: 'text-yellow-800',
+          button: 'bg-yellow-900 text-white hover:bg-yellow-800',
+          icon: Clock,
+        };
+      default: // 7+ days (info)
+        return {
+          bg: 'bg-blue-600',
+          border: 'border-blue-700',
+          text: 'text-white',
+          subtext: 'text-blue-100',
+          button: 'bg-white text-blue-600 hover:bg-blue-50',
+          icon: Calendar,
+        };
+    }
+  };
+
+  const styles = getBannerStyles();
+  const IconComponent = styles.icon;
+
+  // Banner content based on severity
+  const getBannerContent = () => {
+    if (daysRemaining <= 2) {
       return {
-        bg: 'bg-red-50',
-        border: 'border-red-200',
-        text: 'text-red-900',
-        icon: 'text-red-600',
-        button: 'bg-red-600 hover:bg-red-700 text-white',
-        urgency: 'Last chance!'
+        emoji: '🔔',
+        title: daysRemaining === 1 ? 'Last chance! Your trial expires tomorrow' : `Only ${daysRemaining} days left in your trial!`,
+        subtitle: `After ${formattedEndDate}, clients won't be able to find you. Keep your profile live.`,
+        cta: "Upgrade Now - Don't Miss Out",
       };
-    } else if (daysRemaining <= 3) {
+    } else if (daysRemaining <= 6) {
       return {
-        bg: 'bg-yellow-50',
-        border: 'border-yellow-200',
-        text: 'text-yellow-900',
-        icon: 'text-yellow-600',
-        button: 'bg-yellow-600 hover:bg-yellow-700 text-white',
-        urgency: 'Only a few days left!'
+        emoji: '⚠️',
+        title: `Only ${daysRemaining} days left in your trial!`,
+        subtitle: `Your profile will be hidden from search after ${formattedEndDate}. Upgrade to stay visible.`,
+        cta: 'Upgrade Now',
       };
     } else {
       return {
-        bg: 'bg-blue-50',
-        border: 'border-blue-200',
-        text: 'text-blue-900',
-        icon: 'text-blue-600',
-        button: 'bg-blue-600 hover:bg-blue-700 text-white',
-        urgency: 'Reminder'
+        emoji: '📅',
+        title: `Your trial ends in ${daysRemaining} days`,
+        subtitle: `Lock in your early bird rate now - £15/mo or £150/yr (save 17%)`,
+        cta: 'View Pricing',
       };
     }
   };
 
-  const style = getBannerStyle();
-
-  const getMessage = () => {
-    if (daysRemaining <= 1) {
-      return `Your trial expires tomorrow (${formattedDate}). Choose a plan to continue your profile visibility.`;
-    } else if (daysRemaining === 2) {
-      return `Your trial expires in 2 days (${formattedDate}). Lock in your price now!`;
-    } else {
-      return `Your trial ends in ${daysRemaining} days (${formattedDate}). Choose a plan anytime during your trial.`;
-    }
-  };
+  const content = getBannerContent();
+  const canDismiss = daysRemaining > 3; // Only allow dismissing info banners
 
   return (
-    <div className={`${style.bg} border ${style.border} rounded-xl p-4 mb-6 shadow-sm animate-fade-in`}>
-      <div className="flex items-start gap-3">
-        {/* Icon */}
-        <div className={`flex-shrink-0 ${style.icon}`}>
-          {daysRemaining <= 1 ? (
-            <AlertCircle className="h-6 w-6" />
-          ) : (
-            <Calendar className="h-6 w-6" />
-          )}
+    <div className={`${styles.bg} ${styles.border} border-b-2 py-3 px-4 shadow-lg`}>
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-1">
+          <IconComponent className={`h-6 w-6 flex-shrink-0 ${styles.text}`} />
+          <div className="min-w-0">
+            <p className={`font-bold text-sm ${styles.text}`}>
+              {content.emoji} {content.title}
+            </p>
+            <p className={`text-xs ${styles.subtext} mt-0.5`}>
+              {content.subtitle}
+            </p>
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className={`font-bold text-sm ${style.text} mb-1`}>
-                {style.urgency}
-              </p>
-              <p className={`text-sm ${style.text}`}>
-                {getMessage()}
-              </p>
-            </div>
-
-            {/* Dismiss button - only for non-urgent banners */}
-            {daysRemaining > 1 && (
-              <button
-                onClick={() => setIsDismissed(true)}
-                className={`flex-shrink-0 ${style.icon} hover:opacity-70 transition-opacity`}
-                aria-label="Dismiss"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            )}
-          </div>
-
-          {/* Action button */}
+        <div className="flex items-center gap-2">
           <button
             onClick={() => navigate('/pricing')}
-            className={`mt-3 ${style.button} px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm`}
+            className={`${styles.button} px-5 py-2 rounded-lg text-sm font-bold transition-colors flex-shrink-0 shadow-md flex items-center gap-2`}
           >
-            {daysRemaining <= 1 ? 'Choose Plan Now' : 'View Plans'}
+            <Zap className="h-4 w-4" />
+            {content.cta}
           </button>
+
+          {canDismiss && (
+            <button
+              onClick={() => setIsDismissed(true)}
+              className={`${styles.text} hover:opacity-80 transition-opacity p-1`}
+              aria-label="Dismiss banner"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          )}
         </div>
       </div>
     </div>

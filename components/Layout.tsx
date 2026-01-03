@@ -4,6 +4,7 @@ import { Menu, X, ChevronDown, User, Search, HelpCircle, Mail, CreditCard, LogIn
 import { useAuth } from '../hooks/useAuth';
 import { ProfileDropdown } from './navigation/ProfileDropdown';
 import { ExpiredBanner } from './subscription/ExpiredBanner';
+import { TrialCountdownBanner } from './subscription/TrialCountdownBanner';
 
 // --- Using actual logo image from PDF ---
 
@@ -63,6 +64,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     <div className="min-h-screen flex flex-col bg-slate-50">
       {/* Expired Banner - shown globally at very top */}
       {coach && <ExpiredBanner coach={coach} />}
+
+      {/* Trial Countdown Banner - shown globally for active trials */}
+      {coach && <TrialCountdownBanner coach={coach} />}
 
       {/* Sticky Header with Glassmorphism */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all duration-300" ref={navRef}>

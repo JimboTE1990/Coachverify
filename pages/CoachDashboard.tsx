@@ -15,7 +15,9 @@ import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import { ViewModeToggle } from '../components/common/ViewModeToggle';
 import { TrialCountdownBanner } from '../components/subscription/TrialCountdownBanner';
 import { CancelSubscriptionModal } from '../components/subscription/CancelSubscriptionModal';
+import { TrialExpiredModal } from '../components/subscription/TrialExpiredModal';
 import { ProfileViewsChart } from '../components/analytics/ProfileViewsChart';
+import { useTrialStatus } from '../hooks/useTrialStatus';
 
 const AVAILABLE_SPECIALTIES: Specialty[] = [
   'Career Growth', 
@@ -74,6 +76,10 @@ export const CoachDashboard: React.FC = () => {
 
   // Cancel Subscription Modal State
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+
+  // Trial Expired Modal State
+  const [isTrialExpiredModalOpen, setIsTrialExpiredModalOpen] = useState(false);
+  const trialStatus = useTrialStatus(currentCoach);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -134,6 +140,19 @@ export const CoachDashboard: React.FC = () => {
       loadAnalytics();
     }
   }, [activeTab, currentCoach, analytics]);
+
+  // Check for trial expiration and show modal once on first login
+  useEffect(() => {
+    if (currentCoach && trialStatus.isExpired && trialStatus.neverPaid) {
+      // Check if modal has been shown in this session
+      const hasSeenExpiredModal = sessionStorage.getItem('hasSeenTrialExpiredModal');
+
+      if (!hasSeenExpiredModal) {
+        setIsTrialExpiredModalOpen(true);
+        sessionStorage.setItem('hasSeenTrialExpiredModal', 'true');
+      }
+    }
+  }, [currentCoach, trialStatus.isExpired, trialStatus.neverPaid]);
 
   const handleLogout = async () => {
     await logout();
@@ -243,6 +262,40 @@ export const CoachDashboard: React.FC = () => {
       alert('✓ Subscription reactivated successfully!');
     } else {
       alert('⚠ Failed to reactivate subscription. Please try again.');
+    }
+  };
+
+  // Delete account handler
+  const handleDeleteAccount = async () => {
+    if (!currentCoach) return;
+
+    // In production, this would call an API endpoint to:
+    // 1. Mark account for deletion
+    // 2. Set scheduled_deletion_at to 30 days from now
+    // 3. Anonymize profile immediately (hide from search)
+    // 4. Send confirmation email
+    // 5. Queue background job for final deletion
+
+    // For now, we'll mark the account as expired and schedule deletion
+    const now = new Date();
+    const deletionDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+
+    const updates = {
+      subscriptionStatus: 'expired' as const,
+      cancelledAt: now.toISOString(),
+      subscriptionEndsAt: now.toISOString(), // End access immediately
+      cancelReason: 'Account deletion requested',
+      dataRetentionPreference: 'delete' as const,
+      scheduledDeletionAt: deletionDate.toISOString()
+    };
+
+    const success = await updateCoach({ ...currentCoach, ...updates });
+    if (success) {
+      // Log out and redirect to home
+      await logout();
+      navigate('/', { state: { message: 'Your account has been scheduled for deletion. You will receive a confirmation email shortly.' } });
+    } else {
+      throw new Error('Failed to delete account');
     }
   };
 
@@ -1103,6 +1156,15 @@ export const CoachDashboard: React.FC = () => {
                        onClose={() => setIsCancelModalOpen(false)}
                        onConfirm={handleCancelSubscription}
                    />
+
+                   {/* Trial Expired Modal */}
+                   {isTrialExpiredModalOpen && (
+                     <TrialExpiredModal
+                       coach={currentCoach}
+                       onClose={() => setIsTrialExpiredModalOpen(false)}
+                       onDeleteAccount={handleDeleteAccount}
+                     />
+                   )}
                </div>
             )}
 
