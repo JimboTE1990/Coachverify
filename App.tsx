@@ -15,6 +15,7 @@ import { CoachInfo } from './pages/CoachInfo';
 import { ClientInfo } from './pages/ClientInfo';
 import { Contact } from './pages/Contact';
 import { VerifyEmail } from './pages/VerifyEmail';
+import { CheckEmail } from './pages/CheckEmail';
 import { ResendVerification } from './pages/ResendVerification';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
@@ -106,6 +107,7 @@ const App: React.FC = () => {
               <Route path="/coach-login" element={<CoachLogin />} />
               <Route path="/coach-signup" element={<CoachSignup />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/check-email" element={<CheckEmail />} />
               <Route path="/resend-verification" element={<ResendVerification />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />

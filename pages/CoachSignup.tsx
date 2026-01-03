@@ -226,9 +226,14 @@ export const CoachSignup: React.FC = () => {
 
       // Check if email confirmation is required
       if (authData.user && !authData.user.email_confirmed_at) {
-        console.log('[CoachSignup] Email confirmation required, showing Step 3 (Check Your Email)');
-        // Email confirmation required - go to step 3
-        setStep(3);
+        console.log('[CoachSignup] Email confirmation required, redirecting to Check Your Email page');
+        // Email confirmation required - redirect to dedicated page
+        navigate('/check-email', {
+          state: { email: formData.email },
+          replace: true
+        });
+        setLoading(false);
+        return;
       } else {
         // User is auto-confirmed (shouldn't happen with email confirmation enabled)
         console.log('[CoachSignup] User auto-confirmed, creating profile immediately...');
