@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Mail, RefreshCw, CheckCircle, ArrowLeft } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
+import { handleVerificationError } from '../utils/errorHandling';
 
 export const ResendVerification: React.FC = () => {
   const navigate = useNavigate();
@@ -46,22 +47,19 @@ export const ResendVerification: React.FC = () => {
       });
 
       if (error) {
-        console.error('[ResendVerification] Resend error:', error);
-        console.error('[ResendVerification] Error details:', {
-          message: error.message,
-          status: error.status,
-          code: (error as any).code
+        const errorResponse = handleVerificationError(error, {
+          component: 'ResendVerification',
+          action: 'resend verification email',
+          metadata: { email }
         });
 
-        if (error.message.includes('rate limit') || error.message.includes('too many')) {
-          setMessage('Please wait a few minutes before requesting another verification email.');
-        } else if (error.message.includes('not found') || error.message.includes('invalid')) {
-          setMessage('Email address not found. Please check your email or sign up again.');
-        } else if (error.message.includes('already confirmed') || error.message.includes('already verified')) {
-          setMessage('This email is already verified. You can log in directly.');
-        } else {
-          setMessage(error.message || 'Failed to send verification email. Please try again.');
+        setMessage(errorResponse.userMessage);
+
+        // Handle redirect if needed (e.g., already verified -> login)
+        if (errorResponse.shouldRedirect) {
+          setTimeout(() => navigate(errorResponse.shouldRedirect!), 2000);
         }
+
         return;
       }
 
@@ -77,13 +75,17 @@ export const ResendVerification: React.FC = () => {
       setEmail('');
 
     } catch (err: any) {
-      console.error('[ResendVerification] Resend failed with exception:', err);
-      console.error('[ResendVerification] Exception details:', {
-        message: err.message,
-        name: err.name,
-        stack: err.stack
+      const errorResponse = handleVerificationError(err, {
+        component: 'ResendVerification',
+        action: 'resend verification email (exception)',
+        metadata: { email }
       });
-      setMessage('An unexpected error occurred. Please try again or contact support.');
+
+      setMessage(errorResponse.userMessage);
+
+      if (errorResponse.shouldRedirect) {
+        setTimeout(() => navigate(errorResponse.shouldRedirect!), 2000);
+      }
     } finally {
       setResending(false);
     }

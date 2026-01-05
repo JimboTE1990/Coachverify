@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Eye, EyeOff } from 'lucide-react';
+import { Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
 import { useAuth } from '../hooks/useAuth';
+import { handleAuthError } from '../utils/errorHandling';
 
 export const CoachLogin: React.FC = () => {
   const navigate = useNavigate();
@@ -33,10 +34,12 @@ export const CoachLogin: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showResendBanner, setShowResendBanner] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setShowResendBanner(false);
     setLoading(true);
 
     try {
@@ -52,11 +55,31 @@ export const CoachLogin: React.FC = () => {
         navigate(from, { replace: true });
       } else {
         console.error('[CoachLogin] Login failed:', result.error);
-        setError(result.error || 'Login failed. Please check your credentials.');
+
+        const errorResponse = handleAuthError(result.error, {
+          component: 'CoachLogin',
+          action: 'login',
+          metadata: { email }
+        });
+
+        setError(errorResponse.userMessage);
+
+        // Show resend verification banner if email not verified
+        if (result.error?.message?.includes('email not confirmed') ||
+            result.error?.message?.includes('not verified')) {
+          setShowResendBanner(true);
+        }
       }
     } catch (err: any) {
       console.error('[CoachLogin] Login exception:', err);
-      setError(err.message || 'Login failed. Please try again.');
+
+      const errorResponse = handleAuthError(err, {
+        component: 'CoachLogin',
+        action: 'login (exception)',
+        metadata: { email }
+      });
+
+      setError(errorResponse.userMessage);
     } finally {
       setLoading(false);
     }
@@ -117,6 +140,27 @@ export const CoachLogin: React.FC = () => {
           {error && (
             <div className="bg-red-50 text-red-600 text-sm p-4 rounded-xl flex items-center border border-red-100">
               <Lock className="h-4 w-4 mr-2" /> {error}
+            </div>
+          )}
+
+          {showResendBanner && (
+            <div className="bg-yellow-50 border-2 border-yellow-400 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-yellow-900">Email Not Verified</p>
+                  <p className="text-xs text-yellow-800 mt-1">
+                    Please verify your email before logging in. We can send you a new verification link.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/check-email', { state: { email } })}
+                    className="mt-3 text-xs font-bold text-yellow-900 bg-yellow-200 hover:bg-yellow-300 px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Resend Verification Email
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

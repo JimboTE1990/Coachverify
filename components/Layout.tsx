@@ -154,18 +154,29 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                         colorClass="bg-rose-50 text-rose-600 group-hover:bg-rose-600 group-hover:text-white"
                       />
                       <div className="border-t border-slate-100 my-2 mx-3"></div>
-                      <NavMenuItem
-                        to="/coach-login"
-                        icon={LayoutDashboard}
-                        label="Coach Portal Log In"
-                        colorClass="bg-slate-100 text-slate-700 group-hover:bg-slate-800 group-hover:text-white"
-                      />
-                       <NavMenuItem 
-                        to="/coach-signup" 
-                        icon={UserPlus} 
-                        label="Join as a Coach" 
-                        colorClass="bg-brand-50 text-brand-600 group-hover:bg-brand-600 group-hover:text-white"
-                      />
+                      {!isAuthenticated && (
+                        <>
+                          <NavMenuItem
+                            to="/coach-login"
+                            icon={LayoutDashboard}
+                            label="Coach Portal Log In"
+                            colorClass="bg-slate-100 text-slate-700 group-hover:bg-slate-800 group-hover:text-white"
+                          />
+                          <NavMenuItem
+                            to="/coach-signup"
+                            icon={UserPlus}
+                            label="Join as a Coach"
+                            colorClass="bg-brand-50 text-brand-600 group-hover:bg-brand-600 group-hover:text-white"
+                          />
+                          <NavMenuItem
+                            to="/check-email"
+                            icon={Mail}
+                            label="Resend Verification"
+                            desc="Get a new verification link"
+                            colorClass="bg-yellow-50 text-yellow-600 group-hover:bg-yellow-600 group-hover:text-white"
+                          />
+                        </>
+                      )}
                     </div>
                   </div>
                 )}

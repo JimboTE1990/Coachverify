@@ -7,6 +7,7 @@ import { validatePassword } from '../utils/passwordValidation';
 import { createCoachProfile } from '../utils/profileCreation';
 import { withTimeout } from '../utils/promiseTimeout';
 import { useAuth } from '../hooks/useAuth';
+import { handleAuthError, handleError } from '../utils/errorHandling';
 
 export const CoachSignup: React.FC = () => {
   const navigate = useNavigate();
@@ -197,23 +198,14 @@ export const CoachSignup: React.FC = () => {
       });
 
       if (authError) {
-        console.error('[CoachSignup] Auth error:', authError);
-        console.error('[CoachSignup] Error code:', authError.code);
-        console.error('[CoachSignup] Error message:', authError.message);
-
-        // Check for duplicate email error from Supabase
-        if (authError.message && (
-          authError.message.toLowerCase().includes('already') ||
-          authError.message.toLowerCase().includes('duplicate') ||
-          authError.message.toLowerCase().includes('exists') ||
-          authError.code === '23505' // PostgreSQL unique violation
-        )) {
-          setSignupError('An account with this email already exists. Please log in or use a different email. If you believe this is an error, please contact support@coachdog.com');
-          setLoading(false);
-          return;
-        }
-
-        throw authError;
+        const errorResponse = handleAuthError(authError, {
+          component: 'CoachSignup',
+          action: 'create account',
+          metadata: { email: formData.email }
+        });
+        setSignupError(errorResponse.userMessage);
+        setLoading(false);
+        return;
       }
 
       if (!authData.user) {
@@ -256,12 +248,12 @@ export const CoachSignup: React.FC = () => {
         }
       }
     } catch (error: any) {
-      console.error('Signup error:', error);
-      if (error.message.includes('already registered')) {
-        setSignupError('This email is already registered. Please login instead.');
-      } else {
-        setSignupError(error.message || 'Registration failed. Please try again.');
-      }
+      const errorResponse = handleError(error, {
+        component: 'CoachSignup',
+        action: 'complete signup',
+        metadata: { step: 'final', email: formData.email }
+      });
+      setSignupError(errorResponse.userMessage);
     } finally {
       setLoading(false);
     }

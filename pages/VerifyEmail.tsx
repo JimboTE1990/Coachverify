@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { CheckCircle, XCircle, Loader, Mail, RefreshCw } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
+import { handleVerificationError } from '../utils/errorHandling';
 
 export const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
@@ -46,17 +47,31 @@ export const VerifyEmail: React.FC = () => {
 
         // Handle errors in URL
         if (error || errorCode === 'otp_expired') {
-          console.error('[VerifyEmail] Link error detected');
+          const errorResponse = handleVerificationError(
+            { message: error || 'otp_expired', code: errorCode },
+            {
+              component: 'VerifyEmail',
+              action: 'verify email link',
+              metadata: { type, errorCode, hasAccessToken: !!accessToken }
+            }
+          );
           setStatus('expired');
-          setMessage('This verification link has expired. Email verification links expire after 24 hours. Please request a new one below.');
+          setMessage(errorResponse.userMessage);
           return;
         }
 
         // Validate tokens exist
         if (!accessToken || !type) {
-          console.error('[VerifyEmail] Missing required tokens');
+          const errorResponse = handleVerificationError(
+            { message: 'Missing tokens', code: 'invalid_link' },
+            {
+              component: 'VerifyEmail',
+              action: 'validate verification link',
+              metadata: { hasAccessToken: !!accessToken, hasType: !!type }
+            }
+          );
           setStatus('error');
-          setMessage('Invalid verification link. Please use the complete link from your email, or request a new one below.');
+          setMessage(errorResponse.userMessage);
           return;
         }
 
@@ -78,9 +93,13 @@ export const VerifyEmail: React.FC = () => {
         }, 2000);
 
       } catch (err: any) {
-        console.error('[VerifyEmail] Error:', err);
+        const errorResponse = handleVerificationError(err, {
+          component: 'VerifyEmail',
+          action: 'verify email',
+          metadata: { hasAccessToken: !!accessToken, type }
+        });
         setStatus('error');
-        setMessage(err.message || 'An unexpected error occurred during verification.');
+        setMessage(errorResponse.userMessage);
       }
     };
 
@@ -111,16 +130,19 @@ export const VerifyEmail: React.FC = () => {
       console.log('[VerifyEmail] Resend result:', { data, error });
 
       if (error) {
-        console.error('[VerifyEmail] Resend error:', error);
+        const errorResponse = handleVerificationError(error, {
+          component: 'VerifyEmail',
+          action: 'resend verification email',
+          metadata: { email }
+        });
 
-        // Handle specific error cases
-        if (error.message.includes('rate limit') || error.message.includes('too many')) {
-          setMessage('Please wait a few minutes before requesting another verification email.');
-        } else if (error.message.includes('not found') || error.message.includes('invalid')) {
-          setMessage('Email address not found. Please check your email or sign up again.');
-        } else {
-          setMessage(error.message || 'Failed to send verification email. Please try again.');
+        setMessage(errorResponse.userMessage);
+
+        // Handle rate limiting
+        if (error.message?.includes('rate limit') || error.message?.includes('too many')) {
+          // Keep user-friendly message but no special handling needed
         }
+
         return;
       }
 
@@ -129,8 +151,12 @@ export const VerifyEmail: React.FC = () => {
       setEmail(''); // Clear email input on success
 
     } catch (err: any) {
-      console.error('[VerifyEmail] Resend failed with exception:', err);
-      setMessage('An unexpected error occurred. Please try again or contact support.');
+      const errorResponse = handleVerificationError(err, {
+        component: 'VerifyEmail',
+        action: 'resend verification email (exception)',
+        metadata: { email }
+      });
+      setMessage(errorResponse.userMessage);
     } finally {
       setResending(false);
     }

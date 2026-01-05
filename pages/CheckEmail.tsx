@@ -131,24 +131,28 @@ export const CheckEmail: React.FC = () => {
 
             {/* Title */}
             <h1 className="text-2xl font-bold text-slate-900 mb-3 text-center">
-              Check Your Email
+              {emailFromState ? 'Check Your Email' : 'Resend Verification Email'}
             </h1>
 
-            {emailFromState && (
-              <p className="text-slate-600 mb-2 text-center">
-                We sent a verification link to:
-              </p>
+            {emailFromState ? (
+              <>
+                <p className="text-slate-600 mb-2 text-center">
+                  We sent a verification link to:
+                </p>
+                <p className="text-brand-600 font-bold mb-6 text-center break-all">
+                  {emailFromState}
+                </p>
+                <p className="text-slate-600 mb-8 text-center text-sm">
+                  Click the verification link in the email to activate your 30-day free trial and access your dashboard.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-slate-600 mb-6 text-center text-sm">
+                  Didn't receive your verification email or need a new one? Enter your email below to get a fresh verification link.
+                </p>
+              </>
             )}
-
-            {emailFromState && (
-              <p className="text-brand-600 font-bold mb-6 text-center break-all">
-                {emailFromState}
-              </p>
-            )}
-
-            <p className="text-slate-600 mb-8 text-center text-sm">
-              Click the verification link in the email to activate your 30-day free trial and access your dashboard.
-            </p>
 
             {/* Instructions */}
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
@@ -192,7 +196,7 @@ export const CheckEmail: React.FC = () => {
             )}
 
             {/* Resend Section */}
-            {!showResendForm && (
+            {!showResendForm && emailFromState && (
               <div className="text-center mb-6">
                 <p className="text-sm text-slate-600 mb-3">
                   Didn't receive the email?
@@ -206,20 +210,26 @@ export const CheckEmail: React.FC = () => {
               </div>
             )}
 
-            {/* Resend Form */}
-            {showResendForm && (
+            {/* Resend Form - Always show if no email from state, or if user clicked resend */}
+            {(showResendForm || !emailFromState) && (
               <div className="bg-slate-50 rounded-xl p-6 mb-6">
-                <h3 className="font-bold text-slate-900 mb-3 text-sm">
-                  Resend Verification Email
-                </h3>
+                {emailFromState && (
+                  <h3 className="font-bold text-slate-900 mb-3 text-sm">
+                    Resend Verification Email
+                  </h3>
+                )}
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your.email@example.com"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none mb-3"
+                  disabled={!!emailFromState}
+                />
                 {!emailFromState && (
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your.email@example.com"
-                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none mb-3"
-                  />
+                  <p className="text-xs text-slate-500 mb-3 text-center">
+                    Enter the email address you used to sign up
+                  </p>
                 )}
                 <button
                   onClick={handleResend}
@@ -236,7 +246,7 @@ export const CheckEmail: React.FC = () => {
                   ) : (
                     <>
                       <Mail className="h-5 w-5 mr-2" />
-                      Resend Email {resendCount > 0 && `(${resendCount})`}
+                      Resend Verification Email {resendCount > 0 && `(${resendCount})`}
                     </>
                   )}
                 </button>
