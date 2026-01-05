@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Mail, RefreshCw, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
+import { handleVerificationError } from '../utils/errorHandling';
 
 export const CheckEmail: React.FC = () => {
   const navigate = useNavigate();
@@ -67,20 +68,24 @@ export const CheckEmail: React.FC = () => {
       console.log('[CheckEmail] Resend result:', { data, error });
 
       if (error) {
-        console.error('[CheckEmail] Resend error:', error);
+        const errorResponse = handleVerificationError(error, {
+          component: 'CheckEmail',
+          action: 'resend verification email',
+          metadata: { email }
+        });
 
-        // Handle specific error cases
-        if (error.message.includes('rate limit') || error.message.includes('too many')) {
-          setMessage('Too many requests. Please wait a few minutes before trying again.');
+        setMessage(errorResponse.userMessage);
+
+        // Handle rate limiting
+        if (error.message?.includes('rate limit') || error.message?.includes('too many')) {
           setCountdown(120); // 2 minute cooldown
-        } else if (error.message.includes('not found') || error.message.includes('User not found')) {
-          setMessage('Email address not found. Please check your email or sign up again.');
-        } else if (error.message.includes('already confirmed') || error.message.includes('already verified')) {
-          setMessage('This email is already verified! You can log in now.');
-          setTimeout(() => navigate('/coach-login'), 2000);
-        } else {
-          setMessage(error.message || 'Failed to send verification email. Please try again.');
         }
+
+        // Redirect if needed (e.g., already verified -> login)
+        if (errorResponse.shouldRedirect) {
+          setTimeout(() => navigate(errorResponse.shouldRedirect!), 2000);
+        }
+
         return;
       }
 
@@ -91,8 +96,17 @@ export const CheckEmail: React.FC = () => {
       setCountdown(60); // 1 minute cooldown before allowing another resend
 
     } catch (err: any) {
-      console.error('[CheckEmail] Resend failed with exception:', err);
-      setMessage('An unexpected error occurred. Please try again or contact support.');
+      const errorResponse = handleVerificationError(err, {
+        component: 'CheckEmail',
+        action: 'resend verification email (exception)',
+        metadata: { email }
+      });
+
+      setMessage(errorResponse.userMessage);
+
+      if (errorResponse.shouldRedirect) {
+        setTimeout(() => navigate(errorResponse.shouldRedirect!), 2000);
+      }
     } finally {
       setResending(false);
     }
