@@ -7,9 +7,10 @@ interface CoachCardProps {
   coach: Coach;
   matchReason?: string;
   matchPercentage?: number;
+  filterMatchPercentage?: number;
 }
 
-export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchPercentage }) => {
+export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchPercentage, filterMatchPercentage }) => {
   const navigate = useNavigate();
   const avgRating = coach.reviews?.length 
     ? (coach.reviews.reduce((acc, r) => acc + r.rating, 0) / coach.reviews.length).toFixed(1)
@@ -78,6 +79,33 @@ export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchP
                   <span className="text-xs font-bold text-brand-800 line-clamp-1">{matchReason}</span>
               </div>
             </div>
+            ) : filterMatchPercentage !== undefined ? (
+            <div className="flex items-center gap-2">
+              <div className={`rounded-lg px-3 py-1.5 flex items-center shadow-sm border ${
+                filterMatchPercentage === 100
+                  ? 'bg-green-50 border-green-200'
+                  : filterMatchPercentage >= 75
+                  ? 'bg-amber-50 border-amber-200'
+                  : 'bg-orange-50 border-orange-200'
+              }`}>
+                <span className={`text-xs font-bold ${
+                  filterMatchPercentage === 100
+                    ? 'text-green-800'
+                    : filterMatchPercentage >= 75
+                    ? 'text-amber-800'
+                    : 'text-orange-800'
+                }`}>
+                  {filterMatchPercentage}% Match
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {coach.certifications?.slice(0, 1).map((cert, idx) => (
+                  <span key={idx} className="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                    {cert}
+                  </span>
+                ))}
+              </div>
+            </div>
             ) : (
             <div className="flex flex-wrap gap-2">
                 {coach.certifications?.slice(0, 2).map((cert, idx) => (
@@ -87,7 +115,7 @@ export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchP
                 ))}
             </div>
             )}
-            
+
             {/* View Profile Button that appears/colors on hover */}
             <div className="hidden sm:flex items-center text-sm font-bold text-slate-300 group-hover:text-brand-600 transition-colors">
                 View Profile <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />

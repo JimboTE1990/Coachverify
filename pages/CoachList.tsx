@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Search, SlidersHorizontal, X, Sparkles } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Sparkles, Bone, AlertCircle } from 'lucide-react';
 import { getCoaches, searchCoaches } from '../services/supabaseService';
 import { Coach, QuestionnaireAnswers, Specialty, Format, CoachingExpertise, CoachingLanguage, CPDQualification } from '../types';
 import { CoachCard } from '../components/CoachCard';
@@ -26,6 +26,10 @@ export const CoachList: React.FC = () => {
 
   // Mobile filter sidebar state
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+
+  // Partial match toggle
+  const [showPartialMatches, setShowPartialMatches] = useState(false);
+  const [minMatchPercentage] = useState(50); // Minimum 50% match to show
 
   // Questionnaire results passed from Onboarding
   const [matchData, setMatchData] = useState<QuestionnaireAnswers | null>(null);
@@ -65,61 +69,138 @@ export const CoachList: React.FC = () => {
     setCpdFilter([]);
   };
 
+  // Calculate match percentage for each coach
+  const calculateFilterMatchPercentage = (coach: Coach): {
+    percentage: number;
+    matched: string[];
+    total: number;
+  } => {
+    const criteria = [];
+    const matched = [];
+
+    // 1. Text Search (always passes if empty)
+    const name = coach.name ? coach.name.toLowerCase() : '';
+    const loc = coach.location ? coach.location.toLowerCase() : '';
+    const search = searchTerm.toLowerCase();
+    if (searchTerm) {
+      criteria.push('Search term');
+      if (name.includes(search) || loc.includes(search)) {
+        matched.push('Search term');
+      }
+    }
+
+    // 2. Specialty Filter
+    if (specialtyFilter) {
+      criteria.push('Specialty');
+      if (coach.specialties && coach.specialties.includes(specialtyFilter as any)) {
+        matched.push('Specialty');
+      }
+    }
+
+    // 3. Format Filter
+    if (formatFilter.length > 0) {
+      criteria.push('Format');
+      if (formatFilter.some(format => coach.availableFormats?.includes(format))) {
+        matched.push('Format');
+      }
+    }
+
+    // 4. Price Filter (always add if not default)
+    if (maxPrice < 500) {
+      criteria.push('Price range');
+      if ((coach.hourlyRate || 0) <= maxPrice) {
+        matched.push('Price range');
+      }
+    }
+
+    // 5. Experience Filter
+    if (minExperience > 0) {
+      criteria.push('Experience');
+      if ((coach.yearsExperience || 0) >= minExperience) {
+        matched.push('Experience');
+      }
+    }
+
+    // 6. Language Filter
+    if (languageFilter.length > 0) {
+      criteria.push('Languages');
+      if (languageFilter.some(lang => coach.coachingLanguages?.includes(lang as any))) {
+        matched.push('Languages');
+      }
+    }
+
+    // 7. Coaching Expertise Filter
+    if (expertiseFilter.length > 0) {
+      criteria.push('Expertise areas');
+      if (expertiseFilter.some(exp => coach.coachingExpertise?.includes(exp))) {
+        matched.push('Expertise areas');
+      }
+    }
+
+    // 8. CPD Qualifications Filter
+    if (cpdFilter.length > 0) {
+      criteria.push('Qualifications');
+      if (cpdFilter.some(cpd => coach.cpdQualifications?.includes(cpd))) {
+        matched.push('Qualifications');
+      }
+    }
+
+    const total = criteria.length;
+    const percentage = total === 0 ? 100 : Math.round((matched.length / total) * 100);
+
+    return { percentage, matched, total };
+  };
+
   const filteredCoaches = useMemo(() => {
     if (!coaches) return [];
 
-    let result = coaches.filter(coach => {
-      if (!coach) return false;
+    // Calculate match percentage for each coach
+    const coachesWithScores = coaches.map(coach => ({
+      coach,
+      filterMatch: calculateFilterMatchPercentage(coach)
+    }));
 
-      // 1. Text Search (name/location)
-      const name = coach.name ? coach.name.toLowerCase() : '';
-      const loc = coach.location ? coach.location.toLowerCase() : '';
-      const search = searchTerm.toLowerCase();
-      const textMatch = name.includes(search) || loc.includes(search);
-
-      // 2. Specialty Filter
-      const specMatch = specialtyFilter
-        ? (coach.specialties && coach.specialties.includes(specialtyFilter as any))
-        : true;
-
-      // 3. Format Filter
-      const formatMatch = formatFilter.length > 0
-        ? formatFilter.some(format => coach.availableFormats?.includes(format))
-        : true;
-
-      // 4. Price Filter
-      const priceMatch = (coach.hourlyRate || 0) <= maxPrice;
-
-      // 5. Experience Filter
-      const experienceMatch = (coach.yearsExperience || 0) >= minExperience;
-
-      // 6. Language Filter
-      const languageMatch = languageFilter.length > 0
-        ? languageFilter.some(lang => coach.coachingLanguages?.includes(lang as any))
-        : true;
-
-      // 7. Coaching Expertise Filter
-      const expertiseMatch = expertiseFilter.length > 0
-        ? expertiseFilter.some(exp => coach.coachingExpertise?.includes(exp))
-        : true;
-
-      // 8. CPD Qualifications Filter
-      const cpdMatch = cpdFilter.length > 0
-        ? cpdFilter.some(cpd => coach.cpdQualifications?.includes(cpd))
-        : true;
-
-      return textMatch && specMatch && formatMatch && priceMatch &&
-             experienceMatch && languageMatch && expertiseMatch && cpdMatch;
+    // Filter based on whether we're showing partial matches
+    let result = coachesWithScores.filter(({ filterMatch }) => {
+      if (showPartialMatches) {
+        // Show coaches with at least minMatchPercentage% match
+        return filterMatch.percentage >= minMatchPercentage;
+      } else {
+        // Only show 100% matches
+        return filterMatch.percentage === 100;
+      }
     });
 
-    // Sort by Match Relevance if matchData exists
+    // Sort by Match Relevance if matchData exists, otherwise by filter match percentage
     if (matchData) {
-      result = sortCoachesByMatch(result, matchData);
+      result = result.sort((a, b) => {
+        const scoreA = calculateMatchScore(a.coach, matchData);
+        const scoreB = calculateMatchScore(b.coach, matchData);
+        return scoreB - scoreA;
+      });
+    } else {
+      result = result.sort((a, b) => b.filterMatch.percentage - a.filterMatch.percentage);
     }
 
-    return result;
+    return result.map(r => r.coach);
   }, [coaches, searchTerm, specialtyFilter, formatFilter, maxPrice, minExperience,
-      languageFilter, expertiseFilter, cpdFilter, matchData]);
+      languageFilter, expertiseFilter, cpdFilter, matchData, showPartialMatches, minMatchPercentage]);
+
+  // Calculate counts for perfect and partial matches
+  const perfectMatchCount = useMemo(() => {
+    if (!coaches) return 0;
+    return coaches.filter(coach => calculateFilterMatchPercentage(coach).percentage === 100).length;
+  }, [coaches, searchTerm, specialtyFilter, formatFilter, maxPrice, minExperience,
+      languageFilter, expertiseFilter, cpdFilter]);
+
+  const partialMatchCount = useMemo(() => {
+    if (!coaches) return 0;
+    return coaches.filter(coach => {
+      const match = calculateFilterMatchPercentage(coach);
+      return match.percentage >= minMatchPercentage && match.percentage < 100;
+    }).length;
+  }, [coaches, searchTerm, specialtyFilter, formatFilter, maxPrice, minExperience,
+      languageFilter, expertiseFilter, cpdFilter, minMatchPercentage]);
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -128,9 +209,13 @@ export const CoachList: React.FC = () => {
         {/* Search Header */}
         <div className="mb-10 text-center">
           <h1 className="text-4xl font-display font-bold text-slate-900 mb-2">
-            {matchData ? 'Your Perfect Matches' : 'Find Your Coach'}
+            {matchData ? '🐾 Your Perfect Matches' : '🦴 Sniffing Out Your Perfect Coach'}
           </h1>
-          <p className="text-slate-500">Connect with verified professionals who align with your goals.</p>
+          <p className="text-slate-500">
+            {isLoading
+              ? '🐕 Fetching results...'
+              : 'Connect with verified professionals who align with your goals.'}
+          </p>
         </div>
 
         {/* Personalized Results Banner */}
@@ -226,7 +311,7 @@ export const CoachList: React.FC = () => {
                     <input
                       type="text"
                       className="block w-full pl-11 pr-4 py-3 border-none rounded-xl bg-slate-50 focus:bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all font-medium"
-                      placeholder="Search by name or location..."
+                      placeholder="🐶 Search by name or location..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -254,25 +339,122 @@ export const CoachList: React.FC = () => {
                   ))}
                 </>
               ) : filteredCoaches.length > 0 ? (
-                filteredCoaches.map((coach, index) => (
-                  <div key={coach.id} className="animate-fade-in-up" style={{ animationDelay: `${index * 50}ms` }}>
+                <>
+                  {/* Perfect Matches Section Header */}
+                  {!showPartialMatches && perfectMatchCount > 0 && (
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-4 flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="bg-green-100 p-2 rounded-full mr-3">
+                          <Bone className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-green-900">🎯 Perfect Matches!</p>
+                          <p className="text-sm text-green-700">These coaches match 100% of your criteria</p>
+                        </div>
+                      </div>
+                      <span className="bg-green-600 text-white px-4 py-2 rounded-full font-bold text-sm">
+                        {perfectMatchCount} {perfectMatchCount === 1 ? 'Coach' : 'Coaches'}
+                      </span>
+                    </div>
+                  )}
+
+                  {filteredCoaches.map((coach, index) => (
+                    <div key={coach.id} className="animate-fade-in-up" style={{ animationDelay: `${index * 50}ms` }}>
                       <CoachCard
                         coach={coach}
                         matchReason={matchData ? getEnhancedMatchReason(coach, matchData) : undefined}
                         matchPercentage={matchData ? calculateMatchScore(coach, matchData) : undefined}
+                        filterMatchPercentage={showPartialMatches ? calculateFilterMatchPercentage(coach).percentage : undefined}
                       />
-                  </div>
-                ))
+                    </div>
+                  ))}
+
+                  {/* Partial Match Toggle - Show after perfect matches */}
+                  {!showPartialMatches && perfectMatchCount > 0 && partialMatchCount > 0 && (
+                    <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-2xl p-6 text-center">
+                      <Bone className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+                      <h3 className="text-xl font-bold text-amber-900 mb-2">
+                        🐕 Want more options?
+                      </h3>
+                      <p className="text-amber-700 mb-4">
+                        We found <strong>{partialMatchCount} coaches</strong> who are close matches (50%+ criteria)
+                      </p>
+                      <button
+                        onClick={() => setShowPartialMatches(true)}
+                        className="bg-amber-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-amber-700 transition-all shadow-lg hover:shadow-xl"
+                      >
+                        Show Close Matches
+                      </button>
+                    </div>
+                  )}
+                </>
               ) : (
+                // No results - Dog-themed with smart suggestions
                 <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
                   <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                     <Search className="h-8 w-8 text-slate-300" />
+                    <Bone className="h-8 w-8 text-slate-300" />
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900">No coaches found</h3>
-                  <p className="text-slate-500 mt-2">Try adjusting your filters or search terms.</p>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2">🦴 No bones found!</h3>
+                  <p className="text-slate-600 mb-6">
+                    We couldn't sniff out any coaches matching all your criteria.
+                  </p>
+
+                  {/* Smart Suggestions */}
+                  {!showPartialMatches && partialMatchCount > 0 ? (
+                    <div className="bg-brand-50 border border-brand-200 rounded-xl p-6 max-w-md mx-auto mb-6">
+                      <AlertCircle className="h-6 w-6 text-brand-600 mx-auto mb-3" />
+                      <p className="text-brand-900 font-bold mb-2">💡 Try this:</p>
+                      <p className="text-brand-700 text-sm mb-4">
+                        We found {partialMatchCount} coaches who match at least 50% of your criteria
+                      </p>
+                      <button
+                        onClick={() => setShowPartialMatches(true)}
+                        className="bg-brand-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-brand-700 transition-all w-full"
+                      >
+                        Show Close Matches
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 max-w-md mx-auto mb-6 text-left">
+                      <p className="font-bold text-slate-900 mb-3">🐾 Try these tips:</p>
+                      <ul className="space-y-2 text-sm text-slate-700">
+                        {cpdFilter.length > 0 && (
+                          <li className="flex items-start">
+                            <span className="mr-2">•</span>
+                            <span><strong>Remove some qualifications</strong> - Fewer requirements = more coaches</span>
+                          </li>
+                        )}
+                        {expertiseFilter.length > 0 && (
+                          <li className="flex items-start">
+                            <span className="mr-2">•</span>
+                            <span><strong>Broaden expertise areas</strong> - Try selecting fewer specific skills</span>
+                          </li>
+                        )}
+                        {maxPrice < 500 && (
+                          <li className="flex items-start">
+                            <span className="mr-2">•</span>
+                            <span><strong>Increase your budget</strong> - Try raising the max price to £{maxPrice + 50}</span>
+                          </li>
+                        )}
+                        {minExperience > 5 && (
+                          <li className="flex items-start">
+                            <span className="mr-2">•</span>
+                            <span><strong>Lower experience requirement</strong> - Try {minExperience - 2} years instead</span>
+                          </li>
+                        )}
+                        {languageFilter.length > 1 && (
+                          <li className="flex items-start">
+                            <span className="mr-2">•</span>
+                            <span><strong>Reduce language filters</strong> - Focus on your primary language</span>
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+
                   <button
                     onClick={clearAllFilters}
-                    className="mt-6 text-brand-600 font-bold hover:underline"
+                    className="text-brand-600 font-bold hover:underline"
                   >
                     Clear all filters
                   </button>
