@@ -321,9 +321,11 @@ export interface QuestionnaireAnswers {
   sessionsPerMonth: 'one' | 'two' | 'unlimited' | '';
   preferredFormat: Format[];
   budgetRange: number;
-  preferredCertifications?: AdditionalCertification[]; // New: Preferred coach certifications
-  languagePreferences?: string[]; // New: Multiple languages (e.g., ["English", "Spanish"])
-  experienceLevel?: 'beginner' | 'intermediate' | 'advanced' | 'any'; // New: Preferred coach experience level
+  preferredCertifications?: AdditionalCertification[]; // Legacy: Preferred coach certifications
+  languagePreferences?: string[]; // Multiple languages (e.g., ["English", "Spanish"])
+  experienceLevel?: 'beginner' | 'intermediate' | 'advanced' | 'any'; // Preferred coach experience level
+  coachingExpertise?: CoachingExpertise[]; // New: Specific coaching areas (80+ options across 7 categories)
+  cpdQualifications?: CPDQualification[]; // New: CPD qualifications (40+ certifications)
 }
 
 export interface UserState {
