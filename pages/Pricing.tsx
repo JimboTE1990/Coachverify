@@ -13,10 +13,18 @@ export const Pricing: React.FC = () => {
   // Check if user is on trial
   const isOnTrial = coach && coach.subscriptionStatus === 'trial';
 
+  // Get current billing cycle for premium users
+  const currentBillingCycle = coach?.billingCycle; // 'monthly' or 'annual'
+
   const handlePlanSelection = (plan: 'monthly' | 'annual') => {
-    // If already subscribed, don't allow checkout
-    if (hasActiveSubscription) {
-      alert('You already have an active subscription. Manage it from your dashboard.');
+    // If already subscribed and trying to switch plans, go to change plan flow
+    if (hasActiveSubscription && currentBillingCycle && currentBillingCycle !== plan) {
+      navigate(`/subscription/change-plan?to=${plan}`);
+      return;
+    }
+
+    // If already on this plan, navigate to subscription management
+    if (hasActiveSubscription && currentBillingCycle === plan) {
       navigate('/for-coaches?tab=subscription');
       return;
     }
@@ -177,10 +185,16 @@ export const Pricing: React.FC = () => {
 
               <button
                 onClick={() => handlePlanSelection('monthly')}
-                disabled={hasActiveSubscription}
+                disabled={hasActiveSubscription && currentBillingCycle === 'monthly'}
                 className="mt-8 w-full bg-brand-600 text-white py-4 rounded-xl font-bold hover:bg-brand-700 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {hasActiveSubscription ? 'Already Subscribed' : isOnTrial ? 'Upgrade to Monthly' : 'Select Monthly'}
+                {hasActiveSubscription && currentBillingCycle === 'monthly'
+                  ? 'Current Plan'
+                  : hasActiveSubscription && currentBillingCycle === 'annual'
+                  ? 'Switch to Monthly'
+                  : isOnTrial
+                  ? 'Upgrade to Monthly'
+                  : 'Select Monthly'}
               </button>
             </div>
 
@@ -221,10 +235,16 @@ export const Pricing: React.FC = () => {
 
               <button
                 onClick={() => handlePlanSelection('annual')}
-                disabled={hasActiveSubscription}
+                disabled={hasActiveSubscription && currentBillingCycle === 'annual'}
                 className="mt-8 w-full bg-gradient-to-r from-brand-600 to-indigo-600 text-white py-4 rounded-xl font-bold hover:from-brand-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {hasActiveSubscription ? 'Already Subscribed' : isOnTrial ? 'Upgrade to Annual' : 'Select Annual'}
+                {hasActiveSubscription && currentBillingCycle === 'annual'
+                  ? 'Current Plan'
+                  : hasActiveSubscription && currentBillingCycle === 'monthly'
+                  ? 'Switch to Annual'
+                  : isOnTrial
+                  ? 'Upgrade to Annual'
+                  : 'Select Annual'}
               </button>
             </div>
           </div>

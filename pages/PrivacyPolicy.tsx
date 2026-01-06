@@ -19,12 +19,12 @@ export const PrivacyPolicy: React.FC = () => {
         {/* Introduction */}
         <section className="mb-8">
           <p className="text-slate-700 mb-4">
-            At CoachVerify, we take your privacy seriously. This Privacy Policy explains how we collect, use, protect, and handle your personal information when you use our platform to connect verified coaches with users seeking coaching services.
+            At CoachDog, we take your privacy seriously. This Privacy Policy explains how we collect, use, protect, and handle your personal information when you use our platform to connect verified coaches with users seeking coaching services.
           </p>
           <p className="text-slate-700 mb-4">
             We are committed to compliance with the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018. If you have any questions about this policy, please contact us at{' '}
-            <a href="mailto:privacy@coachverify.com" className="text-brand-600 hover:underline">
-              privacy@coachverify.com
+            <a href="mailto:privacy@coachdog.com" className="text-brand-600 hover:underline">
+              privacy@coachdog.com
             </a>
           </p>
         </section>
@@ -36,12 +36,12 @@ export const PrivacyPolicy: React.FC = () => {
             Data Controller
           </h2>
           <p className="text-slate-700 mb-2">
-            CoachVerify is the data controller for the personal information we process. You can contact us at:
+            CoachDog is the data controller for the personal information we process. You can contact us at:
           </p>
           <div className="bg-slate-50 rounded-xl p-4 text-slate-700">
-            <p className="font-medium">CoachVerify</p>
-            <p>Email: <a href="mailto:privacy@coachverify.com" className="text-brand-600 hover:underline">privacy@coachverify.com</a></p>
-            <p>Support: <a href="mailto:support@coachverify.com" className="text-brand-600 hover:underline">support@coachverify.com</a></p>
+            <p className="font-medium">CoachDog</p>
+            <p>Email: <a href="mailto:privacy@coachdog.com" className="text-brand-600 hover:underline">privacy@coachdog.com</a></p>
+            <p>Support: <a href="mailto:support@coachdog.com" className="text-brand-600 hover:underline">support@coachdog.com</a></p>
           </div>
         </section>
 
@@ -237,7 +237,7 @@ export const PrivacyPolicy: React.FC = () => {
               <h4 className="font-bold text-blue-900 mb-1">Right to Access</h4>
               <p className="text-blue-800 text-sm">
                 You can request a copy of all personal data we hold about you. Contact{' '}
-                <a href="mailto:privacy@coachverify.com" className="underline">privacy@coachverify.com</a> to request your data export.
+                <a href="mailto:privacy@coachdog.com" className="underline">privacy@coachdog.com</a> to request your data export.
               </p>
             </div>
 
@@ -252,7 +252,7 @@ export const PrivacyPolicy: React.FC = () => {
               <h4 className="font-bold text-blue-900 mb-1">Right to Erasure ("Right to be Forgotten")</h4>
               <p className="text-blue-800 text-sm">
                 You can request deletion of your account and all associated data. Go to Account Settings → Delete Account, or email{' '}
-                <a href="mailto:privacy@coachverify.com" className="underline">privacy@coachverify.com</a>. We will permanently delete your data within 30 days, except where we're legally required to retain it.
+                <a href="mailto:privacy@coachdog.com" className="underline">privacy@coachdog.com</a>. We will permanently delete your data within 30 days, except where we're legally required to retain it.
               </p>
             </div>
 
@@ -288,7 +288,7 @@ export const PrivacyPolicy: React.FC = () => {
           <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mt-6">
             <p className="text-yellow-900 text-sm">
               <strong>To exercise any of these rights:</strong> Email us at{' '}
-              <a href="mailto:privacy@coachverify.com" className="underline">privacy@coachverify.com</a>{' '}
+              <a href="mailto:privacy@coachdog.com" className="underline">privacy@coachdog.com</a>{' '}
               with your request. We will respond within 30 days. If you're unsatisfied with our response, you have the right to lodge a complaint with the{' '}
               <a href="https://ico.org.uk/" target="_blank" rel="noopener noreferrer" className="underline">
                 Information Commissioner's Office (ICO)
@@ -311,7 +311,7 @@ export const PrivacyPolicy: React.FC = () => {
           <div className="bg-slate-50 rounded-xl p-6 mb-4">
             <h4 className="font-bold text-slate-900 mb-3">Option 1: Self-Service Deletion</h4>
             <ol className="ml-6 list-decimal space-y-2 text-slate-700">
-              <li>Log in to your CoachVerify account</li>
+              <li>Log in to your CoachDog account</li>
               <li>Navigate to Dashboard → Account Settings</li>
               <li>Scroll to "Delete Account" section</li>
               <li>Click "Delete My Account" and confirm</li>
@@ -323,8 +323,8 @@ export const PrivacyPolicy: React.FC = () => {
             <h4 className="font-bold text-slate-900 mb-3">Option 2: Email Request</h4>
             <p className="text-slate-700 mb-2">
               Send an email to{' '}
-              <a href="mailto:privacy@coachverify.com" className="text-brand-600 hover:underline font-medium">
-                privacy@coachverify.com
+              <a href="mailto:privacy@coachdog.com" className="text-brand-600 hover:underline font-medium">
+                privacy@coachdog.com
               </a>{' '}
               with the subject "Account Deletion Request" and include:
             </p>
@@ -401,9 +401,9 @@ export const PrivacyPolicy: React.FC = () => {
           </h2>
 
           <p className="text-slate-700">
-            CoachVerify is not intended for users under the age of 18. We do not knowingly collect personal information from children. Coaches must be at least 18 years old to create an account. If we discover that we have collected data from a child, we will delete it immediately. If you believe a child has provided us with personal information, please contact{' '}
-            <a href="mailto:privacy@coachverify.com" className="text-brand-600 hover:underline">
-              privacy@coachverify.com
+            CoachDog is not intended for users under the age of 18. We do not knowingly collect personal information from children. Coaches must be at least 18 years old to create an account. If we discover that we have collected data from a child, we will delete it immediately. If you believe a child has provided us with personal information, please contact{' '}
+            <a href="mailto:privacy@coachdog.com" className="text-brand-600 hover:underline">
+              privacy@coachdog.com
             </a>.
           </p>
         </section>
@@ -447,17 +447,17 @@ export const PrivacyPolicy: React.FC = () => {
           </p>
 
           <div className="bg-brand-50 border border-brand-200 rounded-xl p-6">
-            <p className="text-slate-900 font-medium mb-2">CoachVerify Privacy Team</p>
+            <p className="text-slate-900 font-medium mb-2">CoachDog Privacy Team</p>
             <p className="text-slate-700 mb-1">
               <strong>Email:</strong>{' '}
-              <a href="mailto:privacy@coachverify.com" className="text-brand-600 hover:underline">
-                privacy@coachverify.com
+              <a href="mailto:privacy@coachdog.com" className="text-brand-600 hover:underline">
+                privacy@coachdog.com
               </a>
             </p>
             <p className="text-slate-700">
               <strong>Support:</strong>{' '}
-              <a href="mailto:support@coachverify.com" className="text-brand-600 hover:underline">
-                support@coachverify.com
+              <a href="mailto:support@coachdog.com" className="text-brand-600 hover:underline">
+                support@coachdog.com
               </a>
             </p>
           </div>
@@ -470,7 +470,7 @@ export const PrivacyPolicy: React.FC = () => {
         {/* Footer Links */}
         <div className="pt-8 border-t border-slate-200 text-center">
           <p className="text-slate-600 mb-4">
-            By using CoachVerify, you agree to this Privacy Policy and our{' '}
+            By using CoachDog, you agree to this Privacy Policy and our{' '}
             <Link to="/terms" className="text-brand-600 hover:underline font-medium">
               Terms of Service
             </Link>.

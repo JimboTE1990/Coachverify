@@ -19,10 +19,10 @@ export const TermsOfService: React.FC = () => {
         {/* Introduction */}
         <section className="mb-8">
           <p className="text-slate-700 mb-4">
-            Welcome to CoachVerify. These Terms of Service ("Terms") govern your access to and use of our platform, which connects verified coaches with users seeking coaching services.
+            Welcome to CoachDog. These Terms of Service ("Terms") govern your access to and use of our platform, which connects verified coaches with users seeking coaching services.
           </p>
           <p className="text-slate-700 mb-4">
-            By accessing or using CoachVerify, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use our platform.
+            By accessing or using CoachDog, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use our platform.
           </p>
         </section>
 
@@ -33,7 +33,7 @@ export const TermsOfService: React.FC = () => {
             1. Acceptance of Terms
           </h2>
           <p className="text-slate-700 mb-4">
-            By creating an account or using CoachVerify, you acknowledge that you have read, understood, and agree to be bound by these Terms and our{' '}
+            By creating an account or using CoachDog, you acknowledge that you have read, understood, and agree to be bound by these Terms and our{' '}
             <Link to="/privacy" className="text-brand-600 hover:underline font-medium">
               Privacy Policy
             </Link>
@@ -47,7 +47,7 @@ export const TermsOfService: React.FC = () => {
             2. Eligibility
           </h2>
           <p className="text-slate-700 mb-4">
-            To use CoachVerify, you must:
+            To use CoachDog, you must:
           </p>
           <ul className="space-y-2 text-slate-700 ml-6 list-disc">
             <li>Be at least 18 years of age</li>
@@ -63,7 +63,7 @@ export const TermsOfService: React.FC = () => {
             3. Account Registration and Security
           </h2>
           <p className="text-slate-700 mb-4">
-            When you create a CoachVerify account:
+            When you create a CoachDog account:
           </p>
           <ul className="space-y-2 text-slate-700 ml-6 list-disc">
             <li>You must provide accurate, complete, and current information</li>
@@ -83,7 +83,7 @@ export const TermsOfService: React.FC = () => {
             4. Coach Verification Process
           </h2>
           <p className="text-slate-700 mb-4">
-            For coaches creating profiles on CoachVerify:
+            For coaches creating profiles on CoachDog:
           </p>
           <ul className="space-y-2 text-slate-700 ml-6 list-disc">
             <li>You must provide valid coaching credentials from a recognized accreditation body</li>
@@ -110,7 +110,7 @@ export const TermsOfService: React.FC = () => {
 
           <h3 className="text-xl font-bold text-slate-900 mb-3 mt-6">5.1 Subscription Plans</h3>
           <p className="text-slate-700 mb-4">
-            CoachVerify offers monthly and annual subscription plans for coaches. All plans include a 30-day free trial for new users.
+            CoachDog offers monthly and annual subscription plans for coaches. All plans include a 30-day free trial for new users.
           </p>
 
           <h3 className="text-xl font-bold text-slate-900 mb-3 mt-6">5.2 Billing</h3>
@@ -167,7 +167,7 @@ export const TermsOfService: React.FC = () => {
             7. Intellectual Property Rights
           </h2>
           <p className="text-slate-700 mb-4">
-            All content on CoachVerify, including text, graphics, logos, and software, is the property of CoachVerify or our licensors and is protected by copyright, trademark, and other intellectual property laws.
+            All content on CoachDog, including text, graphics, logos, and software, is the property of CoachDog or our licensors and is protected by copyright, trademark, and other intellectual property laws.
           </p>
           <p className="text-slate-700 mb-4">
             You retain ownership of any content you submit to the platform (e.g., profile information, photos). By submitting content, you grant us a non-exclusive, worldwide, royalty-free license to use, display, and distribute your content on the platform.
@@ -180,7 +180,7 @@ export const TermsOfService: React.FC = () => {
             8. Limitation of Liability
           </h2>
           <p className="text-slate-700 mb-4">
-            CoachVerify is a platform that facilitates connections between coaches and users. We are not responsible for:
+            CoachDog is a platform that facilitates connections between coaches and users. We are not responsible for:
           </p>
           <ul className="space-y-2 text-slate-700 ml-6 list-disc">
             <li>The quality, safety, or legality of coaching services provided by coaches</li>
@@ -209,7 +209,7 @@ export const TermsOfService: React.FC = () => {
             10. Indemnification
           </h2>
           <p className="text-slate-700">
-            You agree to indemnify and hold harmless CoachVerify, its officers, directors, employees, and agents from any claims, damages, losses, or expenses arising from your use of the platform, violation of these Terms, or infringement of any third-party rights.
+            You agree to indemnify and hold harmless CoachDog, its officers, directors, employees, and agents from any claims, damages, losses, or expenses arising from your use of the platform, violation of these Terms, or infringement of any third-party rights.
           </p>
         </section>
 
@@ -261,17 +261,17 @@ export const TermsOfService: React.FC = () => {
             If you have any questions about these Terms, please contact us:
           </p>
           <div className="bg-brand-50 border border-brand-200 rounded-xl p-6">
-            <p className="text-slate-900 font-medium mb-2">CoachVerify Legal Team</p>
+            <p className="text-slate-900 font-medium mb-2">CoachDog Legal Team</p>
             <p className="text-slate-700 mb-1">
               <strong>Email:</strong>{' '}
-              <a href="mailto:legal@coachverify.com" className="text-brand-600 hover:underline">
-                legal@coachverify.com
+              <a href="mailto:legal@coachdog.com" className="text-brand-600 hover:underline">
+                legal@coachdog.com
               </a>
             </p>
             <p className="text-slate-700">
               <strong>Support:</strong>{' '}
-              <a href="mailto:support@coachverify.com" className="text-brand-600 hover:underline">
-                support@coachverify.com
+              <a href="mailto:support@coachdog.com" className="text-brand-600 hover:underline">
+                support@coachdog.com
               </a>
             </p>
           </div>
@@ -280,7 +280,7 @@ export const TermsOfService: React.FC = () => {
         {/* Footer Links */}
         <div className="pt-8 border-t border-slate-200 text-center">
           <p className="text-slate-600 mb-4">
-            By using CoachVerify, you agree to these Terms of Service and our{' '}
+            By using CoachDog, you agree to these Terms of Service and our{' '}
             <Link to="/privacy" className="text-brand-600 hover:underline font-medium">
               Privacy Policy
             </Link>.

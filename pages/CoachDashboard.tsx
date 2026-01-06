@@ -33,6 +33,7 @@ import { CancelSubscriptionModal } from '../components/subscription/CancelSubscr
 import { TrialExpiredModal } from '../components/subscription/TrialExpiredModal';
 import { ProfileViewsChart } from '../components/analytics/ProfileViewsChart';
 import { useTrialStatus } from '../hooks/useTrialStatus';
+import { ImageUpload } from '../components/ImageUpload';
 
 const AVAILABLE_SPECIALTIES: Specialty[] = [
   'Career Growth',
@@ -671,6 +672,13 @@ export const CoachDashboard: React.FC = () => {
                       </button>
                     </div>
                   </div>
+
+                  {/* Profile Photo Upload */}
+                  <ImageUpload
+                    currentImageUrl={localProfile?.photoUrl}
+                    onImageUpdate={(newUrl) => updateLocalProfile({ photoUrl: newUrl })}
+                    coachId={currentCoach.id}
+                  />
 
                   {/* Basic Info */}
                   <div className="grid grid-cols-1 gap-6">
