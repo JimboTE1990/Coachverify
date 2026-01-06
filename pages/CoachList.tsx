@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Search, SlidersHorizontal, X, Sparkles, Bone, AlertCircle } from 'lucide-react';
-import { getCoaches, searchCoaches } from '../services/supabaseService';
+import { getCoaches } from '../services/supabaseService';
 import { Coach, QuestionnaireAnswers, Specialty, Format, CoachingExpertise, CoachingLanguage, CPDQualification } from '../types';
 import { CoachCard } from '../components/CoachCard';
 import { FilterSidebar } from '../components/filters/FilterSidebar';
-import { calculateMatchScore, getMatchReason as getEnhancedMatchReason, sortCoachesByMatch } from '../utils/matchCalculator';
+import { calculateMatchScore, getMatchReason as getEnhancedMatchReason } from '../utils/matchCalculator';
 
 export const CoachList: React.FC = () => {
   const location = useLocation();

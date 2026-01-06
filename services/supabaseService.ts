@@ -1,6 +1,9 @@
 import { supabase } from '../lib/supabase';
 import { Coach, Review, SocialLink, Specialty, Format } from '../types';
 
+// Re-export supabase for use in other components
+export { supabase };
+
 // ============================================================================
 // COACH SERVICES
 // ============================================================================
