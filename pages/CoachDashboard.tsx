@@ -192,6 +192,16 @@ export const CoachDashboard: React.FC = () => {
     setTimeout(() => setToast(null), 4000); // Auto-dismiss after 4 seconds
   };
 
+  // Helper function to strip mailto: and tel: prefixes for display
+  const stripProtocol = (url: string): string => {
+    if (url.startsWith('mailto:')) {
+      return url.replace('mailto:', '');
+    } else if (url.startsWith('tel:')) {
+      return url.replace('tel:', '');
+    }
+    return url;
+  };
+
   // Redirect to login if not authenticated
   useEffect(() => {
     console.log('[CoachDashboard] Auth state:', { authLoading, hasCoach: !!currentCoach, hasRedirected: hasRedirected.current });
@@ -1277,7 +1287,7 @@ export const CoachDashboard: React.FC = () => {
                                         {link.type === 'email' ? 'EMAIL' : link.type === 'tel' ? 'PHONE' : 'URL'}
                                       </span>
                                     </div>
-                                    <p className="text-sm text-brand-700 font-medium truncate">{link.url}</p>
+                                    <p className="text-sm text-brand-700 font-medium truncate">{stripProtocol(link.url)}</p>
                                 </div>
                                 <button onClick={() => removeLink(idx)} className="text-slate-400 hover:text-red-500 p-2 transition-colors">
                                     <Trash2 className="h-4 w-4" />

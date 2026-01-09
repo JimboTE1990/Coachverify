@@ -252,6 +252,16 @@ export const CoachDetails: React.FC = () => {
 
   const currentReview = coach.reviews?.[currentReviewIndex];
 
+  // Helper function to strip mailto: and tel: prefixes for display
+  const stripProtocol = (url: string): string => {
+    if (url.startsWith('mailto:')) {
+      return url.replace('mailto:', '');
+    } else if (url.startsWith('tel:')) {
+      return url.replace('tel:', '');
+    }
+    return url;
+  };
+
   // Helper function to get the correct icon for each social platform
   const getSocialIcon = (platform: string) => {
     const lowerPlatform = platform.toLowerCase();
@@ -675,7 +685,7 @@ export const CoachDetails: React.FC = () => {
 
               {/* Contact Options Dropdown */}
               {showContactOptions && (emailContacts.length > 0 || phoneContacts.length > 0) && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border-2 border-cyan-500 shadow-2xl z-50 overflow-hidden animate-fade-in">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border-2 border-cyan-500 shadow-2xl z-50 overflow-visible animate-fade-in max-h-96 overflow-y-auto">
                   {/* Email Options */}
                   {emailContacts.length > 0 && (
                     <div className="border-b border-slate-200">
@@ -688,11 +698,11 @@ export const CoachDetails: React.FC = () => {
                           onClick={() => copyToClipboard(contact.url, contact.platform)}
                           className="w-full px-4 py-3 text-left hover:bg-cyan-50 transition-colors flex items-center justify-between group"
                         >
-                          <div>
+                          <div className="flex-1 min-w-0">
                             <p className="font-bold text-slate-900">{contact.platform}</p>
-                            <p className="text-sm text-slate-600 truncate">{contact.url}</p>
+                            <p className="text-sm text-slate-600 break-all">{stripProtocol(contact.url)}</p>
                           </div>
-                          <Copy className={`h-5 w-5 ${copiedContact === contact.platform ? 'text-green-600' : 'text-slate-400 group-hover:text-cyan-600'}`} />
+                          <Copy className={`h-5 w-5 flex-shrink-0 ml-3 ${copiedContact === contact.platform ? 'text-green-600' : 'text-slate-400 group-hover:text-cyan-600'}`} />
                         </button>
                       ))}
                     </div>
@@ -710,11 +720,11 @@ export const CoachDetails: React.FC = () => {
                           onClick={() => copyToClipboard(contact.url, contact.platform)}
                           className="w-full px-4 py-3 text-left hover:bg-cyan-50 transition-colors flex items-center justify-between group"
                         >
-                          <div>
+                          <div className="flex-1 min-w-0">
                             <p className="font-bold text-slate-900">{contact.platform}</p>
-                            <p className="text-sm text-slate-600">{contact.url}</p>
+                            <p className="text-sm text-slate-600 break-all">{stripProtocol(contact.url)}</p>
                           </div>
-                          <Copy className={`h-5 w-5 ${copiedContact === contact.platform ? 'text-green-600' : 'text-slate-400 group-hover:text-cyan-600'}`} />
+                          <Copy className={`h-5 w-5 flex-shrink-0 ml-3 ${copiedContact === contact.platform ? 'text-green-600' : 'text-slate-400 group-hover:text-cyan-600'}`} />
                         </button>
                       ))}
                     </div>
