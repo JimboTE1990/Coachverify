@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { updateCoach, getCoachAnalytics, type CoachAnalytics } from '../services/supabaseService';
+import { updateCoach, getCoachAnalytics, getCoachById, verifyReview, flagReview, resetReviewVerification, type CoachAnalytics } from '../services/supabaseService';
 import {
   Coach,
+  Review,
   Specialty,
   Format,
   CoachingExpertise,
@@ -22,7 +23,7 @@ import {
   Plus, Trash2, Link as LinkIcon, CheckCircle, Shield,
   AlertTriangle, Mail, Smartphone, RefreshCw, Eye, EyeOff,
   Tag, Monitor, LayoutDashboard, Sparkles, BarChart, TrendingUp, Calendar,
-  Award, GraduationCap, Trophy
+  Award, GraduationCap, Trophy, Star, Flag
 } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
 import { useAuth } from '../hooks/useAuth';
@@ -164,7 +165,7 @@ export const CoachDashboard: React.FC = () => {
   }, [currentCoach, localProfile]);
 
   // New Link State
-  const [newLink, setNewLink] = useState({ platform: '', url: '' });
+  const [newLink, setNewLink] = useState<{ platform: string; url: string; type: 'url' | 'email' | 'tel' }>({ platform: '', url: '', type: 'url' });
   const [newQualification, setNewQualification] = useState<{ degree: string; institution?: string; year?: number }>({ degree: '', institution: '', year: undefined });
   const [newAcknowledgement, setNewAcknowledgement] = useState<{ title: string; icon?: string; year?: number }>({ title: '', icon: '', year: undefined });
 
@@ -267,6 +268,51 @@ export const CoachDashboard: React.FC = () => {
   const handleLogout = async () => {
     await logout();
     navigate('/coach-login');
+  };
+
+  const handleVerifyReview = async (reviewId: string) => {
+    if (!currentCoach?.id) return;
+
+    const success = await verifyReview(reviewId, currentCoach.id);
+    if (success) {
+      // Refresh coach data to get updated reviews
+      const updatedCoach = await getCoachById(currentCoach.id);
+      if (updatedCoach) {
+        setCoach(updatedCoach);
+      }
+    } else {
+      alert('Failed to verify review. Please try again.');
+    }
+  };
+
+  const handleFlagReview = async (reviewId: string) => {
+    if (!currentCoach?.id) return;
+
+    const success = await flagReview(reviewId, currentCoach.id);
+    if (success) {
+      // Refresh coach data to get updated reviews
+      const updatedCoach = await getCoachById(currentCoach.id);
+      if (updatedCoach) {
+        setCoach(updatedCoach);
+      }
+    } else {
+      alert('Failed to flag review. Please try again.');
+    }
+  };
+
+  const handleResetReview = async (reviewId: string) => {
+    if (!currentCoach?.id) return;
+
+    const success = await resetReviewVerification(reviewId, currentCoach.id);
+    if (success) {
+      // Refresh coach data to get updated reviews
+      const updatedCoach = await getCoachById(currentCoach.id);
+      if (updatedCoach) {
+        setCoach(updatedCoach);
+      }
+    } else {
+      alert('Failed to reset review. Please try again.');
+    }
   };
 
   // Update local profile state (doesn't save to database)
@@ -409,13 +455,65 @@ export const CoachDashboard: React.FC = () => {
     }
   };
 
+  // Email validation function (reused from CoachSignup)
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  };
+
+  // Phone validation function (basic check for minimum digits)
+  const validatePhone = (phone: string): boolean => {
+    // Remove all non-digit characters
+    const digitsOnly = phone.replace(/\D/g, '');
+    // Must have at least 10 digits (handles most international formats)
+    return digitsOnly.length >= 10;
+  };
+
   // --- Profile Helpers (use local state, not immediate saves) ---
   const addLink = () => {
-    if (newLink.platform && newLink.url) {
-      const updatedLinks = [...(localProfile?.socialLinks || []), newLink];
-      updateLocalProfile({ socialLinks: updatedLinks });
-      setNewLink({ platform: '', url: '' });
+    if (!newLink.platform || !newLink.url) {
+      alert('Please fill in both the label and value fields.');
+      return;
     }
+
+    // Validate email format
+    if (newLink.type === 'email') {
+      const emailToValidate = newLink.url.replace('mailto:', ''); // Remove mailto: if present
+      if (!validateEmail(emailToValidate)) {
+        alert('Please enter a valid email address (e.g., coach@example.com)');
+        return;
+      }
+      // Ensure mailto: prefix
+      if (!newLink.url.startsWith('mailto:')) {
+        newLink.url = `mailto:${emailToValidate}`;
+      }
+    }
+
+    // Validate phone format
+    if (newLink.type === 'tel') {
+      const phoneToValidate = newLink.url.replace('tel:', ''); // Remove tel: if present
+      if (!validatePhone(phoneToValidate)) {
+        alert('Please enter a valid phone number with at least 10 digits (e.g., +44 7700 900000)');
+        return;
+      }
+      // Ensure tel: prefix
+      if (!newLink.url.startsWith('tel:')) {
+        newLink.url = `tel:${phoneToValidate}`;
+      }
+    }
+
+    // Validate URL format
+    if (newLink.type === 'url' && !newLink.url.startsWith('http://') && !newLink.url.startsWith('https://')) {
+      alert('Please enter a valid URL starting with http:// or https://');
+      return;
+    }
+
+    const updatedLinks = [...(localProfile?.socialLinks || []), {
+      ...newLink,
+      id: `link_${Date.now()}`
+    }];
+    updateLocalProfile({ socialLinks: updatedLinks });
+    setNewLink({ platform: '', url: '', type: 'url' });
   };
 
   const removeLink = (index: number) => {
@@ -603,6 +701,17 @@ export const CoachDashboard: React.FC = () => {
                 Analytics
               </button>
               <button
+                onClick={() => setActiveTab('reviews')}
+                className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
+                  activeTab === 'reviews'
+                    ? 'bg-yellow-50 text-yellow-700 shadow-sm'
+                    : 'text-slate-500 hover:bg-slate-50'
+                }`}
+              >
+                <Star className="h-4 w-4 inline mr-2" />
+                Reviews
+              </button>
+              <button
                 onClick={() => setActiveTab('account')}
                 className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
                   activeTab === 'account'
@@ -659,6 +768,12 @@ export const CoachDashboard: React.FC = () => {
                   className={`w-full flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'analytics' ? 'bg-green-50 text-green-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
                 >
                   <BarChart className={`h-5 w-5 mr-3 ${activeTab === 'analytics' ? 'text-green-600' : 'text-slate-400'}`} /> Analytics
+                </button>
+                <button
+                  onClick={() => setActiveTab('reviews')}
+                  className={`w-full flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'reviews' ? 'bg-yellow-50 text-yellow-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
+                >
+                  <Star className={`h-5 w-5 mr-3 ${activeTab === 'reviews' ? 'text-yellow-600' : 'text-slate-400'}`} /> Reviews
                 </button>
                 <button
                   onClick={() => setActiveTab('account')}
@@ -1140,7 +1255,7 @@ export const CoachDashboard: React.FC = () => {
                   {/* Social Links */}
                   <CollapsibleSection
                     title="Social & Web Links"
-                    subtitle="Your professional online presence"
+                    subtitle="Your professional online presence and contact methods"
                     icon={<LinkIcon className="h-4 w-4" />}
                     defaultOpen={false}
                     gradient="from-slate-50 to-gray-50"
@@ -1152,7 +1267,16 @@ export const CoachDashboard: React.FC = () => {
                         {localProfile?.socialLinks?.map((link, idx) => (
                             <div key={idx} className="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
                                 <div className="flex-grow">
-                                    <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">{link.platform}</p>
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">{link.platform}</p>
+                                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                                        link.type === 'email' ? 'bg-blue-100 text-blue-700' :
+                                        link.type === 'tel' ? 'bg-green-100 text-green-700' :
+                                        'bg-slate-100 text-slate-600'
+                                      }`}>
+                                        {link.type === 'email' ? 'EMAIL' : link.type === 'tel' ? 'PHONE' : 'URL'}
+                                      </span>
+                                    </div>
                                     <p className="text-sm text-brand-700 font-medium truncate">{link.url}</p>
                                 </div>
                                 <button onClick={() => removeLink(idx)} className="text-slate-400 hover:text-red-500 p-2 transition-colors">
@@ -1161,29 +1285,46 @@ export const CoachDashboard: React.FC = () => {
                             </div>
                         ))}
                     </div>
-                    
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <input 
-                            type="text" 
-                            placeholder="Label (e.g. LinkedIn)" 
-                            className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
-                            value={newLink.platform}
-                            onChange={(e) => setNewLink({...newLink, platform: e.target.value})}
-                        />
-                         <input 
-                            type="text" 
-                            placeholder="URL (https://...)" 
-                            className="flex-[2] border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
-                            value={newLink.url}
-                            onChange={(e) => setNewLink({...newLink, url: e.target.value})}
-                        />
-                        <button 
-                            onClick={addLink}
-                            disabled={!newLink.platform || !newLink.url}
-                            className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center shadow-md"
-                        >
-                            <Plus className="h-4 w-4 mr-1" /> Add
-                        </button>
+
+                    <div className="flex flex-col gap-3">
+                        <div className="flex gap-3">
+                          <select
+                            value={newLink.type}
+                            onChange={(e) => setNewLink({...newLink, type: e.target.value as 'url' | 'email' | 'tel'})}
+                            className="border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none bg-white font-bold text-slate-700"
+                          >
+                            <option value="url">Website/Social</option>
+                            <option value="email">Email</option>
+                            <option value="tel">Telephone</option>
+                          </select>
+                          <input
+                              type="text"
+                              placeholder="Label (e.g. LinkedIn, Contact Email, Mobile)"
+                              className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
+                              value={newLink.platform}
+                              onChange={(e) => setNewLink({...newLink, platform: e.target.value})}
+                          />
+                        </div>
+                        <div className="flex gap-3">
+                          <input
+                              type="text"
+                              placeholder={
+                                newLink.type === 'email' ? 'Email address (e.g., coach@example.com)' :
+                                newLink.type === 'tel' ? 'Phone number (e.g., +44 7700 900000)' :
+                                'URL (https://...)'
+                              }
+                              className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
+                              value={newLink.url}
+                              onChange={(e) => setNewLink({...newLink, url: e.target.value})}
+                          />
+                          <button
+                              onClick={addLink}
+                              disabled={!newLink.platform || !newLink.url}
+                              className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center shadow-md"
+                          >
+                              <Plus className="h-4 w-4 mr-1" /> Add
+                          </button>
+                        </div>
                     </div>
                   </CollapsibleSection>
               </div>
@@ -1420,6 +1561,110 @@ export const CoachDashboard: React.FC = () => {
                      />
                    )}
                </div>
+            )}
+
+            {/* ---------------- REVIEWS TAB ---------------- */}
+            {activeTab === 'reviews' && (
+              <div className="space-y-6 animate-fade-in-up">
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-8">
+                  <h2 className="text-2xl font-display font-bold text-slate-900 mb-6">Manage Reviews</h2>
+
+                  {currentCoach?.reviews && currentCoach.reviews.length > 0 ? (
+                    <div className="space-y-4">
+                      {currentCoach.reviews.map((review: Review) => (
+                        <div
+                          key={review.id}
+                          className={`border-2 rounded-xl p-6 transition-all ${
+                            review.verificationStatus === 'verified'
+                              ? 'border-green-200 bg-green-50/30'
+                              : review.verificationStatus === 'flagged'
+                              ? 'border-red-200 bg-red-50/30'
+                              : 'border-slate-200 bg-white'
+                          }`}
+                        >
+                          {/* Review Header */}
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="font-bold text-slate-900">{review.author}</span>
+                                {review.verificationStatus === 'verified' && (
+                                  <div className="flex items-center gap-1 bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-bold">
+                                    <CheckCircle className="h-3 w-3" />
+                                    Verified
+                                  </div>
+                                )}
+                                {review.verificationStatus === 'flagged' && (
+                                  <div className="flex items-center gap-1 bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full font-bold">
+                                    <Flag className="h-3 w-3" />
+                                    Flagged
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Star Rating */}
+                              <div className="flex gap-1 mb-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`h-4 w-4 ${star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'fill-slate-200 text-slate-200'}`}
+                                  />
+                                ))}
+                              </div>
+
+                              <p className="text-sm text-slate-500 mb-1">
+                                Coaching period: {review.coachingPeriod || 'Not specified'}
+                              </p>
+                              <p className="text-xs text-slate-400">
+                                Submitted: {review.date}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Review Text */}
+                          <p className="text-slate-700 mb-4 leading-relaxed">{review.text}</p>
+
+                          {/* Action Buttons */}
+                          <div className="flex gap-3 pt-4 border-t border-slate-200">
+                            {review.verificationStatus !== 'verified' && (
+                              <button
+                                onClick={() => handleVerifyReview(review.id)}
+                                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors text-sm"
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                                Verify Review
+                              </button>
+                            )}
+                            {review.verificationStatus !== 'flagged' && (
+                              <button
+                                onClick={() => handleFlagReview(review.id)}
+                                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors text-sm"
+                              >
+                                <Flag className="h-4 w-4" />
+                                Flag as Fake
+                              </button>
+                            )}
+                            {(review.verificationStatus === 'verified' || review.verificationStatus === 'flagged') && (
+                              <button
+                                onClick={() => handleResetReview(review.id)}
+                                className="flex items-center gap-2 px-4 py-2 bg-slate-600 text-white rounded-lg font-bold hover:bg-slate-700 transition-colors text-sm"
+                              >
+                                <RefreshCw className="h-4 w-4" />
+                                Reset to Unverified
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Star className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                      <p className="text-slate-500 font-medium">No reviews yet</p>
+                      <p className="text-slate-400 text-sm mt-2">Reviews from clients will appear here</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
 
             {/* ---------------- ANALYTICS TAB ---------------- */}

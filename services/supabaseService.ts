@@ -110,38 +110,56 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
     return false;
   }
 
+  // Build update object with only defined fields
+  const updateData: any = {
+    name: coach.name,
+    email: coach.email,
+    phone_number: coach.phoneNumber || null,
+    photo_url: coach.photoUrl,
+    bio: coach.bio || '',
+    location: coach.location,
+    hourly_rate: coach.hourlyRate,
+    years_experience: coach.yearsExperience,
+    is_verified: coach.isVerified,
+    documents_submitted: coach.documentsSubmitted,
+    subscription_status: coach.subscriptionStatus,
+    billing_cycle: coach.billingCycle,
+    two_factor_enabled: coach.twoFactorEnabled,
+  };
+
+  // Add optional fields only if they are defined
+  if (coach.trialEndsAt !== undefined) updateData.trial_ends_at = coach.trialEndsAt;
+  if (coach.lastPaymentDate !== undefined) updateData.last_payment_date = coach.lastPaymentDate;
+
+  // Enhanced profile fields (only add if defined)
+  if (coach.accreditationLevel !== undefined) updateData.accreditation_level = coach.accreditationLevel;
+  if (coach.additionalCertifications !== undefined) updateData.additional_certifications = coach.additionalCertifications;
+  if (coach.coachingHours !== undefined) updateData.coaching_hours = coach.coachingHours;
+  if (coach.locationRadius !== undefined) updateData.location_radius = coach.locationRadius;
+  if (coach.qualifications !== undefined) updateData.qualifications = coach.qualifications;
+  if (coach.acknowledgements !== undefined) updateData.acknowledgements = coach.acknowledgements;
+  if (coach.coachingExpertise !== undefined) updateData.coaching_expertise = coach.coachingExpertise;
+  if (coach.cpdQualifications !== undefined) updateData.cpd_qualifications = coach.cpdQualifications;
+  if (coach.coachingLanguages !== undefined) updateData.coaching_languages = coach.coachingLanguages;
+
+  // Cancellation fields (only add if defined)
+  if (coach.cancelledAt !== undefined) updateData.cancelled_at = coach.cancelledAt;
+  if (coach.subscriptionEndsAt !== undefined) updateData.subscription_ends_at = coach.subscriptionEndsAt;
+  if (coach.cancelReason !== undefined) updateData.cancel_reason = coach.cancelReason;
+  if (coach.cancelFeedback !== undefined) updateData.cancel_feedback = coach.cancelFeedback;
+  if (coach.dataRetentionPreference !== undefined) updateData.data_retention_preference = coach.dataRetentionPreference;
+  if (coach.scheduledDeletionAt !== undefined) updateData.scheduled_deletion_at = coach.scheduledDeletionAt;
+
   // Update main coach record
   const { error: coachError } = await supabase
     .from('coaches')
-    .update({
-      name: coach.name,
-      email: coach.email,
-      phone_number: coach.phoneNumber,
-      photo_url: coach.photoUrl,
-      bio: coach.bio,
-      location: coach.location,
-      hourly_rate: coach.hourlyRate,
-      years_experience: coach.yearsExperience,
-      is_verified: coach.isVerified,
-      documents_submitted: coach.documentsSubmitted,
-      subscription_status: coach.subscriptionStatus,
-      billing_cycle: coach.billingCycle,
-      trial_ends_at: coach.trialEndsAt,
-      last_payment_date: coach.lastPaymentDate,
-      two_factor_enabled: coach.twoFactorEnabled,
-      // Cancellation fields
-      cancelled_at: coach.cancelledAt,
-      subscription_ends_at: coach.subscriptionEndsAt,
-      cancel_reason: coach.cancelReason,
-      cancel_feedback: coach.cancelFeedback,
-      data_retention_preference: coach.dataRetentionPreference,
-      scheduled_deletion_at: coach.scheduledDeletionAt,
-    })
+    .update(updateData)
     .eq('id', coach.id)
     .eq('user_id', user.id);
 
   if (coachError) {
     console.error('Error updating coach:', coachError);
+    console.error('Error details:', coachError.message, coachError.details, coachError.hint);
     return false;
   }
 
@@ -154,8 +172,14 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   // Update certifications
   await updateCoachCertifications(coach.id, coach.certifications);
 
-  // Update social links
-  await updateCoachSocialLinks(coach.id, coach.socialLinks || []);
+  // Update social links with error handling
+  try {
+    await updateCoachSocialLinks(coach.id, coach.socialLinks || []);
+  } catch (error: any) {
+    console.error('[updateCoach] Failed to update social links:', error);
+    // Don't fail the entire update if social links fail
+    // User will see their other changes saved, and we'll log the specific error
+  }
 
   return true;
 };
@@ -274,7 +298,9 @@ export const addReview = async (
   coachId: string,
   authorName: string,
   rating: number,
-  reviewText: string
+  reviewText: string,
+  coachingPeriod: string,
+  location?: string
 ): Promise<Review | null> => {
   const { data: review, error } = await supabase
     .from('reviews')
@@ -283,6 +309,8 @@ export const addReview = async (
       author_name: authorName,
       rating,
       review_text: reviewText,
+      coaching_period: coachingPeriod,
+      reviewer_location: location || null,
     })
     .select()
     .single();
@@ -315,6 +343,90 @@ export const toggleFlagReview = async (
 
   if (error) {
     console.error('Error flagging review:', error);
+    return false;
+  }
+
+  return true;
+};
+
+export const addCoachReply = async (
+  reviewId: string,
+  coachReply: string
+): Promise<Review | null> => {
+  const { data: review, error } = await supabase
+    .from('reviews')
+    .update({
+      coach_reply: coachReply,
+      coach_reply_date: new Date().toISOString(),
+    })
+    .eq('id', reviewId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error adding coach reply:', error);
+    return null;
+  }
+
+  return mapReview(review);
+};
+
+export const verifyReview = async (
+  reviewId: string,
+  coachId: string
+): Promise<boolean> => {
+  const { error } = await supabase
+    .from('reviews')
+    .update({
+      verification_status: 'verified',
+      verified_at: new Date().toISOString(),
+    })
+    .eq('id', reviewId)
+    .eq('coach_id', coachId);
+
+  if (error) {
+    console.error('Error verifying review:', error);
+    return false;
+  }
+
+  return true;
+};
+
+export const flagReview = async (
+  reviewId: string,
+  coachId: string
+): Promise<boolean> => {
+  const { error } = await supabase
+    .from('reviews')
+    .update({
+      verification_status: 'flagged',
+    })
+    .eq('id', reviewId)
+    .eq('coach_id', coachId);
+
+  if (error) {
+    console.error('Error flagging review:', error);
+    return false;
+  }
+
+  return true;
+};
+
+export const resetReviewVerification = async (
+  reviewId: string,
+  coachId: string
+): Promise<boolean> => {
+  const { error } = await supabase
+    .from('reviews')
+    .update({
+      verification_status: 'unverified',
+      verified_at: null,
+    })
+    .eq('id', reviewId)
+    .eq('coach_id', coachId);
+
+  if (error) {
+    console.error('Error resetting review verification:', error);
     return false;
   }
 
@@ -424,10 +536,19 @@ const updateCoachCertifications = async (coachId: string, certifications: string
 };
 
 const updateCoachSocialLinks = async (coachId: string, socialLinks: SocialLink[]) => {
-  await supabase.from('social_links').delete().eq('coach_id', coachId);
+  console.log('[updateCoachSocialLinks] Updating social links for coach:', coachId, 'Links:', socialLinks);
 
+  // Delete existing social links
+  const { error: deleteError } = await supabase.from('social_links').delete().eq('coach_id', coachId);
+
+  if (deleteError) {
+    console.error('[updateCoachSocialLinks] Error deleting existing social links:', deleteError);
+    throw new Error(`Failed to delete social links: ${deleteError.message}`);
+  }
+
+  // Insert new social links
   if (socialLinks.length > 0) {
-    await supabase.from('social_links').insert(
+    const { error: insertError } = await supabase.from('social_links').insert(
       socialLinks.map((link, index) => ({
         coach_id: coachId,
         platform: link.platform,
@@ -435,6 +556,15 @@ const updateCoachSocialLinks = async (coachId: string, socialLinks: SocialLink[]
         display_order: index,
       }))
     );
+
+    if (insertError) {
+      console.error('[updateCoachSocialLinks] Error inserting social links:', insertError);
+      throw new Error(`Failed to insert social links: ${insertError.message}`);
+    }
+
+    console.log('[updateCoachSocialLinks] Successfully saved', socialLinks.length, 'social links');
+  } else {
+    console.log('[updateCoachSocialLinks] No social links to save (empty array)');
   }
 };
 
@@ -463,6 +593,19 @@ const mapCoachProfile = (data: any): Coach => {
     lastPaymentDate: data.last_payment_date,
     twoFactorEnabled: data.two_factor_enabled || false,
 
+    // Enhanced profile fields
+    accreditationLevel: data.accreditation_level,
+    additionalCertifications: data.additional_certifications,
+    coachingHours: data.coaching_hours,
+    locationRadius: data.location_radius,
+    qualifications: data.qualifications,
+    acknowledgements: data.acknowledgements,
+    averageRating: data.average_rating,
+    totalReviews: data.total_reviews,
+    coachingExpertise: data.coaching_expertise,
+    cpdQualifications: data.cpd_qualifications,
+    coachingLanguages: data.coaching_languages,
+
     // Cancellation tracking (Phase 2)
     cancelledAt: data.cancelled_at,
     subscriptionEndsAt: data.subscription_ends_at,
@@ -488,11 +631,20 @@ const mapCoachProfiles = (data: any[]): Coach[] => {
 const mapReview = (data: any): Review => {
   return {
     id: data.id,
+    coachId: data.coach_id,
     author: data.author_name,
+    authorPhotoUrl: data.author_photo_url,
     rating: data.rating,
     text: data.review_text || '',
     isFlagged: data.is_flagged || false,
     date: new Date(data.created_at).toISOString().split('T')[0],
+    isVerifiedClient: data.is_verified_client || false,
+    coachReply: data.coach_reply || undefined,
+    coachReplyDate: data.coach_reply_date ? new Date(data.coach_reply_date).toISOString().split('T')[0] : undefined,
+    coachingPeriod: data.coaching_period || undefined,
+    verificationStatus: data.verification_status || 'unverified',
+    verifiedAt: data.verified_at ? new Date(data.verified_at).toISOString().split('T')[0] : undefined,
+    location: data.reviewer_location || undefined,
   };
 };
 

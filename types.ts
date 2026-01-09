@@ -227,18 +227,25 @@ export interface SocialLink {
   id?: string;
   platform: string;
   url: string;
+  type?: 'url' | 'email' | 'tel'; // New: identify if it's a URL, email, or telephone
 }
 
 export interface Review {
   id: string;
   coachId: string;
-  author: string;
+  author: string; // First name + last initial (e.g., "John S.")
   authorPhotoUrl?: string;
   rating: number; // 1-5
   text: string;
   isFlagged: boolean;
   date: string;
-  isVerifiedClient?: boolean; // Did they actually book with this coach?
+  isVerifiedClient?: boolean; // Legacy field - now using verificationStatus
+  coachReply?: string; // Coach's response to the review
+  coachReplyDate?: string; // When the coach replied
+  coachingPeriod?: string; // When coaching took place (e.g., "December 2024")
+  verificationStatus?: 'unverified' | 'verified' | 'flagged'; // Coach-managed verification
+  verifiedAt?: string; // When coach verified the review
+  location?: string; // General location of reviewer (e.g., "Cardiff, Wales")
 }
 
 export interface Acknowledgement {
