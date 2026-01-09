@@ -122,8 +122,20 @@ export const CoachSignup: React.FC = () => {
     }
   };
 
+  const validateEmail = (email: string): boolean => {
+    // RFC 5322 compliant email regex pattern
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  };
+
   const handleStep1Submit = async () => {
     setSignupError('');
+
+    // Validate email format first
+    if (!validateEmail(formData.email)) {
+      setSignupError('Please enter a valid email address (e.g., jane@coaching.com)');
+      return;
+    }
 
     // Validate password strength
     if (passwordStrength.score < 3) {

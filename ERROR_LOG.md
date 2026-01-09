@@ -821,6 +821,85 @@ Manual configuration in Supabase dashboard.
 
 ---
 
+### ERROR-011: Weak Email Validation Allowing Invalid Signup
+**Date:** 9 January 2026
+**Status:** ✅ RESOLVED
+**Severity:** 🔴 HIGH (Security & Data Quality Issue)
+
+**Issue:**
+```
+User was able to bypass signup form with single letter email (e.g., "a")
+No frontend email format validation
+No database constraint to prevent invalid emails
+```
+
+**Details:**
+- CoachSignup.tsx had no email format validation before Step 1 submission
+- User could enter "a", "invalid", or any text without @ symbol
+- Database accepted any string in email column
+- Invalid emails stored in production database
+- Verification emails sent to invalid addresses (wasted resources)
+
+**Root Cause:**
+Missing validation at both frontend and backend layers:
+1. Frontend: No regex check on email format before submission
+2. Backend: No PostgreSQL CHECK constraint on coaches.email column
+
+**Solution:**
+
+**Frontend (CoachSignup.tsx:125-129):**
+```typescript
+const validateEmail = (email: string): boolean => {
+  // RFC 5322 compliant email regex pattern
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailRegex.test(email);
+};
+
+// Called in handleStep1Submit() before password and age checks
+if (!validateEmail(formData.email)) {
+  setSignupError('Please enter a valid email address (e.g., jane@coaching.com)');
+  return;
+}
+```
+
+**Backend (add_email_validation_constraint.sql):**
+```sql
+ALTER TABLE coaches
+ADD CONSTRAINT coaches_email_format_check
+CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
+```
+
+**Validation Order in Step 1:**
+1. Email format validation (NEW - instant feedback)
+2. Password strength check (existing)
+3. Duplicate email check (existing - async)
+4. Age verification (existing)
+
+**Files Modified:**
+- `/pages/CoachSignup.tsx` - Added `validateEmail()` function and validation call
+
+**Files Created:**
+- `/add_email_validation_constraint.sql` - Database constraint migration
+
+**Testing:**
+- ✅ Invalid email "a" rejected with clear error message
+- ✅ Invalid email "user@" rejected
+- ✅ Invalid email "@domain.com" rejected
+- ✅ Valid email "jane@coaching.com" accepted
+- ✅ Valid email "john.doe+tag@example.co.uk" accepted
+
+**Prevention:**
+- Always validate user input at multiple layers (frontend, backend, database)
+- Use regex patterns for format validation
+- Add database constraints for critical fields
+- Test with edge cases (single char, no @, no domain, etc.)
+
+**Related Issues:**
+- Part of larger signup flow improvements documented in plan file
+- Complements existing duplicate email check (ERROR-007)
+
+---
+
 ## Development Best Practices
 
 Based on errors encountered, these practices should be followed:

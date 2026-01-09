@@ -34,6 +34,8 @@ import { TrialExpiredModal } from '../components/subscription/TrialExpiredModal'
 import { ProfileViewsChart } from '../components/analytics/ProfileViewsChart';
 import { useTrialStatus } from '../hooks/useTrialStatus';
 import { ImageUpload } from '../components/ImageUpload';
+import { MultiSelect } from '../components/forms/MultiSelect';
+import { CollapsibleSection } from '../components/forms/CollapsibleSection';
 
 const AVAILABLE_SPECIALTIES: Specialty[] = [
   'Career Growth',
@@ -181,6 +183,14 @@ export const CoachDashboard: React.FC = () => {
   const [isTrialExpiredModalOpen, setIsTrialExpiredModalOpen] = useState(false);
   const trialStatus = useTrialStatus(currentCoach);
 
+  // Toast Notification State
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000); // Auto-dismiss after 4 seconds
+  };
+
   // Redirect to login if not authenticated
   useEffect(() => {
     console.log('[CoachDashboard] Auth state:', { authLoading, hasCoach: !!currentCoach, hasRedirected: hasRedirected.current });
@@ -276,9 +286,9 @@ export const CoachDashboard: React.FC = () => {
     if (success) {
       await refreshCoach(); // Refresh auth context with updated data
       setHasUnsavedChanges(false);
-      alert('✓ Profile updated successfully!');
+      showToast('Profile updated successfully!', 'success');
     } else {
-      alert('⚠ Failed to save changes. Please try again.');
+      showToast('Failed to save changes. Please try again.', 'error');
     }
     setIsSaving(false);
   };
@@ -291,9 +301,9 @@ export const CoachDashboard: React.FC = () => {
     const success = await updateCoach(updated);
     if (success) {
       await refreshCoach(); // Refresh auth context with updated data
-      alert('✓ Profile updated successfully!');
+      showToast('Profile updated successfully!', 'success');
     } else {
-      alert('⚠ Failed to save changes. Please try again.');
+      showToast('Failed to save changes. Please try again.', 'error');
     }
   };
 
@@ -500,6 +510,48 @@ export const CoachDashboard: React.FC = () => {
 
   return (
     <div className="bg-slate-50 min-h-screen">
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-24 right-4 z-[10000] animate-fade-in-up shadow-2xl rounded-xl border-2 ${
+          toast.type === 'success'
+            ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300'
+            : 'bg-gradient-to-r from-red-50 to-rose-50 border-red-300'
+        }`}>
+          <div className="flex items-center gap-3 px-6 py-4">
+            {toast.type === 'success' ? (
+              <div className="bg-green-500 p-2 rounded-full flex-shrink-0">
+                <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            ) : (
+              <div className="bg-red-500 p-2 rounded-full flex-shrink-0">
+                <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+            )}
+            <div>
+              <p className={`font-display font-bold text-base ${
+                toast.type === 'success' ? 'text-green-900' : 'text-red-900'
+              }`}>
+                {toast.message}
+              </p>
+            </div>
+            <button
+              onClick={() => setToast(null)}
+              className={`ml-4 flex-shrink-0 hover:opacity-70 transition-opacity ${
+                toast.type === 'success' ? 'text-green-700' : 'text-red-700'
+              }`}
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Dashboard Banner Gradient */}
       <div className="bg-gradient-to-r from-teal-600 to-indigo-700 h-48 w-full absolute top-20 left-0 z-0"></div>
@@ -766,11 +818,16 @@ export const CoachDashboard: React.FC = () => {
                   </div>
 
                   {/* Professional Credentials Section */}
-                  <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-100 space-y-6">
-                      <h3 className="text-sm font-extrabold text-indigo-900 flex items-center uppercase tracking-widest">
-                        <Award className="h-4 w-4 mr-2" /> Professional Credentials
-                      </h3>
-
+                  <CollapsibleSection
+                    title="Professional Credentials"
+                    subtitle="Your coaching accreditation and experience"
+                    icon={<Award className="h-4 w-4" />}
+                    defaultOpen={false}
+                    gradient="from-indigo-50 to-purple-50"
+                    borderColor="border-indigo-100"
+                    iconBgColor="bg-indigo-100"
+                    iconTextColor="text-indigo-600"
+                  >
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           {/* Accreditation Level */}
                           <div>
@@ -804,28 +861,16 @@ export const CoachDashboard: React.FC = () => {
                           </div>
                       </div>
 
-                      {/* Additional Certifications */}
+                      {/* Additional Certifications - Now MultiSelect */}
                       <div>
                         <label className="block text-sm font-bold text-slate-700 mb-3">Additional Certifications</label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {['Mental Health First Aid Trained', 'Trauma Informed', 'Diversity & Inclusion Certified', 'Child & Adolescent Specialist', 'Corporate Coaching Certified', 'NLP Practitioner', 'CBT Trained'].map(cert => (
-                            <label key={cert} className="flex items-center cursor-pointer p-3 rounded-lg bg-white hover:bg-indigo-50 border border-slate-200 transition-colors">
-                              <input
-                                type="checkbox"
-                                checked={localProfile?.additionalCertifications?.includes(cert as any) || false}
-                                onChange={(e) => {
-                                  const current = localProfile?.additionalCertifications || [];
-                                  const updated = e.target.checked
-                                    ? [...current, cert as any]
-                                    : current.filter(c => c !== cert);
-                                  updateLocalProfile({additionalCertifications: updated});
-                                }}
-                                className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300 rounded"
-                              />
-                              <span className="ml-3 text-xs font-medium text-slate-700">{cert}</span>
-                            </label>
-                          ))}
-                        </div>
+                        <MultiSelect
+                          options={['Mental Health First Aid Trained', 'Trauma Informed', 'Diversity & Inclusion Certified', 'Child & Adolescent Specialist', 'Corporate Coaching Certified', 'NLP Practitioner', 'CBT Trained']}
+                          selected={localProfile?.additionalCertifications || []}
+                          onChange={(selected) => updateLocalProfile({additionalCertifications: selected as any})}
+                          placeholder="Select certifications..."
+                          searchPlaceholder="Search certifications..."
+                        />
                       </div>
 
                       {/* Location Radius */}
@@ -839,110 +884,96 @@ export const CoachDashboard: React.FC = () => {
                           className="w-full border border-slate-200 bg-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-slate-800"
                         />
                       </div>
-
-                  </div>
+                  </CollapsibleSection>
 
                   {/* Coaching Expertise Section */}
-                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100 space-y-6">
-                    <h3 className="text-sm font-extrabold text-purple-900 flex items-center uppercase tracking-widest">
-                      <Sparkles className="h-4 w-4 mr-2" /> Coaching Areas of Expertise
-                    </h3>
-                    <p className="text-xs text-slate-600">Select specific areas where you specialize (helps clients find you)</p>
-
+                  <CollapsibleSection
+                    title="Coaching Areas of Expertise"
+                    subtitle="Select specific areas where you specialize (helps clients find you)"
+                    icon={<Sparkles className="h-4 w-4" />}
+                    defaultOpen={false}
+                    gradient="from-purple-50 to-pink-50"
+                    borderColor="border-purple-100"
+                    iconBgColor="bg-purple-100"
+                    iconTextColor="text-purple-600"
+                  >
                     {Object.entries(COACHING_EXPERTISE_BY_CATEGORY).map(([category, options]) => (
-                      <div key={category} className="bg-white rounded-xl p-4 border border-purple-100">
-                        <h4 className="text-sm font-bold text-slate-900 mb-3">{category}</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                          {options.map(expertise => (
-                            <label key={expertise} className="flex items-center cursor-pointer p-2 rounded-lg hover:bg-purple-50 transition-colors">
-                              <input
-                                type="checkbox"
-                                checked={localProfile?.coachingExpertise?.includes(expertise) || false}
-                                onChange={(e) => {
-                                  const current = localProfile?.coachingExpertise || [];
-                                  const updated = e.target.checked
-                                    ? [...current, expertise]
-                                    : current.filter(c => c !== expertise);
-                                  updateLocalProfile({coachingExpertise: updated});
-                                }}
-                                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                              />
-                              <span className="ml-2 text-xs font-medium text-slate-700">{expertise}</span>
-                            </label>
-                          ))}
-                        </div>
+                      <div key={category}>
+                        <label className="block text-sm font-bold text-slate-900 mb-2">{category}</label>
+                        <MultiSelect
+                          options={options}
+                          selected={localProfile?.coachingExpertise?.filter(e => options.includes(e as any)) || []}
+                          onChange={(selected) => {
+                            const current = localProfile?.coachingExpertise || [];
+                            const otherCategories = current.filter(e => !options.includes(e as any));
+                            const updated = [...otherCategories, ...selected] as CoachingExpertise[];
+                            updateLocalProfile({coachingExpertise: updated});
+                          }}
+                          placeholder={`Select ${category.toLowerCase()} areas...`}
+                          searchPlaceholder="Search areas..."
+                          maxHeight="300px"
+                        />
                       </div>
                     ))}
-                  </div>
+                  </CollapsibleSection>
 
                   {/* CPD Qualifications Section */}
-                  <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl p-6 border border-teal-100 space-y-4">
-                    <h3 className="text-sm font-extrabold text-teal-900 flex items-center uppercase tracking-widest">
-                      <Award className="h-4 w-4 mr-2" /> CPD Qualifications & Certifications
-                    </h3>
-                    <p className="text-xs text-slate-600">Additional professional development certifications you hold</p>
-
-                    <div className="bg-white rounded-xl p-4 border border-teal-100">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {CPD_QUALIFICATIONS.map(qual => (
-                          <label key={qual} className="flex items-center cursor-pointer p-2 rounded-lg hover:bg-teal-50 transition-colors">
-                            <input
-                              type="checkbox"
-                              checked={localProfile?.cpdQualifications?.includes(qual) || false}
-                              onChange={(e) => {
-                                const current = localProfile?.cpdQualifications || [];
-                                const updated = e.target.checked
-                                  ? [...current, qual]
-                                  : current.filter(c => c !== qual);
-                                updateLocalProfile({cpdQualifications: updated});
-                              }}
-                              className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
-                            />
-                            <span className="ml-2 text-xs font-medium text-slate-700">{qual}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                  <CollapsibleSection
+                    title="CPD Qualifications & Certifications"
+                    subtitle="Additional professional development certifications you hold"
+                    icon={<Award className="h-4 w-4" />}
+                    defaultOpen={false}
+                    gradient="from-teal-50 to-cyan-50"
+                    borderColor="border-teal-100"
+                    iconBgColor="bg-teal-100"
+                    iconTextColor="text-teal-600"
+                  >
+                    <MultiSelect
+                      options={CPD_QUALIFICATIONS}
+                      selected={localProfile?.cpdQualifications || []}
+                      onChange={(selected) => updateLocalProfile({cpdQualifications: selected})}
+                      placeholder="Select CPD qualifications..."
+                      searchPlaceholder="Search qualifications (e.g., ICF, EMCC, ILM)..."
+                      maxHeight="400px"
+                    />
+                  </CollapsibleSection>
 
                   {/* Languages Section (Enhanced) */}
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100 space-y-4">
-                    <h3 className="text-sm font-extrabold text-blue-900 flex items-center uppercase tracking-widest">
-                      <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <CollapsibleSection
+                    title="Coaching Languages"
+                    subtitle="Languages in which you offer coaching sessions"
+                    icon={
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
                       </svg>
-                      Coaching Languages
-                    </h3>
-                    <p className="text-xs text-slate-600">Languages in which you offer coaching sessions</p>
-
-                    <div className="bg-white rounded-xl p-4 border border-blue-100">
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                        {COACHING_LANGUAGES.map(lang => (
-                          <label key={lang} className="flex items-center cursor-pointer p-2 rounded-lg hover:bg-blue-50 transition-colors">
-                            <input
-                              type="checkbox"
-                              checked={localProfile?.coachingLanguages?.includes(lang) || false}
-                              onChange={(e) => {
-                                const current = localProfile?.coachingLanguages || [];
-                                const updated = e.target.checked
-                                  ? [...current, lang]
-                                  : current.filter(c => c !== lang);
-                                updateLocalProfile({coachingLanguages: updated});
-                              }}
-                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <span className="ml-2 text-xs font-medium text-slate-700">{lang}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                    }
+                    defaultOpen={false}
+                    gradient="from-blue-50 to-indigo-50"
+                    borderColor="border-blue-100"
+                    iconBgColor="bg-blue-100"
+                    iconTextColor="text-blue-600"
+                  >
+                    <MultiSelect
+                      options={COACHING_LANGUAGES}
+                      selected={localProfile?.coachingLanguages || []}
+                      onChange={(selected) => updateLocalProfile({coachingLanguages: selected})}
+                      placeholder="Select languages..."
+                      searchPlaceholder="Search languages..."
+                      maxHeight="400px"
+                    />
+                  </CollapsibleSection>
 
                   {/* Qualifications Section */}
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
-                        <div className="bg-slate-100 p-1.5 rounded mr-2 text-slate-600"><GraduationCap className="h-4 w-4" /></div> Qualifications
-                    </h3>
+                  <CollapsibleSection
+                    title="Qualifications"
+                    subtitle="Your academic and professional qualifications"
+                    icon={<GraduationCap className="h-4 w-4" />}
+                    defaultOpen={false}
+                    gradient="from-green-50 to-emerald-50"
+                    borderColor="border-green-100"
+                    iconBgColor="bg-green-100"
+                    iconTextColor="text-green-600"
+                  >
                     <div className="space-y-3 mb-4">
                         {localProfile?.qualifications?.map((qual, idx) => (
                             <div key={idx} className="flex items-start space-x-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
@@ -1005,20 +1036,38 @@ export const CoachDashboard: React.FC = () => {
                             <Plus className="h-4 w-4 mr-1" /> Add Qualification
                         </button>
                     </div>
-                  </div>
+                  </CollapsibleSection>
 
                   {/* Acknowledgements Section */}
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
-                        <div className="bg-slate-100 p-1.5 rounded mr-2 text-slate-600"><Trophy className="h-4 w-4" /></div> Acknowledgements & Awards
-                    </h3>
+                  <CollapsibleSection
+                    title="Acknowledgements & Awards"
+                    subtitle="Professional recognition and achievements"
+                    icon={<Trophy className="h-4 w-4" />}
+                    defaultOpen={false}
+                    gradient="from-amber-50 to-yellow-50"
+                    borderColor="border-amber-100"
+                    iconBgColor="bg-amber-100"
+                    iconTextColor="text-amber-600"
+                  >
                     <div className="space-y-3 mb-4">
-                        {localProfile?.acknowledgements?.map((ack, idx) => (
+                        {localProfile?.acknowledgements?.map((ack, idx) => {
+                          const iconMap: { [key: string]: string } = {
+                            'trophy': '🏆',
+                            'star': '⭐',
+                            'medal': '🏅',
+                            'award': '🎖️',
+                            'certificate': '📜',
+                            'crown': '👑',
+                            'ribbon': '🎗️'
+                          };
+                          return (
                             <div key={idx} className="flex items-start space-x-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                {ack.icon && (
+                                  <div className="text-2xl flex-shrink-0">{iconMap[ack.icon] || '🏆'}</div>
+                                )}
                                 <div className="flex-grow">
                                     <p className="text-sm font-bold text-slate-900">{ack.title}</p>
                                     <div className="flex items-center gap-2 mt-1">
-                                      {ack.icon && <span className="text-xs text-slate-500">Icon: {ack.icon}</span>}
                                       {ack.year && <span className="text-xs text-slate-500">{ack.year}</span>}
                                     </div>
                                 </div>
@@ -1032,7 +1081,8 @@ export const CoachDashboard: React.FC = () => {
                                     <Trash2 className="h-4 w-4" />
                                 </button>
                             </div>
-                        ))}
+                          );
+                        })}
                     </div>
 
                     <div className="flex flex-col gap-3 bg-white p-4 rounded-xl border border-slate-200">
@@ -1044,13 +1094,20 @@ export const CoachDashboard: React.FC = () => {
                             onChange={(e) => setNewAcknowledgement({...newAcknowledgement, title: e.target.value})}
                         />
                         <div className="grid grid-cols-2 gap-3">
-                          <input
-                              type="text"
-                              placeholder="Icon (e.g., star, trophy)"
-                              className="border border-slate-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
+                          <select
+                              className="border border-slate-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none bg-white"
                               value={newAcknowledgement.icon || ''}
                               onChange={(e) => setNewAcknowledgement({...newAcknowledgement, icon: e.target.value})}
-                          />
+                          >
+                              <option value="">Select icon (optional)</option>
+                              <option value="trophy">🏆 Trophy</option>
+                              <option value="star">⭐ Star</option>
+                              <option value="medal">🏅 Medal</option>
+                              <option value="award">🎖️ Award</option>
+                              <option value="certificate">📜 Certificate</option>
+                              <option value="crown">👑 Crown</option>
+                              <option value="ribbon">🎗️ Ribbon</option>
+                          </select>
                           <input
                               type="number"
                               placeholder="Year (optional)"
@@ -1078,13 +1135,19 @@ export const CoachDashboard: React.FC = () => {
                             <Plus className="h-4 w-4 mr-1" /> Add Acknowledgement
                         </button>
                     </div>
-                  </div>
+                  </CollapsibleSection>
 
                   {/* Social Links */}
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
-                        <div className="bg-slate-100 p-1.5 rounded mr-2 text-slate-600"><LinkIcon className="h-4 w-4" /></div> Social & Web Links
-                    </h3>
+                  <CollapsibleSection
+                    title="Social & Web Links"
+                    subtitle="Your professional online presence"
+                    icon={<LinkIcon className="h-4 w-4" />}
+                    defaultOpen={false}
+                    gradient="from-slate-50 to-gray-50"
+                    borderColor="border-slate-200"
+                    iconBgColor="bg-slate-100"
+                    iconTextColor="text-slate-600"
+                  >
                     <div className="space-y-3 mb-4">
                         {localProfile?.socialLinks?.map((link, idx) => (
                             <div key={idx} className="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
@@ -1122,7 +1185,7 @@ export const CoachDashboard: React.FC = () => {
                             <Plus className="h-4 w-4 mr-1" /> Add
                         </button>
                     </div>
-                  </div>
+                  </CollapsibleSection>
               </div>
             )}
 
