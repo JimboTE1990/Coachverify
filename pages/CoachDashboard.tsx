@@ -810,7 +810,33 @@ export const CoachDashboard: React.FC = () => {
 
             {/* ---------------- PROFILE TAB ---------------- */}
             {activeTab === 'profile' && (
-              <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-8 space-y-8 animate-fade-in-up">
+              <div className="space-y-6">
+                {/* Upgrade CTA for unpaid trial users */}
+                {currentCoach.subscriptionStatus === 'trial' && !currentCoach.billingCycle && (
+                  <div className="bg-gradient-to-br from-brand-600 via-indigo-600 to-purple-600 rounded-2xl shadow-2xl border border-brand-700 p-6 text-white animate-fade-in">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                      <div className="text-center md:text-left">
+                        <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          <h3 className="text-xl font-bold">Upgrade to Keep Your Profile Live</h3>
+                        </div>
+                        <p className="text-brand-100 text-sm">
+                          Your trial ends on {currentCoach.trialEndsAt ? new Date(currentCoach.trialEndsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }) : 'soon'}. Choose a plan to stay visible to clients.
+                        </p>
+                      </div>
+                      <Link
+                        to="/pricing"
+                        className="bg-white text-brand-600 px-6 py-3 rounded-xl font-bold hover:bg-brand-50 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 whitespace-nowrap"
+                      >
+                        View Plans
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-8 space-y-8 animate-fade-in-up">
                   <div className="flex justify-between items-center border-b border-slate-100 pb-6">
                     <div className="flex items-center">
                         <div className="bg-brand-100 p-2 rounded-lg mr-4 text-brand-600">
@@ -1337,6 +1363,7 @@ export const CoachDashboard: React.FC = () => {
                         </div>
                     </div>
                   </CollapsibleSection>
+              </div>
               </div>
             )}
 
