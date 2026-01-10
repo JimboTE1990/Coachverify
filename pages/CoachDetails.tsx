@@ -238,6 +238,21 @@ export const CoachDetails: React.FC = () => {
     return url.startsWith('tel:') || url.startsWith('+') || platform.includes('phone') || platform.includes('tel') || platform.includes('mobile');
   }) || [];
 
+  // Find booking/appointment link for "Schedule a Call" button
+  const bookingLink = coach?.socialLinks?.find(link => {
+    const platform = link.platform?.toLowerCase() || '';
+    const url = link.url?.toLowerCase() || '';
+    return (
+      platform.includes('booking') ||
+      platform.includes('appointment') ||
+      platform.includes('schedule') ||
+      platform.includes('calendly') ||
+      platform.includes('cal.com') ||
+      url.includes('calendly.com') ||
+      url.includes('cal.com')
+    );
+  });
+
   const nextReview = () => {
     if (coach.reviews && currentReviewIndex < coach.reviews.length - 1) {
       setCurrentReviewIndex(currentReviewIndex + 1);
@@ -674,17 +689,30 @@ export const CoachDetails: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="px-6 pb-8 space-y-4">
-            {/* Contact Coach Button with Dropdown */}
+            {/* Schedule a Call / Contact Coach Button */}
             <div className="relative">
-              <button
-                onClick={() => setShowContactOptions(!showContactOptions)}
-                className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 text-black font-black py-5 rounded-2xl text-xl shadow-xl hover:shadow-2xl hover:from-cyan-600 hover:to-cyan-700 transition-all transform hover:-translate-y-0.5"
-              >
-                Contact Coach for More Details
-              </button>
+              {bookingLink ? (
+                // If booking link exists, show "Schedule a Call" button with direct link
+                <a
+                  href={bookingLink.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 text-black font-black py-5 rounded-2xl text-xl shadow-xl hover:shadow-2xl hover:from-cyan-600 hover:to-cyan-700 transition-all transform hover:-translate-y-0.5 flex items-center justify-center"
+                >
+                  Schedule a Call
+                </a>
+              ) : (
+                // If no booking link, show "Contact Coach" button with dropdown
+                <button
+                  onClick={() => setShowContactOptions(!showContactOptions)}
+                  className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 text-black font-black py-5 rounded-2xl text-xl shadow-xl hover:shadow-2xl hover:from-cyan-600 hover:to-cyan-700 transition-all transform hover:-translate-y-0.5"
+                >
+                  Contact Coach for More Details
+                </button>
+              )}
 
-              {/* Contact Options Dropdown */}
-              {showContactOptions && (emailContacts.length > 0 || phoneContacts.length > 0) && (
+              {/* Contact Options Dropdown - Only show if no booking link */}
+              {!bookingLink && showContactOptions && (emailContacts.length > 0 || phoneContacts.length > 0) && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border-2 border-cyan-500 shadow-2xl z-50 animate-fade-in max-h-96 overflow-y-auto">
                   {/* Email Options */}
                   {emailContacts.length > 0 && (
@@ -738,8 +766,8 @@ export const CoachDetails: React.FC = () => {
                 </div>
               )}
 
-              {/* No Contact Info Available */}
-              {showContactOptions && emailContacts.length === 0 && phoneContacts.length === 0 && (
+              {/* No Contact Info Available - Only show if no booking link */}
+              {!bookingLink && showContactOptions && emailContacts.length === 0 && phoneContacts.length === 0 && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border-2 border-slate-300 shadow-2xl z-50 p-6 text-center animate-fade-in">
                   <p className="text-slate-600">No contact information available yet.</p>
                 </div>
