@@ -152,7 +152,7 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
 
   // Update main coach record
   const { error: coachError } = await supabase
-    .from('coaches')
+    .from('coach_profiles')
     .update(updateData)
     .eq('id', coach.id)
     .eq('user_id', user.id);
