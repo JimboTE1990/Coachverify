@@ -51,37 +51,42 @@ export const Questionnaire: React.FC = () => {
       {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex justify-between mb-2">
-          <span className="text-xs font-semibold tracking-wide uppercase text-brand-600">Step {step} of 7</span>
-          <span className="text-xs font-semibold text-slate-400">{Math.round((step / 7) * 100)}% Completed</span>
+          <span className="text-xs font-semibold tracking-wide uppercase text-brand-600">Step {step} of 6</span>
+          <span className="text-xs font-semibold text-slate-400">{Math.round((step / 6) * 100)}% Completed</span>
         </div>
         <div className="h-2 bg-slate-100 rounded-full">
-          <div className="h-2 bg-brand-500 rounded-full transition-all duration-500 ease-out" style={{ width: `${(step / 7) * 100}%` }}></div>
+          <div className="h-2 bg-brand-500 rounded-full transition-all duration-500 ease-out" style={{ width: `${(step / 6) * 100}%` }}></div>
         </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8 min-h-[400px] flex flex-col justify-between">
 
-        {/* Step 1: Goal */}
+        {/* Step 1: Coaching Expertise (UPDATED - Moved from Step 5) */}
         {step === 1 && (
           <div className="animate-fade-in">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">What is your main goal?</h2>
-            <div className="space-y-3">
-              {(['Career Growth', 'Stress Relief', 'Relationships', 'Health & Wellness', 'Executive Coaching'] as Specialty[]).map((option) => (
-                <button
-                  key={option}
-                  onClick={() => setAnswers({ ...answers, goal: option })}
-                  className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all ${
-                    answers.goal === option
-                    ? 'border-brand-500 bg-brand-50 text-brand-700'
-                    : 'border-slate-100 hover:border-brand-200 hover:bg-slate-50'
-                  }`}
+            <h2 className="text-2xl font-bold text-slate-900 mb-4">What areas of coaching do you need?</h2>
+            <p className="text-slate-500 mb-6 text-sm">Select any that apply (optional). Expand each category to see specific areas.</p>
+
+            <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+              {EXPERTISE_CATEGORIES.map(category => (
+                <ExpandableCategory
+                  key={category.name}
+                  title={category.name}
+                  icon={category.icon}
+                  description={category.description}
+                  badge={getSelectedCountForCategory(category.items)}
                 >
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">{option}</span>
-                    {answers.goal === option && <CheckCircle className="h-5 w-5 text-brand-500" />}
-                  </div>
-                </button>
+                  <CheckboxGrid
+                    options={category.items}
+                    value={answers.coachingExpertise || []}
+                    onChange={(value) => setAnswers({ ...answers, coachingExpertise: value as CoachingExpertise[] })}
+                  />
+                </ExpandableCategory>
               ))}
+            </div>
+
+            <div className="mt-4 text-xs text-slate-500 text-center">
+              {(answers.coachingExpertise || []).length} area(s) selected
             </div>
           </div>
         )}
@@ -170,38 +175,8 @@ export const Questionnaire: React.FC = () => {
           </div>
         )}
 
-        {/* Step 5: Coaching Expertise (NEW - Categorized) */}
+        {/* Step 5: Languages (UPDATED - Multi-Select Dropdown) */}
         {step === 5 && (
-          <div className="animate-fade-in">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">What areas of coaching do you need?</h2>
-            <p className="text-slate-500 mb-6 text-sm">Select any that apply (optional). Expand each category to see specific areas.</p>
-
-            <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-              {EXPERTISE_CATEGORIES.map(category => (
-                <ExpandableCategory
-                  key={category.name}
-                  title={category.name}
-                  icon={category.icon}
-                  description={category.description}
-                  badge={getSelectedCountForCategory(category.items)}
-                >
-                  <CheckboxGrid
-                    options={category.items}
-                    value={answers.coachingExpertise || []}
-                    onChange={(value) => setAnswers({ ...answers, coachingExpertise: value as CoachingExpertise[] })}
-                  />
-                </ExpandableCategory>
-              ))}
-            </div>
-
-            <div className="mt-4 text-xs text-slate-500 text-center">
-              {(answers.coachingExpertise || []).length} area(s) selected
-            </div>
-          </div>
-        )}
-
-        {/* Step 6: Languages (UPDATED - Multi-Select Dropdown) */}
-        {step === 6 && (
           <div className="animate-fade-in">
             <MultiSelectDropdown
               label="Which languages would you like your coach to speak?"
@@ -221,8 +196,8 @@ export const Questionnaire: React.FC = () => {
           </div>
         )}
 
-        {/* Step 7: CPD Qualifications (UPDATED - Multi-Select Dropdown) */}
-        {step === 7 && (
+        {/* Step 6: CPD Qualifications (UPDATED - Multi-Select Dropdown) */}
+        {step === 6 && (
           <div className="animate-fade-in">
             <MultiSelectDropdown
               label="Are there any specific qualifications you prefer?"
@@ -253,14 +228,13 @@ export const Questionnaire: React.FC = () => {
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </button>
 
-          {step < 7 ? (
+          {step < 6 ? (
              <button
              onClick={nextStep}
              disabled={
-               (step === 1 && !answers.goal) ||
                (step === 2 && !answers.sessionsPerMonth) ||
                (step === 3 && answers.preferredFormat.length === 0)
-               // Steps 4-7 have no required fields, so no validation needed
+               // Steps 1, 4-6 have no required fields, so no validation needed
              }
              className="bg-brand-600 text-white px-6 py-2 rounded-full font-medium hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center shadow-md"
            >
