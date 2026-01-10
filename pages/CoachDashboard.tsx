@@ -1416,19 +1416,22 @@ export const CoachDashboard: React.FC = () => {
                                         <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4">Payment Method</h4>
                                         <div className="flex items-center justify-between">
                                             <p className="text-sm text-slate-600">
-                                                Payment method managed securely by Stripe
+                                                Card ending in ••••  {/* Will be populated from Stripe Customer Portal */}
                                             </p>
-                                            <a
-                                                href="https://dashboard.stripe.com"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-sm text-brand-600 font-bold hover:underline flex items-center"
+                                            <button
+                                                onClick={async () => {
+                                                    // For now, show helpful message since we don't have Stripe Customer ID yet
+                                                    // TODO: Once Stripe integration is complete, replace with:
+                                                    // await createBillingPortalSession(currentCoach.stripeCustomerId);
+                                                    alert('Payment method management will be available after your first payment is processed. This will give you access to:\n\n• Update card details\n• View payment history\n• Download invoices\n• Manage subscription\n\nNo Stripe account needed - it\'s a secure customer portal.');
+                                                }}
+                                                className="text-sm bg-white border border-slate-300 text-slate-700 font-bold px-4 py-2 rounded-lg hover:bg-slate-50 hover:border-slate-400 transition-all flex items-center shadow-sm"
                                             >
-                                                Manage in Stripe
-                                                <svg className="h-3 w-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                                                 </svg>
-                                            </a>
+                                                Update Payment
+                                            </button>
                                         </div>
                                         <p className="text-xs text-slate-500 mt-3">
                                             Your payment details are securely stored by Stripe. No card information is stored on our servers.

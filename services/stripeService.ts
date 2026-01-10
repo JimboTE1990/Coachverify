@@ -89,6 +89,55 @@ export const getPriceId = (billingCycle: 'monthly' | 'annual'): string => {
 };
 
 /**
+ * Create a Stripe Billing Portal Session
+ * This allows customers to manage their subscription, payment methods, and view invoices
+ * WITHOUT needing a Stripe account - professional UX like Netflix, Spotify, etc.
+ */
+export const createBillingPortalSession = async (customerId: string): Promise<void> => {
+  console.log('[StripeService] Creating billing portal session for customer:', customerId);
+
+  try {
+    // Call backend API to create billing portal session
+    const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const apiUrl = isDevelopment
+      ? 'http://localhost:3001/api'
+      : 'https://whhwvuugrzbyvobwfmce.supabase.co/functions/v1';
+
+    console.log('[StripeService] API URL:', apiUrl);
+
+    const response = await fetch(`${apiUrl}/create-billing-portal-session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        customerId,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create billing portal session');
+    }
+
+    const { url } = await response.json();
+
+    if (!url) {
+      throw new Error('No billing portal URL returned from server');
+    }
+
+    console.log('[StripeService] Redirecting to Stripe Billing Portal:', url);
+
+    // Redirect to Stripe hosted billing portal page
+    window.location.href = url;
+
+  } catch (error: any) {
+    console.error('[StripeService] Error:', error);
+    throw new Error(error.message || 'Failed to open billing portal. Please try again.');
+  }
+};
+
+/**
  * Verify Stripe configuration on app load
  */
 export const verifyStripeConfiguration = (): { configured: boolean; message?: string } => {
