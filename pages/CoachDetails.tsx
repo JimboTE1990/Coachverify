@@ -309,7 +309,7 @@ export const CoachDetails: React.FC = () => {
 
       {/* Main Content - White Card */}
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-xl">
 
           {/* Top Section: Match, Photo, Recently Viewed */}
           <div className="px-6 pt-8 pb-6">
