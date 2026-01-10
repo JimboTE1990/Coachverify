@@ -685,7 +685,7 @@ export const CoachDetails: React.FC = () => {
 
               {/* Contact Options Dropdown */}
               {showContactOptions && (emailContacts.length > 0 || phoneContacts.length > 0) && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border-2 border-cyan-500 shadow-2xl z-50 overflow-visible animate-fade-in max-h-96 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border-2 border-cyan-500 shadow-2xl z-50 animate-fade-in max-h-96 overflow-y-auto">
                   {/* Email Options */}
                   {emailContacts.length > 0 && (
                     <div className="border-b border-slate-200">
