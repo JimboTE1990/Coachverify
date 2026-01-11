@@ -993,8 +993,6 @@ export const CoachDashboard: React.FC = () => {
                               <option value="Practitioner">Practitioner</option>
                               <option value="Senior Practitioner">Senior Practitioner</option>
                               <option value="Master Practitioner">Master Practitioner</option>
-                              <option value="Certified">Certified</option>
-                              <option value="Advanced Certified">Advanced Certified</option>
                             </select>
                           </div>
 
