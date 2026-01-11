@@ -391,8 +391,8 @@ export const CoachList: React.FC = () => {
               ) : (
                 // No results - Dog-themed with smart suggestions
                 <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
-                  <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Bone className="h-8 w-8 text-slate-300" />
+                  <div className="mb-6 text-8xl">
+                    🐕
                   </div>
                   <h3 className="text-2xl font-bold text-slate-900 mb-2">🦴 No bones found!</h3>
                   <p className="text-slate-600 mb-6">
