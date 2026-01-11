@@ -954,6 +954,7 @@ export const CoachDashboard: React.FC = () => {
                                     type="number"
                                     value={localProfile?.hourlyRate || 0}
                                     onChange={(e) => updateLocalProfile({hourlyRate: parseInt(e.target.value) || 0})}
+                                    onFocus={(e) => e.target.select()}
                                     className="w-full border border-slate-200 rounded-xl pl-8 pr-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-lg font-bold text-slate-800"
                                 />
                             </div>
