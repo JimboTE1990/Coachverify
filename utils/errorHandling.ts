@@ -194,7 +194,7 @@ export function handleVerificationError(error: any, context: ErrorContext): Erro
   ) {
     console.warn(`[${context.component}] Verification link expired during ${context.action}`, error);
     return {
-      userMessage: 'This verification link has expired. We can send you a new one.',
+      userMessage: 'This verification link has expired or is no longer valid. Verification links expire after 24 hours for security. Please request a new verification email below.',
       shouldRetry: false,
       shouldRedirect: undefined, // Stay on current page (should show resend form)
     };
@@ -204,7 +204,7 @@ export function handleVerificationError(error: any, context: ErrorContext): Erro
   if (errorMessage.includes('not found') || errorMessage.includes('user not found')) {
     console.warn(`[${context.component}] Email not found during ${context.action}`, error);
     return {
-      userMessage: 'We couldn\'t find your email address. Please check your email or sign up again.',
+      userMessage: 'We couldn\'t find an account with this email address. This means you may not have signed up yet, or the signup didn\'t complete. Please create a new account to continue.',
       shouldRetry: false,
       shouldRedirect: '/coach-signup',
     };

@@ -11,9 +11,7 @@ export type AccreditationLevel =
   | 'Foundation'
   | 'Practitioner'
   | 'Senior Practitioner'
-  | 'Master Practitioner'
-  | 'Certified'
-  | 'Advanced Certified';
+  | 'Master Practitioner';
 
 // New: Comprehensive Coaching Areas of Expertise (7 categories)
 export type CoachingExpertiseCategory =

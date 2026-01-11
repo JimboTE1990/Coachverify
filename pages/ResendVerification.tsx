@@ -66,7 +66,12 @@ export const ResendVerification: React.FC = () => {
       // Check if data is null (Supabase sometimes returns success with null data)
       if (!data) {
         console.warn('[ResendVerification] Resend returned null data - email may not have been sent');
-        setMessage('Email may already be verified, or the account does not exist. Please try logging in or signing up again.');
+        setMessage('We couldn\'t find an account with this email address. Please create a new account to continue.');
+
+        // Redirect to signup after 3 seconds
+        setTimeout(() => {
+          navigate('/coach-signup');
+        }, 3000);
         return;
       }
 
@@ -151,9 +156,19 @@ export const ResendVerification: React.FC = () => {
                 }`}>
                   <div className="flex items-start">
                     {success && <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />}
-                    <p className={`text-sm ${success ? 'text-green-800' : 'text-red-700'}`}>
-                      {message}
-                    </p>
+                    <div className="flex-1">
+                      <p className={`text-sm ${success ? 'text-green-800' : 'text-red-700'}`}>
+                        {message}
+                      </p>
+                      {!success && message.includes('couldn\'t find an account') && (
+                        <button
+                          onClick={() => navigate('/coach-signup')}
+                          className="mt-3 text-sm font-bold text-red-700 underline hover:no-underline"
+                        >
+                          → Create a new account
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

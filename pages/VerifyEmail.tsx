@@ -84,12 +84,12 @@ export const VerifyEmail: React.FC = () => {
         // We just show success and redirect to login
 
         setStatus('success');
-        setMessage('Your email has been verified! Your 30-day free trial is now active. Redirecting to your dashboard...');
+        setMessage('Your email has been verified successfully! Your 30-day free trial is now active.');
 
-        // Redirect directly to dashboard after 2 seconds (user is already authenticated)
+        // Redirect to login page after 2 seconds
         setTimeout(() => {
-          console.log('[VerifyEmail] Redirecting to dashboard...');
-          navigate('/for-coaches', { replace: true });
+          console.log('[VerifyEmail] Redirecting to login...');
+          navigate('/coach-login', { replace: true });
         }, 2000);
 
       } catch (err: any) {
@@ -191,13 +191,11 @@ export const VerifyEmail: React.FC = () => {
                 <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <CheckCircle className="h-10 w-10 text-green-600" />
                 </div>
-                <h1 className="text-2xl font-bold text-slate-900 mb-3">Verification Successful!</h1>
+                <h1 className="text-2xl font-bold text-slate-900 mb-3">Email Verified!</h1>
                 <p className="text-slate-600 mb-6">{message}</p>
-                <div className="bg-brand-50 border border-brand-200 rounded-xl p-4">
-                  <p className="text-brand-800 text-sm font-medium">
-                    Redirecting you to the login page...
-                  </p>
-                </div>
+                <p className="text-slate-500 text-sm">
+                  You'll be redirected to login in a moment...
+                </p>
               </div>
             )}
 
