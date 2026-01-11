@@ -264,14 +264,14 @@ export const TermsOfService: React.FC = () => {
             <p className="text-slate-900 font-medium mb-2">CoachDog Legal Team</p>
             <p className="text-slate-700 mb-1">
               <strong>Email:</strong>{' '}
-              <a href="mailto:legal@coachdog.com" className="text-brand-600 hover:underline">
-                legal@coachdog.com
+              <a href="mailto:legal@coachdog.co.uk" className="text-brand-600 hover:underline">
+                legal@coachdog.co.uk
               </a>
             </p>
             <p className="text-slate-700">
               <strong>Support:</strong>{' '}
-              <a href="mailto:support@coachdog.com" className="text-brand-600 hover:underline">
-                support@coachdog.com
+              <a href="mailto:support@coachdog.co.uk" className="text-brand-600 hover:underline">
+                support@coachdog.co.uk
               </a>
             </p>
           </div>

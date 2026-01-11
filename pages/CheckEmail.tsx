@@ -274,7 +274,7 @@ export const CheckEmail: React.FC = () => {
 
         {/* Footer */}
         <p className="text-center text-slate-400 text-sm mt-8">
-          Need help? Contact <a href="mailto:support@coachdog.com" className="text-brand-400 hover:text-brand-300 underline">support@coachdog.com</a>
+          Need help? Contact <a href="mailto:support@coachdog.co.uk" className="text-brand-400 hover:text-brand-300 underline">support@coachdog.co.uk</a>
         </p>
       </div>
     </div>

@@ -165,7 +165,7 @@ export const ForgotPassword: React.FC = () => {
 
         {/* Footer */}
         <p className="text-center text-slate-400 text-sm mt-8">
-          Need help? Contact support@coachdog.com
+          Need help? Contact support@coachdog.co.uk
         </p>
       </div>
     </div>

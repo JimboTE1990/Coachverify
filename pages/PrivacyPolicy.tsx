@@ -23,8 +23,8 @@ export const PrivacyPolicy: React.FC = () => {
           </p>
           <p className="text-slate-700 mb-4">
             We are committed to compliance with the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018. If you have any questions about this policy, please contact us at{' '}
-            <a href="mailto:privacy@coachdog.com" className="text-brand-600 hover:underline">
-              privacy@coachdog.com
+            <a href="mailto:privacy@coachdog.co.uk" className="text-brand-600 hover:underline">
+              privacy@coachdog.co.uk
             </a>
           </p>
         </section>
@@ -40,8 +40,8 @@ export const PrivacyPolicy: React.FC = () => {
           </p>
           <div className="bg-slate-50 rounded-xl p-4 text-slate-700">
             <p className="font-medium">CoachDog</p>
-            <p>Email: <a href="mailto:privacy@coachdog.com" className="text-brand-600 hover:underline">privacy@coachdog.com</a></p>
-            <p>Support: <a href="mailto:support@coachdog.com" className="text-brand-600 hover:underline">support@coachdog.com</a></p>
+            <p>Email: <a href="mailto:privacy@coachdog.co.uk" className="text-brand-600 hover:underline">privacy@coachdog.co.uk</a></p>
+            <p>Support: <a href="mailto:support@coachdog.co.uk" className="text-brand-600 hover:underline">support@coachdog.co.uk</a></p>
           </div>
         </section>
 
@@ -237,7 +237,7 @@ export const PrivacyPolicy: React.FC = () => {
               <h4 className="font-bold text-blue-900 mb-1">Right to Access</h4>
               <p className="text-blue-800 text-sm">
                 You can request a copy of all personal data we hold about you. Contact{' '}
-                <a href="mailto:privacy@coachdog.com" className="underline">privacy@coachdog.com</a> to request your data export.
+                <a href="mailto:privacy@coachdog.co.uk" className="underline">privacy@coachdog.co.uk</a> to request your data export.
               </p>
             </div>
 
@@ -252,7 +252,7 @@ export const PrivacyPolicy: React.FC = () => {
               <h4 className="font-bold text-blue-900 mb-1">Right to Erasure ("Right to be Forgotten")</h4>
               <p className="text-blue-800 text-sm">
                 You can request deletion of your account and all associated data. Go to Account Settings → Delete Account, or email{' '}
-                <a href="mailto:privacy@coachdog.com" className="underline">privacy@coachdog.com</a>. We will permanently delete your data within 30 days, except where we're legally required to retain it.
+                <a href="mailto:privacy@coachdog.co.uk" className="underline">privacy@coachdog.co.uk</a>. We will permanently delete your data within 30 days, except where we're legally required to retain it.
               </p>
             </div>
 
@@ -288,7 +288,7 @@ export const PrivacyPolicy: React.FC = () => {
           <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mt-6">
             <p className="text-yellow-900 text-sm">
               <strong>To exercise any of these rights:</strong> Email us at{' '}
-              <a href="mailto:privacy@coachdog.com" className="underline">privacy@coachdog.com</a>{' '}
+              <a href="mailto:privacy@coachdog.co.uk" className="underline">privacy@coachdog.co.uk</a>{' '}
               with your request. We will respond within 30 days. If you're unsatisfied with our response, you have the right to lodge a complaint with the{' '}
               <a href="https://ico.org.uk/" target="_blank" rel="noopener noreferrer" className="underline">
                 Information Commissioner's Office (ICO)
@@ -323,8 +323,8 @@ export const PrivacyPolicy: React.FC = () => {
             <h4 className="font-bold text-slate-900 mb-3">Option 2: Email Request</h4>
             <p className="text-slate-700 mb-2">
               Send an email to{' '}
-              <a href="mailto:privacy@coachdog.com" className="text-brand-600 hover:underline font-medium">
-                privacy@coachdog.com
+              <a href="mailto:privacy@coachdog.co.uk" className="text-brand-600 hover:underline font-medium">
+                privacy@coachdog.co.uk
               </a>{' '}
               with the subject "Account Deletion Request" and include:
             </p>
@@ -402,8 +402,8 @@ export const PrivacyPolicy: React.FC = () => {
 
           <p className="text-slate-700">
             CoachDog is not intended for users under the age of 18. We do not knowingly collect personal information from children. Coaches must be at least 18 years old to create an account. If we discover that we have collected data from a child, we will delete it immediately. If you believe a child has provided us with personal information, please contact{' '}
-            <a href="mailto:privacy@coachdog.com" className="text-brand-600 hover:underline">
-              privacy@coachdog.com
+            <a href="mailto:privacy@coachdog.co.uk" className="text-brand-600 hover:underline">
+              privacy@coachdog.co.uk
             </a>.
           </p>
         </section>
@@ -450,14 +450,14 @@ export const PrivacyPolicy: React.FC = () => {
             <p className="text-slate-900 font-medium mb-2">CoachDog Privacy Team</p>
             <p className="text-slate-700 mb-1">
               <strong>Email:</strong>{' '}
-              <a href="mailto:privacy@coachdog.com" className="text-brand-600 hover:underline">
-                privacy@coachdog.com
+              <a href="mailto:privacy@coachdog.co.uk" className="text-brand-600 hover:underline">
+                privacy@coachdog.co.uk
               </a>
             </p>
             <p className="text-slate-700">
               <strong>Support:</strong>{' '}
-              <a href="mailto:support@coachdog.com" className="text-brand-600 hover:underline">
-                support@coachdog.com
+              <a href="mailto:support@coachdog.co.uk" className="text-brand-600 hover:underline">
+                support@coachdog.co.uk
               </a>
             </p>
           </div>

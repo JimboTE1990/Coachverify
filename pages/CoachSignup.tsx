@@ -103,7 +103,7 @@ export const CoachSignup: React.FC = () => {
       if (existingCoach) {
         console.log('[CoachSignup] Email already exists in database');
         setSignupError(
-          'An account with this email already exists. Please use the "Forgot Password" link on the login page, or contact support@coachdog.com if you need help accessing your account.'
+          'An account with this email already exists. Please use the "Forgot Password" link on the login page, or contact support@coachdog.co.uk if you need help accessing your account.'
         );
         return false;
       }

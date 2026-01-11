@@ -67,7 +67,7 @@ export const ClientInfo: React.FC = () => {
             </div>
             <h2 className="text-4xl font-display font-extrabold text-slate-900">It's Not Just a Search. It's a Match.</h2>
             <p className="text-lg text-slate-600 leading-relaxed font-medium max-w-2xl">
-              Browsing hundreds of profiles is overwhelming. Our intelligent 4-step questionnaire analyzes your <span className="text-brand-600 font-bold">goals, budget, and learning style</span>.
+              Browsing hundreds of profiles is overwhelming. Our intelligent 6-step questionnaire analyzes your <span className="text-brand-600 font-bold">goals, budget, and learning style</span>.
             </p>
             <p className="text-lg text-slate-600 leading-relaxed max-w-2xl">
                We cut through the noise to recommend the top 3 coaches specifically for you, saving you hours of research.

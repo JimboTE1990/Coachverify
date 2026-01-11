@@ -307,7 +307,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                <div className="mb-4">
                   <CoachDogFullLogo className="h-16 w-auto" />
                </div>
-               <p className="text-slate-500 text-sm font-medium">The most trusted verification platform for life coaches worldwide.</p>
+               <p className="text-slate-500 text-sm font-medium">A trusted verification platform for life coaches worldwide.</p>
             </div>
             
             <div>
@@ -332,7 +332,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                <h4 className="font-bold text-slate-900 mb-4">Support</h4>
                <ul className="space-y-2 text-sm text-slate-500 font-medium">
                  <li><Link to="/contact" className="hover:text-brand-600">Contact Us</Link></li>
-                 <li><a href="mailto:accounts@coachdog.com" className="hover:text-brand-600">accounts@coachdog.com</a></li>
+                 <li><a href="mailto:accounts@coachdog.co.uk" className="hover:text-brand-600">accounts@coachdog.co.uk</a></li>
                </ul>
             </div>
 
