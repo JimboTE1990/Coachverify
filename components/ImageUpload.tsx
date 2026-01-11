@@ -38,21 +38,47 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     setUploading(true);
 
     try {
-      // Create preview
+      // TODO: Supabase Storage Bucket Setup Required
+      // ============================================
+      // The 'profile-photos' storage bucket needs to be created in Supabase:
+      //
+      // 1. Go to Supabase Dashboard → Storage
+      // 2. Click "New Bucket"
+      // 3. Name: "profile-photos"
+      // 4. Public bucket: YES (to allow public access to profile photos)
+      // 5. Click "Create bucket"
+      //
+      // 6. Set RLS (Row Level Security) policies:
+      //    - Allow INSERT for authenticated users
+      //    - Allow SELECT (read) for everyone (public)
+      //    - Allow UPDATE/DELETE for authenticated users (their own files only)
+      //
+      // Once the bucket is created, this upload code will work automatically.
+      // ============================================
+
+      // For now, convert to base64 data URL (temporary solution until bucket exists)
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreviewUrl(e.target?.result as string);
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        console.log('[ImageUpload] Using base64 data URL (bucket not yet created)');
+        setPreviewUrl(base64String); // Show preview
+        onImageUpdate(base64String); // Save to profile
+      };
+      reader.onerror = () => {
+        setError('Failed to read image file');
+        setPreviewUrl(null);
       };
       reader.readAsDataURL(file);
 
-      // Upload to Supabase Storage
+      // Original Supabase Storage code (uncomment when bucket is created):
+      /*
       const fileExt = file.name.split('.').pop();
       const fileName = `${coachId}-${Date.now()}.${fileExt}`;
       const filePath = `coach-profiles/${fileName}`;
 
       console.log('[ImageUpload] Uploading file:', filePath);
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError} = await supabase.storage
         .from('profile-photos')
         .upload(filePath, file, {
           cacheControl: '3600',
@@ -78,6 +104,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
       // Clear preview after successful upload
       setTimeout(() => setPreviewUrl(null), 1000);
+      */
 
     } catch (err: any) {
       console.error('[ImageUpload] Error uploading image:', err);
