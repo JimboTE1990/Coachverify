@@ -164,7 +164,7 @@ export const TrialExpiredModal: React.FC<TrialExpiredModalProps> = ({
                     Are you absolutely sure?
                   </h3>
                   <p className="text-red-800 mb-4">
-                    This will permanently delete your CoachVerify account and all associated data.
+                    This will permanently delete your CoachDog account and all associated data.
                   </p>
                   <div className="bg-white rounded-lg p-4 mb-4">
                     <p className="text-slate-700 text-sm mb-2">

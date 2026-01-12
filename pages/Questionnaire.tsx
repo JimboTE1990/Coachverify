@@ -152,32 +152,7 @@ export const Questionnaire: React.FC = () => {
           <div className="animate-fade-in">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">What is your budget range?</h2>
 
-            {/* Currency Selector */}
-            <div className="mb-6">
-              <label className="block text-sm font-bold text-slate-700 mb-3">Currency</label>
-              <div className="flex gap-3">
-                {[
-                  { code: 'GBP', symbol: '£', label: 'GBP (£)' },
-                  { code: 'USD', symbol: '$', label: 'USD ($)' },
-                  { code: 'EUR', symbol: '€', label: 'EUR (€)' }
-                ].map((curr) => (
-                  <button
-                    key={curr.code}
-                    type="button"
-                    onClick={() => setAnswers({...answers, currency: curr.code as 'GBP' | 'USD' | 'EUR'})}
-                    className={`flex-1 px-4 py-3 rounded-xl border-2 font-bold transition-all ${
-                      answers.currency === curr.code
-                        ? 'border-brand-600 bg-brand-50 text-brand-900'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
-                    }`}
-                  >
-                    {curr.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <p className="text-slate-500 mb-8">Max hourly rate: <span className="font-bold text-slate-900">{answers.currency === 'GBP' ? '£' : answers.currency === 'USD' ? '$' : '€'}{answers.budgetRange}</span></p>
+            <p className="text-slate-500 mb-8">Max hourly rate: <span className="font-bold text-slate-900">£{answers.budgetRange}</span></p>
 
             <input
               type="range"
@@ -189,14 +164,20 @@ export const Questionnaire: React.FC = () => {
               className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
             />
             <div className="flex justify-between text-xs text-slate-400 mt-2">
-              <span>{answers.currency === 'GBP' ? '£' : answers.currency === 'USD' ? '$' : '€'}50</span>
-              <span>{answers.currency === 'GBP' ? '£' : answers.currency === 'USD' ? '$' : '€'}250</span>
-              <span>{answers.currency === 'GBP' ? '£' : answers.currency === 'USD' ? '$' : '€'}500+</span>
+              <span>£50</span>
+              <span>£250</span>
+              <span>£500+</span>
             </div>
 
             <div className="mt-8 bg-blue-50 p-4 rounded-lg">
                <p className="text-sm text-blue-800">
-                 💡 Tip: Most executive coaches charge {answers.currency === 'GBP' ? '£150+' : answers.currency === 'USD' ? '$200+' : '€180+'}, while wellness coaches often start around {answers.currency === 'GBP' ? '£60-80' : answers.currency === 'USD' ? '$80-100' : '€70-90'}.
+                 💡 Tip: Most executive coaches charge £150+, while wellness coaches often start around £60-80.
+               </p>
+            </div>
+
+            <div className="mt-4 bg-amber-50 border border-amber-200 p-4 rounded-lg">
+               <p className="text-sm text-amber-800">
+                 ℹ️ Pricing is displayed in the coach's local currency. For international clients, please consider that currency conversion rates may impact actual pricing day to day.
                </p>
             </div>
           </div>

@@ -30,7 +30,6 @@ export const CoachDetails: React.FC = () => {
   });
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
-  const [currency, setCurrency] = useState<'GBP' | 'USD' | 'EUR'>('GBP');
 
   // Check for questionnaire data from location state
   useEffect(() => {
@@ -462,36 +461,19 @@ export const CoachDetails: React.FC = () => {
               <span className="text-lg font-bold text-slate-900">{coach.location || 'United Kingdom'}</span>
             </div>
 
-            {/* Currency Selector */}
-            <div className="flex justify-center mb-4">
-              <div className="flex gap-2 bg-slate-100 p-1 rounded-xl">
-                {[
-                  { code: 'GBP', symbol: '£' },
-                  { code: 'USD', symbol: '$' },
-                  { code: 'EUR', symbol: '€' }
-                ].map((curr) => (
-                  <button
-                    key={curr.code}
-                    type="button"
-                    onClick={() => setCurrency(curr.code as 'GBP' | 'USD' | 'EUR')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                      currency === curr.code
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    {curr.symbol}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Price Badge */}
             <div className="flex justify-center mb-8">
               <div className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white px-8 py-3 rounded-full shadow-lg">
-                <span className="text-2xl font-black">{currency === 'GBP' ? '£' : currency === 'USD' ? '$' : '€'}{coach.hourlyRate}</span>
+                <span className="text-2xl font-black">£{coach.hourlyRate}</span>
                 <span className="text-sm font-semibold ml-1">per hour</span>
               </div>
+            </div>
+
+            {/* Currency Disclaimer */}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 mx-4">
+              <p className="text-xs text-amber-900 text-center">
+                <span className="font-bold">ℹ️ Currency Notice:</span> Pricing is in the coach's local currency. International clients should consider currency conversion rates.
+              </p>
             </div>
           </div>
 

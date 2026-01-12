@@ -163,7 +163,7 @@ export const CheckEmail: React.FC = () => {
               <ul className="space-y-2 text-sm text-blue-800">
                 <li className="flex items-start">
                   <CheckCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
-                  <span>Check your inbox for an email from CoachVerify</span>
+                  <span>Check your inbox for an email from CoachDog</span>
                 </li>
                 <li className="flex items-start">
                   <CheckCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />

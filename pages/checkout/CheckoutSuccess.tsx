@@ -72,8 +72,8 @@ export const CheckoutSuccess: React.FC = () => {
 
           <p className="text-lg text-slate-600 mb-8">
             {hasActiveTrial
-              ? `You're now a premium CoachVerify user. Your plan starts after your free trial ends on ${trialEndDate?.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}.`
-              : 'Thank you for subscribing to CoachVerify. Your premium account is now active.'}
+              ? `You're now a premium CoachDog user. Your plan starts after your free trial ends on ${trialEndDate?.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}.`
+              : 'Thank you for subscribing to CoachDog. Your premium account is now active.'}
           </p>
 
           {/* Subscription Details */}
@@ -175,7 +175,7 @@ export const CheckoutSuccess: React.FC = () => {
                   <li className="flex items-start">
                     <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
                     <span>
-                      You have full access to all CoachVerify premium features
+                      You have full access to all CoachDog premium features
                     </span>
                   </li>
                   <li className="flex items-start">

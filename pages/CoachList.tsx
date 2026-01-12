@@ -18,7 +18,6 @@ export const CoachList: React.FC = () => {
   const [formatFilter, setFormatFilter] = useState<Format[]>([]);
   const [maxPrice, setMaxPrice] = useState<number>(500);
   const [minExperience, setMinExperience] = useState<number>(0);
-  const [currency, setCurrency] = useState<'GBP' | 'USD' | 'EUR'>('GBP');
 
   // Advanced filters
   const [languageFilter, setLanguageFilter] = useState<string[]>([]);
@@ -53,7 +52,6 @@ export const CoachList: React.FC = () => {
       // Pre-set filters based on questionnaire
       if (q.goal) setSpecialtyFilter(q.goal);
       if (q.budgetRange) setMaxPrice(q.budgetRange);
-      if (q.currency) setCurrency(q.currency);
       if (q.preferredFormat && q.preferredFormat.length > 0) setFormatFilter(q.preferredFormat);
       if (q.languagePreferences && q.languagePreferences.length > 0) setLanguageFilter(q.languagePreferences);
       if (q.coachingExpertise && q.coachingExpertise.length > 0) setExpertiseFilter(q.coachingExpertise);
@@ -67,7 +65,6 @@ export const CoachList: React.FC = () => {
     setSpecialtyFilter('');
     setFormatFilter([]);
     setMaxPrice(500);
-    setCurrency('GBP');
     setMinExperience(0);
     setLanguageFilter([]);
     setExpertiseFilter([]);
@@ -250,6 +247,13 @@ export const CoachList: React.FC = () => {
           </div>
         )}
 
+        {/* Currency Disclaimer */}
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8 max-w-6xl mx-auto">
+          <p className="text-sm text-amber-900">
+            <span className="font-bold">ℹ️ Currency Notice:</span> Pricing is displayed in each coach's local currency. For international clients, please consider that currency conversion rates may impact actual pricing day to day.
+          </p>
+        </div>
+
         {/* Main Content with Sidebar Layout */}
         <div className="lg:flex lg:gap-8 max-w-7xl mx-auto">
 
@@ -262,8 +266,6 @@ export const CoachList: React.FC = () => {
               onFormatChange={setFormatFilter}
               maxPrice={maxPrice}
               onMaxPriceChange={setMaxPrice}
-              currency={currency}
-              onCurrencyChange={setCurrency}
               minExperience={minExperience}
               onMinExperienceChange={setMinExperience}
               languageFilter={languageFilter}
@@ -286,8 +288,6 @@ export const CoachList: React.FC = () => {
             onFormatChange={setFormatFilter}
             maxPrice={maxPrice}
             onMaxPriceChange={setMaxPrice}
-            currency={currency}
-            onCurrencyChange={setCurrency}
             minExperience={minExperience}
             onMinExperienceChange={setMinExperience}
             languageFilter={languageFilter}

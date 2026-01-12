@@ -35,6 +35,7 @@ export const CoachSignup: React.FC = () => {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
+    gender: '',
     email: '',
     password: '',
     dobDay: '1',
@@ -190,6 +191,7 @@ export const CoachSignup: React.FC = () => {
               full_name: fullName,
               first_name: formData.first_name,
               last_name: formData.last_name,
+              gender: formData.gender,
               date_of_birth: `${formData.dobYear}-${formData.dobMonth.padStart(2, '0')}-${formData.dobDay.padStart(2, '0')}`,
               accreditation_body: formData.body,
               registration_number: formData.regNumber,
@@ -334,6 +336,35 @@ export const CoachSignup: React.FC = () => {
                     placeholder="e.g. Doe"
                     required
                   />
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-3">Gender</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {['Male', 'Female', 'Non-binary', 'Prefer not to say'].map((g) => (
+                      <label key={g} className="flex items-center cursor-pointer p-3 rounded-lg border-2 border-slate-200 hover:border-brand-500 transition-all">
+                        <input
+                          type="radio"
+                          name="gender"
+                          value={g}
+                          checked={formData.gender === g}
+                          onChange={handleChange}
+                          className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300"
+                        />
+                        <span className="ml-3 text-sm font-medium text-slate-800">{g}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="mt-3">
+                    <input
+                      type="text"
+                      name="gender"
+                      placeholder="Prefer to self-describe (optional)"
+                      value={formData.gender && !['Male', 'Female', 'Non-binary', 'Prefer not to say'].includes(formData.gender) ? formData.gender : ''}
+                      onChange={handleChange}
+                      className="w-full border border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                    />
+                  </div>
                 </div>
 
                 <div className="col-span-2 md:col-span-1">
