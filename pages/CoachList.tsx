@@ -333,7 +333,7 @@ export const CoachList: React.FC = () => {
                     <input
                       type="text"
                       className="block w-full pl-11 pr-4 py-3 border-none rounded-xl bg-slate-50 focus:bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all font-medium"
-                      placeholder="🐶 Search by name or location..."
+                      placeholder="Search by name or location..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
