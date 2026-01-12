@@ -18,6 +18,7 @@ export const CoachList: React.FC = () => {
   const [formatFilter, setFormatFilter] = useState<Format[]>([]);
   const [maxPrice, setMaxPrice] = useState<number>(500);
   const [minExperience, setMinExperience] = useState<number>(0);
+  const [currency, setCurrency] = useState<'GBP' | 'USD' | 'EUR'>('GBP');
 
   // Advanced filters
   const [languageFilter, setLanguageFilter] = useState<string[]>([]);
@@ -51,6 +52,7 @@ export const CoachList: React.FC = () => {
       // Pre-set filters based on questionnaire
       if (q.goal) setSpecialtyFilter(q.goal);
       if (q.budgetRange) setMaxPrice(q.budgetRange);
+      if (q.currency) setCurrency(q.currency);
       if (q.preferredFormat && q.preferredFormat.length > 0) setFormatFilter(q.preferredFormat);
       if (q.languagePreferences && q.languagePreferences.length > 0) setLanguageFilter(q.languagePreferences);
       if (q.coachingExpertise && q.coachingExpertise.length > 0) setExpertiseFilter(q.coachingExpertise);
@@ -63,6 +65,7 @@ export const CoachList: React.FC = () => {
     setSpecialtyFilter('');
     setFormatFilter([]);
     setMaxPrice(500);
+    setCurrency('GBP');
     setMinExperience(0);
     setLanguageFilter([]);
     setExpertiseFilter([]);
@@ -248,6 +251,8 @@ export const CoachList: React.FC = () => {
               onFormatChange={setFormatFilter}
               maxPrice={maxPrice}
               onMaxPriceChange={setMaxPrice}
+              currency={currency}
+              onCurrencyChange={setCurrency}
               minExperience={minExperience}
               onMinExperienceChange={setMinExperience}
               languageFilter={languageFilter}
@@ -268,6 +273,8 @@ export const CoachList: React.FC = () => {
             onFormatChange={setFormatFilter}
             maxPrice={maxPrice}
             onMaxPriceChange={setMaxPrice}
+            currency={currency}
+            onCurrencyChange={setCurrency}
             minExperience={minExperience}
             onMinExperienceChange={setMinExperience}
             languageFilter={languageFilter}
@@ -391,8 +398,8 @@ export const CoachList: React.FC = () => {
               ) : (
                 // No results - Dog-themed with smart suggestions
                 <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
-                  <div className="mb-6 text-8xl">
-                    🐕
+                  <div className="mb-6">
+                    <img src="/logo.png" alt="CoachDog" className="w-32 h-32 mx-auto opacity-50" />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-900 mb-2">🦴 No bones found!</h3>
                   <p className="text-slate-600 mb-6">

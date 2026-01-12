@@ -707,7 +707,7 @@ export const CoachDetails: React.FC = () => {
                   onClick={() => setShowContactOptions(!showContactOptions)}
                   className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 text-black font-black py-5 rounded-2xl text-xl shadow-xl hover:shadow-2xl hover:from-cyan-600 hover:to-cyan-700 transition-all transform hover:-translate-y-0.5"
                 >
-                  Contact Coach for More Details
+                  Schedule a call with coach
                 </button>
               )}
 

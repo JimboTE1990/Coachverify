@@ -16,6 +16,9 @@ interface FilterSidebarProps {
   maxPrice: number;
   onMaxPriceChange: (value: number) => void;
 
+  currency: 'GBP' | 'USD' | 'EUR';
+  onCurrencyChange: (value: 'GBP' | 'USD' | 'EUR') => void;
+
   minExperience: number;
   onMinExperienceChange: (value: number) => void;
 
@@ -44,6 +47,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   onFormatChange,
   maxPrice,
   onMaxPriceChange,
+  currency,
+  onCurrencyChange,
   minExperience,
   onMinExperienceChange,
   languageFilter,
@@ -196,7 +201,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             onClick={() => toggleSection('price')}
             className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
           >
-            <span className="text-sm font-bold text-slate-700">Max Hourly Rate: £{maxPrice}</span>
+            <span className="text-sm font-bold text-slate-700">Max Hourly Rate: {currency === 'GBP' ? '£' : currency === 'USD' ? '$' : '€'}{maxPrice}</span>
             {expandedSections.price ? (
               <Minus className="h-4 w-4 text-slate-600" />
             ) : (
@@ -205,6 +210,27 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </button>
           {expandedSections.price && (
             <div className="px-4 pb-4">
+              {/* Currency Selector */}
+              <div className="mb-3 flex gap-2">
+                {[
+                  { code: 'GBP', symbol: '£' },
+                  { code: 'USD', symbol: '$' },
+                  { code: 'EUR', symbol: '€' }
+                ].map((curr) => (
+                  <button
+                    key={curr.code}
+                    type="button"
+                    onClick={() => onCurrencyChange(curr.code as 'GBP' | 'USD' | 'EUR')}
+                    className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      currency === curr.code
+                        ? 'bg-brand-600 text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {curr.symbol}
+                  </button>
+                ))}
+              </div>
               <input
                 type="range"
                 min="50"
@@ -215,9 +241,9 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
               />
               <div className="flex justify-between text-xs text-slate-400 mt-2">
-                <span>£50</span>
-                <span>£250</span>
-                <span>£500+</span>
+                <span>{currency === 'GBP' ? '£' : currency === 'USD' ? '$' : '€'}50</span>
+                <span>{currency === 'GBP' ? '£' : currency === 'USD' ? '$' : '€'}250</span>
+                <span>{currency === 'GBP' ? '£' : currency === 'USD' ? '$' : '€'}500+</span>
               </div>
             </div>
           )}

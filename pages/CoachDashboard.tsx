@@ -947,14 +947,20 @@ export const CoachDashboard: React.FC = () => {
 
                           {/* Hourly Rate */}
                           <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-3">Hourly Rate ($)</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-3">Hourly Rate (£)</label>
                             <div className="relative">
-                                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 font-bold">$</span>
+                                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 font-bold">£</span>
                                 <input
                                     type="number"
-                                    value={localProfile?.hourlyRate || 0}
+                                    value={localProfile?.hourlyRate || ''}
                                     onChange={(e) => updateLocalProfile({hourlyRate: parseInt(e.target.value) || 0})}
-                                    onFocus={(e) => e.target.select()}
+                                    onFocus={(e) => {
+                                        e.target.select();
+                                        if (e.target.value === '0') {
+                                            updateLocalProfile({hourlyRate: 0});
+                                        }
+                                    }}
+                                    placeholder="0"
                                     className="w-full border border-slate-200 rounded-xl pl-8 pr-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-lg font-bold text-slate-800"
                                 />
                             </div>

@@ -326,6 +326,7 @@ export interface QuestionnaireAnswers {
   sessionsPerMonth: 'one' | 'two' | 'unlimited' | '';
   preferredFormat: Format[];
   budgetRange: number;
+  currency?: 'GBP' | 'USD' | 'EUR'; // Currency preference (defaults to GBP)
   preferredCertifications?: AdditionalCertification[]; // Legacy: Preferred coach certifications
   languagePreferences?: string[]; // Multiple languages (e.g., ["English", "Spanish"])
   experienceLevel?: 'beginner' | 'intermediate' | 'advanced' | 'any'; // Preferred coach experience level
