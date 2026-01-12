@@ -414,7 +414,7 @@ export const CoachList: React.FC = () => {
                 // No results - Dog-themed with smart suggestions
                 <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
                   <div className="mb-6">
-                    <img src="/logo.png" alt="CoachDog" className="w-32 h-32 mx-auto opacity-50" />
+                    <img src="/dog-mascot.png" alt="CoachDog Dalmatian" className="w-32 h-32 mx-auto opacity-50" />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-900 mb-2">🦴 No bones found!</h3>
                   <p className="text-slate-600 mb-6">

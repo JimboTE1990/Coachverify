@@ -14,7 +14,6 @@ export const Questionnaire: React.FC = () => {
     sessionsPerMonth: '',
     preferredFormat: [],
     budgetRange: 100,
-    currency: 'GBP',
     preferredCertifications: [],
     languagePreferences: ['English'],
     experienceLevel: 'any',
@@ -52,11 +51,11 @@ export const Questionnaire: React.FC = () => {
       {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex justify-between mb-2">
-          <span className="text-xs font-semibold tracking-wide uppercase text-brand-600">Step {step} of 6</span>
-          <span className="text-xs font-semibold text-slate-400">{Math.round((step / 6) * 100)}% Completed</span>
+          <span className="text-xs font-semibold tracking-wide uppercase text-brand-600">Step {step} of 7</span>
+          <span className="text-xs font-semibold text-slate-400">{Math.round((step / 7) * 100)}% Completed</span>
         </div>
         <div className="h-2 bg-slate-100 rounded-full">
-          <div className="h-2 bg-brand-500 rounded-full transition-all duration-500 ease-out" style={{ width: `${(step / 6) * 100}%` }}></div>
+          <div className="h-2 bg-brand-500 rounded-full transition-all duration-500 ease-out" style={{ width: `${(step / 7) * 100}%` }}></div>
         </div>
       </div>
 
