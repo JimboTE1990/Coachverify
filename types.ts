@@ -212,6 +212,8 @@ export type CoachingLanguage =
   | 'Malay'
   | 'Swahili';
 
+export type Gender = 'Male' | 'Female' | 'Non-binary' | 'Prefer not to say' | string; // string allows for self-describe option
+
 export type AdditionalCertification =
   | 'Mental Health First Aid Trained'
   | 'Trauma Informed'
@@ -293,6 +295,7 @@ export interface Coach {
   coachingExpertise?: CoachingExpertise[]; // Areas of coaching expertise (from 7 categories)
   cpdQualifications?: CPDQualification[]; // Additional professional development certifications
   coachingLanguages?: CoachingLanguage[]; // Languages offered for coaching sessions
+  gender?: Gender; // Coach's gender identity
 
   // Subscription & Billing
   subscriptionStatus: SubscriptionStatus;
@@ -327,6 +330,7 @@ export interface QuestionnaireAnswers {
   preferredFormat: Format[];
   budgetRange: number;
   currency?: 'GBP' | 'USD' | 'EUR'; // Currency preference (defaults to GBP)
+  genderPreference?: Gender[]; // Preferred coach gender(s) - multiple selection
   preferredCertifications?: AdditionalCertification[]; // Legacy: Preferred coach certifications
   languagePreferences?: string[]; // Multiple languages (e.g., ["English", "Spanish"])
   experienceLevel?: 'beginner' | 'intermediate' | 'advanced' | 'any'; // Preferred coach experience level

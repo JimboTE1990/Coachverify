@@ -202,8 +202,53 @@ export const Questionnaire: React.FC = () => {
           </div>
         )}
 
-        {/* Step 5: Languages (UPDATED - Multi-Select Dropdown) */}
+        {/* Step 5: Gender Preference */}
         {step === 5 && (
+          <div className="animate-fade-in">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Do you have a gender preference for your coach?</h2>
+            <p className="text-slate-500 mb-6">Select all that apply (optional)</p>
+
+            <div className="space-y-3">
+              {['Male', 'Female', 'Non-binary', 'No preference'].map((gender) => (
+                <label
+                  key={gender}
+                  className="flex items-center p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-brand-500 transition-all"
+                >
+                  <input
+                    type="checkbox"
+                    checked={gender === 'No preference'
+                      ? !answers.genderPreference || answers.genderPreference.length === 0
+                      : answers.genderPreference?.includes(gender) || false}
+                    onChange={(e) => {
+                      if (gender === 'No preference') {
+                        setAnswers({...answers, genderPreference: []});
+                      } else {
+                        const current = answers.genderPreference || [];
+                        setAnswers({
+                          ...answers,
+                          genderPreference: e.target.checked
+                            ? [...current, gender]
+                            : current.filter(g => g !== gender)
+                        });
+                      }
+                    }}
+                    className="h-5 w-5 text-brand-600 focus:ring-brand-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-3 text-lg font-medium text-slate-900">{gender}</span>
+                </label>
+              ))}
+            </div>
+
+            <div className="mt-8 bg-blue-50 p-4 rounded-lg">
+              <p className="text-sm text-blue-800">
+                💡 This is completely optional. Selecting "No preference" or leaving it blank will show you all coaches regardless of gender.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Step 6: Languages (UPDATED - Multi-Select Dropdown) */}
+        {step === 6 && (
           <div className="animate-fade-in">
             <MultiSelectDropdown
               label="Which languages would you like your coach to speak?"
@@ -223,8 +268,8 @@ export const Questionnaire: React.FC = () => {
           </div>
         )}
 
-        {/* Step 6: CPD Qualifications (UPDATED - Multi-Select Dropdown) */}
-        {step === 6 && (
+        {/* Step 7: CPD Qualifications (UPDATED - Multi-Select Dropdown) */}
+        {step === 7 && (
           <div className="animate-fade-in">
             <MultiSelectDropdown
               label="Are there any specific qualifications you prefer?"
@@ -255,13 +300,13 @@ export const Questionnaire: React.FC = () => {
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </button>
 
-          {step < 6 ? (
+          {step < 7 ? (
              <button
              onClick={nextStep}
              disabled={
                (step === 2 && !answers.sessionsPerMonth) ||
                (step === 3 && answers.preferredFormat.length === 0)
-               // Steps 1, 4-6 have no required fields, so no validation needed
+               // Steps 1, 4-7 have no required fields, so no validation needed
              }
              className="bg-brand-600 text-white px-6 py-2 rounded-full font-medium hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center shadow-md"
            >

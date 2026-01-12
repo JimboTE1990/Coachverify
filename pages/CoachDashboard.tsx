@@ -966,9 +966,38 @@ export const CoachDashboard: React.FC = () => {
                             </div>
                             <p className="text-xs text-slate-500 mt-2">Used to match with client budget ranges.</p>
                           </div>
+
+                          {/* Gender */}
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-3">Gender</label>
+                            <div className="space-y-2">
+                              {['Male', 'Female', 'Non-binary', 'Prefer not to say'].map((g) => (
+                                <label key={g} className="flex items-center cursor-pointer p-2 rounded-lg hover:bg-white/50 transition-colors">
+                                  <input
+                                    type="radio"
+                                    name="gender"
+                                    value={g}
+                                    checked={localProfile?.gender === g}
+                                    onChange={(e) => updateLocalProfile({gender: e.target.value})}
+                                    className="h-5 w-5 text-brand-600 focus:ring-brand-500 border-gray-300"
+                                  />
+                                  <span className="ml-3 text-sm font-medium text-slate-800">{g}</span>
+                                </label>
+                              ))}
+                              <div className="pl-7">
+                                <input
+                                  type="text"
+                                  placeholder="Prefer to self-describe (optional)"
+                                  value={localProfile?.gender && !['Male', 'Female', 'Non-binary', 'Prefer not to say'].includes(localProfile.gender) ? localProfile.gender : ''}
+                                  onChange={(e) => updateLocalProfile({gender: e.target.value})}
+                                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                                />
+                              </div>
+                            </div>
+                          </div>
                       </div>
                   </div>
-                  
+
                   {/* Bio */}
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-2">Bio</label>

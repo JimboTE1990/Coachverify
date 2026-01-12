@@ -32,6 +32,9 @@ interface FilterSidebarProps {
   cpdFilter: CPDQualification[];
   onCpdFilterChange: (value: CPDQualification[]) => void;
 
+  genderFilter: string[];
+  onGenderFilterChange: (value: string[]) => void;
+
   // Actions
   onClearAll: () => void;
 
@@ -57,6 +60,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   onExpertiseFilterChange,
   cpdFilter,
   onCpdFilterChange,
+  genderFilter,
+  onGenderFilterChange,
   onClearAll,
   isMobileOpen = false,
   onMobileClose
@@ -315,6 +320,40 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 maxDisplay={2}
                 optional={true}
               />
+            </div>
+
+            {/* Gender Preference */}
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-3">
+                Coach Gender <span className="text-slate-400 font-normal">(optional)</span>
+              </label>
+              <div className="space-y-2">
+                {['Male', 'Female', 'Non-binary'].map((gender) => (
+                  <label
+                    key={gender}
+                    className="flex items-center p-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={genderFilter.includes(gender)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          onGenderFilterChange([...genderFilter, gender]);
+                        } else {
+                          onGenderFilterChange(genderFilter.filter(g => g !== gender));
+                        }
+                      }}
+                      className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-3 text-sm font-medium text-slate-800">{gender}</span>
+                  </label>
+                ))}
+              </div>
+              {genderFilter.length > 0 && (
+                <div className="mt-2 text-xs text-slate-500">
+                  {genderFilter.length} selected
+                </div>
+              )}
             </div>
 
             {/* Coaching Expertise */}

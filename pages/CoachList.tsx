@@ -24,6 +24,7 @@ export const CoachList: React.FC = () => {
   const [languageFilter, setLanguageFilter] = useState<string[]>([]);
   const [expertiseFilter, setExpertiseFilter] = useState<CoachingExpertise[]>([]);
   const [cpdFilter, setCpdFilter] = useState<CPDQualification[]>([]);
+  const [genderFilter, setGenderFilter] = useState<string[]>([]);
 
   // Mobile filter sidebar state
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
@@ -57,6 +58,7 @@ export const CoachList: React.FC = () => {
       if (q.languagePreferences && q.languagePreferences.length > 0) setLanguageFilter(q.languagePreferences);
       if (q.coachingExpertise && q.coachingExpertise.length > 0) setExpertiseFilter(q.coachingExpertise);
       if (q.cpdQualifications && q.cpdQualifications.length > 0) setCpdFilter(q.cpdQualifications);
+      if (q.genderPreference && q.genderPreference.length > 0) setGenderFilter(q.genderPreference);
     }
   }, [location]);
 
@@ -70,6 +72,7 @@ export const CoachList: React.FC = () => {
     setLanguageFilter([]);
     setExpertiseFilter([]);
     setCpdFilter([]);
+    setGenderFilter([]);
   };
 
   // Calculate match percentage for each coach
@@ -148,6 +151,14 @@ export const CoachList: React.FC = () => {
       }
     }
 
+    // 9. Gender Filter
+    if (genderFilter.length > 0) {
+      criteria.push('Gender');
+      if (coach.gender && genderFilter.includes(coach.gender)) {
+        matched.push('Gender');
+      }
+    }
+
     const total = criteria.length;
     const percentage = total === 0 ? 100 : Math.round((matched.length / total) * 100);
 
@@ -187,14 +198,14 @@ export const CoachList: React.FC = () => {
 
     return result.map(r => r.coach);
   }, [coaches, searchTerm, specialtyFilter, formatFilter, maxPrice, minExperience,
-      languageFilter, expertiseFilter, cpdFilter, matchData, showPartialMatches, minMatchPercentage]);
+      languageFilter, expertiseFilter, cpdFilter, genderFilter, matchData, showPartialMatches, minMatchPercentage]);
 
   // Calculate counts for perfect and partial matches
   const perfectMatchCount = useMemo(() => {
     if (!coaches) return 0;
     return coaches.filter(coach => calculateFilterMatchPercentage(coach).percentage === 100).length;
   }, [coaches, searchTerm, specialtyFilter, formatFilter, maxPrice, minExperience,
-      languageFilter, expertiseFilter, cpdFilter]);
+      languageFilter, expertiseFilter, cpdFilter, genderFilter]);
 
   const partialMatchCount = useMemo(() => {
     if (!coaches) return 0;
@@ -203,7 +214,7 @@ export const CoachList: React.FC = () => {
       return match.percentage >= minMatchPercentage && match.percentage < 100;
     }).length;
   }, [coaches, searchTerm, specialtyFilter, formatFilter, maxPrice, minExperience,
-      languageFilter, expertiseFilter, cpdFilter, minMatchPercentage]);
+      languageFilter, expertiseFilter, cpdFilter, genderFilter, minMatchPercentage]);
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -261,6 +272,8 @@ export const CoachList: React.FC = () => {
               onExpertiseFilterChange={setExpertiseFilter}
               cpdFilter={cpdFilter}
               onCpdFilterChange={setCpdFilter}
+              genderFilter={genderFilter}
+              onGenderFilterChange={setGenderFilter}
               onClearAll={clearAllFilters}
             />
           </aside>
@@ -283,6 +296,8 @@ export const CoachList: React.FC = () => {
             onExpertiseFilterChange={setExpertiseFilter}
             cpdFilter={cpdFilter}
             onCpdFilterChange={setCpdFilter}
+            genderFilter={genderFilter}
+            onGenderFilterChange={setGenderFilter}
             onClearAll={clearAllFilters}
             isMobileOpen={isMobileFiltersOpen}
             onMobileClose={() => setIsMobileFiltersOpen(false)}
@@ -302,10 +317,10 @@ export const CoachList: React.FC = () => {
                   >
                     <SlidersHorizontal className="h-5 w-5 text-slate-600" />
                     {(specialtyFilter || formatFilter.length > 0 || maxPrice < 500 || minExperience > 0 ||
-                      languageFilter.length > 0 || expertiseFilter.length > 0 || cpdFilter.length > 0) && (
+                      languageFilter.length > 0 || expertiseFilter.length > 0 || cpdFilter.length > 0 || genderFilter.length > 0) && (
                       <span className="ml-2 bg-brand-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                         {(specialtyFilter ? 1 : 0) + formatFilter.length + (maxPrice < 500 ? 1 : 0) +
-                         (minExperience > 0 ? 1 : 0) + languageFilter.length + expertiseFilter.length + cpdFilter.length}
+                         (minExperience > 0 ? 1 : 0) + languageFilter.length + expertiseFilter.length + cpdFilter.length + genderFilter.length}
                       </span>
                     )}
                   </button>
