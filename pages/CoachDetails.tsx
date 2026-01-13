@@ -1114,7 +1114,12 @@ export const CoachDetails: React.FC = () => {
       {/* View All Reviews Modal */}
       {showAllReviews && coach && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl relative">
+            {/* Dalmatian Logo - Top Right Corner */}
+            <div className="absolute top-4 right-16 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center z-10 border-2 border-slate-200">
+              <span className="text-2xl">🐕</span>
+            </div>
+
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-gradient-to-r from-cyan-50 to-blue-50">
               <div>

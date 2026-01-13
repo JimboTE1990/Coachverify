@@ -734,6 +734,11 @@ export const CoachDashboard: React.FC = () => {
               >
                 <Star className="h-4 w-4 inline mr-2" />
                 Reviews
+                {currentCoach?.reviews && currentCoach.reviews.filter(r => r.verificationStatus !== 'verified').length > 0 && (
+                  <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    {currentCoach.reviews.filter(r => r.verificationStatus !== 'verified').length}
+                  </span>
+                )}
               </button>
               <button
                 onClick={() => setActiveTab('account')}
@@ -795,9 +800,16 @@ export const CoachDashboard: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setActiveTab('reviews')}
-                  className={`w-full flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'reviews' ? 'bg-yellow-50 text-yellow-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
+                  className={`w-full flex items-center justify-between px-4 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'reviews' ? 'bg-yellow-50 text-yellow-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
                 >
-                  <Star className={`h-5 w-5 mr-3 ${activeTab === 'reviews' ? 'text-yellow-600' : 'text-slate-400'}`} /> Reviews
+                  <div className="flex items-center">
+                    <Star className={`h-5 w-5 mr-3 ${activeTab === 'reviews' ? 'text-yellow-600' : 'text-slate-400'}`} /> Reviews
+                  </div>
+                  {currentCoach?.reviews && currentCoach.reviews.filter(r => r.verificationStatus !== 'verified').length > 0 && (
+                    <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      {currentCoach.reviews.filter(r => r.verificationStatus !== 'verified').length}
+                    </span>
+                  )}
                 </button>
                 <button
                   onClick={() => setActiveTab('account')}
