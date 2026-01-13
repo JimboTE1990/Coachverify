@@ -16,6 +16,7 @@ export const CoachDetails: React.FC = () => {
   const location = useLocation();
   const { coach: currentUserCoach } = useAuth();
   const [coach, setCoach] = useState<Coach | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const [showRecentlyViewed, setShowRecentlyViewed] = useState(false);
   const [recentlyViewedCoaches, setRecentlyViewedCoaches] = useState<Coach[]>([]);
@@ -77,8 +78,10 @@ export const CoachDetails: React.FC = () => {
   useEffect(() => {
     if (id) {
       const loadCoach = async () => {
+        setIsLoading(true);
         const found = await getCoachById(id);
         setCoach(found || undefined);
+        setIsLoading(false);
 
         if (found) {
           await trackProfileView(id);
@@ -108,14 +111,28 @@ export const CoachDetails: React.FC = () => {
     }
   }, [id]);
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="text-6xl mb-4 animate-bounce">🦴</div>
+          <h2 className="text-xl font-bold text-slate-700">Fetching profile...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  // Not found state
   if (!coach) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="text-center">
+          <div className="text-6xl mb-4">🐕</div>
           <h2 className="text-xl font-bold text-slate-700 mb-4">Coach not found</h2>
           <button
             onClick={() => navigate('/search')}
-            className="text-brand-600 hover:underline"
+            className="text-brand-600 hover:underline font-bold"
           >
             Back to Search
           </button>
