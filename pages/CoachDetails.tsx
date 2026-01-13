@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getCoachById, trackProfileView, getCoaches, addReview } from '../services/supabaseService';
 import { Coach, QuestionnaireAnswers, CURRENCIES } from '../types';
 import { calculateMatchScore } from '../utils/matchCalculator';
+import { useAuth } from '../contexts/AuthContext';
 import {
   ArrowLeft, Star, Mail, Instagram, MessageCircle, Linkedin,
   MapPin, CheckCircle, Share2, ChevronLeft, ChevronRight, Clock, X,
@@ -13,6 +14,7 @@ export const CoachDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { coach: currentUserCoach } = useAuth();
   const [coach, setCoach] = useState<Coach | undefined>(undefined);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const [showRecentlyViewed, setShowRecentlyViewed] = useState(false);
@@ -156,6 +158,12 @@ export const CoachDetails: React.FC = () => {
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setReviewError(null);
+
+    // Prevent coaches from reviewing themselves
+    if (currentUserCoach && coach && currentUserCoach.id === coach.id) {
+      setReviewError('You cannot leave a review on your own profile. Reviews must be from genuine clients.');
+      return;
+    }
 
     // Validation
     if (!reviewFormData.author.trim()) {
@@ -844,13 +852,15 @@ export const CoachDetails: React.FC = () => {
               )}
             </div>
 
-            {/* Leave a Review Button */}
-            <button
-              onClick={() => setShowReviewForm(true)}
-              className="w-full bg-slate-900 text-white font-black py-5 rounded-2xl text-xl shadow-xl hover:shadow-2xl hover:bg-slate-800 transition-all transform hover:-translate-y-0.5"
-            >
-              Leave a Review
-            </button>
+            {/* Leave a Review Button - Hide if viewing own profile */}
+            {!(currentUserCoach && coach && currentUserCoach.id === coach.id) && (
+              <button
+                onClick={() => setShowReviewForm(true)}
+                className="w-full bg-slate-900 text-white font-black py-5 rounded-2xl text-xl shadow-xl hover:shadow-2xl hover:bg-slate-800 transition-all transform hover:-translate-y-0.5"
+              >
+                Leave a Review
+              </button>
+            )}
           </div>
 
           {/* Share Button */}
