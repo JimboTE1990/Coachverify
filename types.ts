@@ -7,6 +7,27 @@ export type SubscriptionStatus = 'active' | 'trial' | 'expired' | 'onboarding';
 
 export type BillingCycle = 'monthly' | 'annual';
 
+export type Currency = 'USD' | 'EUR' | 'GBP' | 'JPY' | 'AUD' | 'CAD' | 'CHF' | 'CNY' | 'INR' | 'NZD';
+
+export interface CurrencyInfo {
+  code: Currency;
+  symbol: string;
+  name: string;
+}
+
+export const CURRENCIES: CurrencyInfo[] = [
+  { code: 'GBP', symbol: '£', name: 'Pound Sterling' },
+  { code: 'USD', symbol: '$', name: 'US Dollar' },
+  { code: 'EUR', symbol: '€', name: 'Euro' },
+  { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+  { code: 'AUD', symbol: '$', name: 'Australian Dollar' },
+  { code: 'CAD', symbol: '$', name: 'Canadian Dollar' },
+  { code: 'CHF', symbol: 'CHF', name: 'Swiss Franc' },
+  { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' },
+  { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+  { code: 'NZD', symbol: '$', name: 'New Zealand Dollar' },
+];
+
 export type AccreditationLevel =
   | 'Foundation'
   | 'Practitioner'
@@ -272,6 +293,7 @@ export interface Coach {
   bio: string;
   socialLinks: SocialLink[];
   hourlyRate: number;
+  currency?: Currency; // Coach's preferred currency (defaults to GBP)
   yearsExperience: number;
   certifications: string[]; // Legacy field - keeping for backward compatibility
   isVerified: boolean;

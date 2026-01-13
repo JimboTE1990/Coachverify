@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Coach } from '../types';
+import { Coach, CURRENCIES } from '../types';
 import { BadgeCheck, Star, MapPin, ArrowRight, Sparkles } from 'lucide-react';
 
 interface CoachCardProps {
@@ -51,7 +51,9 @@ export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchP
             <p className="text-brand-600 font-bold text-xs uppercase tracking-wide mb-2">{coach.specialties?.[0] || 'General'}</p>
           </div>
           <div className="text-right">
-              <span className="text-xl font-bold text-slate-900">£{coach.hourlyRate}</span>
+              <span className="text-xl font-bold text-slate-900">
+                {CURRENCIES.find(c => c.code === (coach.currency || 'GBP'))?.symbol || '£'}{coach.hourlyRate}
+              </span>
               <span className="text-xs text-slate-400 block font-medium">/hr</span>
           </div>
         </div>

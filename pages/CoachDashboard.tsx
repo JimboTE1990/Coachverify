@@ -16,7 +16,9 @@ import {
   NicheDemographicExpertise,
   MethodologyModalityExpertise,
   CPDQualification,
-  CoachingLanguage
+  CoachingLanguage,
+  Currency,
+  CURRENCIES
 } from '../types';
 import {
   User, Settings, CreditCard, Lock, LogOut,
@@ -157,6 +159,7 @@ export const CoachDashboard: React.FC = () => {
         name: currentCoach.name,
         bio: currentCoach.bio,
         hourlyRate: currentCoach.hourlyRate,
+        currency: currentCoach.currency || 'GBP',
         specialties: currentCoach.specialties || [],
         availableFormats: currentCoach.availableFormats || [],
         socialLinks: currentCoach.socialLinks || []
@@ -945,11 +948,32 @@ export const CoachDashboard: React.FC = () => {
                             </div>
                           </div>
 
+                          {/* Currency */}
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-3">Currency</label>
+                            <select
+                              value={localProfile?.currency || 'GBP'}
+                              onChange={(e) => updateLocalProfile({currency: e.target.value as Currency})}
+                              className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-sm font-medium text-slate-800 bg-white"
+                            >
+                              {CURRENCIES.map((curr) => (
+                                <option key={curr.code} value={curr.code}>
+                                  {curr.symbol} {curr.code} - {curr.name}
+                                </option>
+                              ))}
+                            </select>
+                            <p className="text-xs text-slate-500 mt-2">Your preferred currency for pricing.</p>
+                          </div>
+
                           {/* Hourly Rate */}
                           <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-3">Hourly Rate (£)</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-3">
+                              Hourly Rate ({CURRENCIES.find(c => c.code === (localProfile?.currency || 'GBP'))?.symbol || '£'})
+                            </label>
                             <div className="relative">
-                                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 font-bold">£</span>
+                                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 font-bold">
+                                  {CURRENCIES.find(c => c.code === (localProfile?.currency || 'GBP'))?.symbol || '£'}
+                                </span>
                                 <input
                                     type="number"
                                     value={localProfile?.hourlyRate || ''}

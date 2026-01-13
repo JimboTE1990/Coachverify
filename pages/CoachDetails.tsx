@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getCoachById, trackProfileView, getCoaches, addReview } from '../services/supabaseService';
-import { Coach, QuestionnaireAnswers } from '../types';
+import { Coach, QuestionnaireAnswers, CURRENCIES } from '../types';
 import { calculateMatchScore } from '../utils/matchCalculator';
 import {
   ArrowLeft, Star, Mail, Instagram, MessageCircle, Linkedin,
@@ -464,7 +464,9 @@ export const CoachDetails: React.FC = () => {
             {/* Price Badge */}
             <div className="flex justify-center mb-8">
               <div className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white px-8 py-3 rounded-full shadow-lg">
-                <span className="text-2xl font-black">£{coach.hourlyRate}</span>
+                <span className="text-2xl font-black">
+                  {CURRENCIES.find(c => c.code === (coach.currency || 'GBP'))?.symbol || '£'}{coach.hourlyRate}
+                </span>
                 <span className="text-sm font-semibold ml-1">per hour</span>
               </div>
             </div>
