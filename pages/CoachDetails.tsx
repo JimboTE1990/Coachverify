@@ -33,6 +33,8 @@ export const CoachDetails: React.FC = () => {
   });
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  const [expandedReview, setExpandedReview] = useState(false);
 
   // Check for questionnaire data from location state
   useEffect(() => {
@@ -710,10 +712,20 @@ export const CoachDetails: React.FC = () => {
                   ))}
                 </div>
 
-                {/* Review Text */}
-                <p className="text-slate-900 text-center text-lg font-medium leading-relaxed mb-6 min-h-[80px]">
-                  {currentReview.text || `${coach.name} is an excellent coach.`}
-                </p>
+                {/* Review Text - Clickable to expand */}
+                <div
+                  onClick={() => setExpandedReview(!expandedReview)}
+                  className="cursor-pointer hover:bg-white/30 rounded-xl p-4 transition-colors"
+                >
+                  <p className={`text-slate-900 text-center text-lg font-medium leading-relaxed mb-6 ${expandedReview ? '' : 'line-clamp-3'}`}>
+                    {currentReview.text || `${coach.name} is an excellent coach.`}
+                  </p>
+                  {currentReview.text && currentReview.text.length > 150 && (
+                    <p className="text-center text-sm text-cyan-600 font-bold">
+                      {expandedReview ? 'Show less' : 'Read more'}
+                    </p>
+                  )}
+                </div>
 
                 {/* Reviewer Info */}
                 <div className="text-center">
@@ -779,6 +791,18 @@ export const CoachDetails: React.FC = () => {
                   </>
                 )}
               </div>
+
+              {/* View All Reviews Button */}
+              {coach.reviews.length > 3 && (
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={() => setShowAllReviews(true)}
+                    className="text-cyan-600 hover:text-cyan-700 font-bold text-sm underline"
+                  >
+                    View All {coach.reviews.length} Reviews
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -802,7 +826,7 @@ export const CoachDetails: React.FC = () => {
                   onClick={() => setShowContactOptions(!showContactOptions)}
                   className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 text-black font-black py-5 rounded-2xl text-xl shadow-xl hover:shadow-2xl hover:from-cyan-600 hover:to-cyan-700 transition-all transform hover:-translate-y-0.5"
                 >
-                  Schedule a call with coach
+                  Schedule a Call
                 </button>
               )}
 
@@ -1083,6 +1107,93 @@ export const CoachDetails: React.FC = () => {
                 )}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* View All Reviews Modal */}
+      {showAllReviews && coach && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-gradient-to-r from-cyan-50 to-blue-50">
+              <div>
+                <h3 className="text-2xl font-black text-slate-900">All Reviews</h3>
+                <p className="text-sm text-slate-600 mt-1">
+                  {coach.reviews.length} {coach.reviews.length === 1 ? 'review' : 'reviews'} • Average rating: {avgRating.toFixed(1)} ⭐
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAllReviews(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Reviews List */}
+            <div className="overflow-y-auto max-h-[calc(90vh-100px)] p-6 space-y-4">
+              {coach.reviews.map((review, index) => (
+                <div
+                  key={review.id}
+                  className="bg-gradient-to-br from-cyan-50 via-cyan-25 to-blue-50 rounded-2xl p-6 border border-cyan-200 shadow-sm"
+                >
+                  {/* Rating */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`h-5 w-5 ${star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'fill-slate-300 text-slate-300'}`}
+                        />
+                      ))}
+                    </div>
+                    {review.verificationStatus === 'verified' && (
+                      <CheckCircle className="h-5 w-5 text-green-600 fill-green-600" />
+                    )}
+                  </div>
+
+                  {/* Review Text */}
+                  <p className="text-slate-900 text-base leading-relaxed mb-4">
+                    {review.text || `${coach.name} is an excellent coach.`}
+                  </p>
+
+                  {/* Reviewer Info */}
+                  <div className="flex items-center justify-between text-sm">
+                    <div>
+                      <span className="font-bold text-slate-900">{review.author}</span>
+                      {review.location && (
+                        <span className="text-slate-500"> • {review.location}</span>
+                      )}
+                    </div>
+                    <span className="text-slate-500">{review.date}</span>
+                  </div>
+
+                  {/* Coach Reply */}
+                  {review.coachReply && (
+                    <div className="mt-4 pt-4 border-t border-cyan-200">
+                      <div className="bg-white/70 rounded-xl p-4">
+                        <p className="font-bold text-sm text-slate-900 mb-2">Response from {coach.name}:</p>
+                        <p className="text-slate-700 text-sm leading-relaxed">{review.coachReply}</p>
+                        {review.coachReplyDate && (
+                          <p className="text-xs text-slate-500 mt-2">Replied on {review.coachReplyDate}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-slate-200 bg-slate-50">
+              <button
+                onClick={() => setShowAllReviews(false)}
+                className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
