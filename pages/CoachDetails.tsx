@@ -7,7 +7,7 @@ import { useAuth } from '../hooks/useAuth';
 import {
   ArrowLeft, Star, Mail, Instagram, MessageCircle, Linkedin,
   MapPin, CheckCircle, Share2, ChevronLeft, ChevronRight, Clock, X,
-  Facebook, Globe, Youtube, Phone, Copy
+  Facebook, Globe, Youtube, Phone, Copy, Flag
 } from 'lucide-react';
 
 export const CoachDetails: React.FC = () => {
@@ -741,18 +741,20 @@ export const CoachDetails: React.FC = () => {
 
                 {/* Reviewer Info */}
                 <div className="text-center">
-                  <div className="flex items-center justify-center gap-2">
+                  <div className="flex flex-col items-center gap-2">
                     <span className="font-black text-slate-900 text-lg">
                       {currentReview.author || 'Jamie'}
                     </span>
                     {currentReview.verificationStatus === 'verified' && (
-                      <div className="relative group">
-                        <CheckCircle className="h-5 w-5 text-green-600 fill-green-600" />
-                        <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block w-48 bg-slate-900 text-white text-xs rounded-lg py-2 px-3 shadow-lg z-10">
-                          <div className="font-bold mb-1">Verified Review</div>
-                          <div>This review has been verified by the coach</div>
-                          <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-900"></div>
-                        </div>
+                      <div className="flex items-center gap-1 bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-bold">
+                        <CheckCircle className="h-3 w-3" />
+                        Client verified by coach
+                      </div>
+                    )}
+                    {currentReview.verificationStatus === 'flagged' && (
+                      <div className="flex items-center gap-1 bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full font-bold">
+                        <Flag className="h-3 w-3" />
+                        Coach has flagged as possible spam
                       </div>
                     )}
                   </div>
@@ -1160,7 +1162,7 @@ export const CoachDetails: React.FC = () => {
                   className="bg-gradient-to-br from-cyan-50 via-cyan-25 to-blue-50 rounded-2xl p-6 border border-cyan-200 shadow-sm"
                 >
                   {/* Rating */}
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center justify-between mb-3">
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star
@@ -1170,7 +1172,16 @@ export const CoachDetails: React.FC = () => {
                       ))}
                     </div>
                     {review.verificationStatus === 'verified' && (
-                      <CheckCircle className="h-5 w-5 text-green-600 fill-green-600" />
+                      <div className="flex items-center gap-1 bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-bold">
+                        <CheckCircle className="h-3 w-3" />
+                        Client verified by coach
+                      </div>
+                    )}
+                    {review.verificationStatus === 'flagged' && (
+                      <div className="flex items-center gap-1 bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full font-bold">
+                        <Flag className="h-3 w-3" />
+                        Coach has flagged as possible spam
+                      </div>
                     )}
                   </div>
 

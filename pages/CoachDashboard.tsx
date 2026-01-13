@@ -304,8 +304,9 @@ export const CoachDashboard: React.FC = () => {
       if (updatedCoach) {
         setCoach(updatedCoach);
       }
+      showToast('Review verified successfully! Badge will show on public profile.', 'success');
     } else {
-      alert('Failed to verify review. Please try again.');
+      showToast('Failed to verify review. Please try again.', 'error');
     }
   };
 
@@ -319,8 +320,9 @@ export const CoachDashboard: React.FC = () => {
       if (updatedCoach) {
         setCoach(updatedCoach);
       }
+      showToast('Review flagged as possible spam. Warning badge will show on public profile.', 'success');
     } else {
-      alert('Failed to flag review. Please try again.');
+      showToast('Failed to flag review. Please try again.', 'error');
     }
   };
 
@@ -334,8 +336,9 @@ export const CoachDashboard: React.FC = () => {
       if (updatedCoach) {
         setCoach(updatedCoach);
       }
+      showToast('Review status reset to unverified.', 'success');
     } else {
-      alert('Failed to reset review. Please try again.');
+      showToast('Failed to reset review. Please try again.', 'error');
     }
   };
 
