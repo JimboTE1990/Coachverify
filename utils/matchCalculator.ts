@@ -96,6 +96,26 @@ export const calculateMatchScore = (coach: Coach, answers: QuestionnaireAnswers)
     totalPoints += 10;
   }
 
+  // 7. Review Quality Boost (Weight: 5 points) - BONUS
+  // Rewards coaches with high ratings and many reviews
+  maxPoints += 5;
+  const avgRating = coach.averageRating || 0;
+  const totalReviews = coach.totalReviews || 0;
+
+  if (totalReviews > 0) {
+    // Points based on rating (0-3 points)
+    const ratingPoints = (avgRating / 5) * 3;
+
+    // Bonus points for review volume (0-2 points)
+    let volumeBonus = 0;
+    if (totalReviews >= 20) volumeBonus = 2;
+    else if (totalReviews >= 10) volumeBonus = 1.5;
+    else if (totalReviews >= 5) volumeBonus = 1;
+    else if (totalReviews >= 2) volumeBonus = 0.5;
+
+    totalPoints += Math.round(ratingPoints + volumeBonus);
+  }
+
   // Calculate percentage
   const percentage = Math.round((totalPoints / maxPoints) * 100);
   return percentage;
@@ -173,6 +193,43 @@ export const sortCoachesByMatch = (
   return [...coaches].sort((a, b) => {
     const scoreA = calculateMatchScore(a, answers);
     const scoreB = calculateMatchScore(b, answers);
+    return scoreB - scoreA;
+  });
+};
+
+/**
+ * Calculate review quality score for sorting (0-100)
+ * Used when no questionnaire data is available
+ */
+export const calculateReviewScore = (coach: Coach): number => {
+  const avgRating = coach.averageRating || 0;
+  const totalReviews = coach.totalReviews || 0;
+
+  if (totalReviews === 0) return 0;
+
+  // Base score from rating (0-70 points)
+  const ratingScore = (avgRating / 5) * 70;
+
+  // Volume boost (0-30 points)
+  let volumeScore = 0;
+  if (totalReviews >= 50) volumeScore = 30;
+  else if (totalReviews >= 20) volumeScore = 25;
+  else if (totalReviews >= 10) volumeScore = 20;
+  else if (totalReviews >= 5) volumeScore = 15;
+  else if (totalReviews >= 2) volumeScore = 10;
+  else volumeScore = 5;
+
+  return Math.round(ratingScore + volumeScore);
+};
+
+/**
+ * Sort coaches by review quality (highest first)
+ * Prioritizes highly-rated coaches with many reviews
+ */
+export const sortCoachesByReviews = (coaches: Coach[]): Coach[] => {
+  return [...coaches].sort((a, b) => {
+    const scoreA = calculateReviewScore(a);
+    const scoreB = calculateReviewScore(b);
     return scoreB - scoreA;
   });
 };
