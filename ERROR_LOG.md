@@ -1293,6 +1293,199 @@ fix: [ERROR-XXX] Brief description of fix
 
 ---
 
+---
+
+### ERROR-019: Profile Fields Not Persisting or Displaying (Critical Data Issue)
+**Date:** 13 January 2026
+**Status:** ✅ RESOLVED
+**Severity:** 🔴 CRITICAL (Data Loss / Display Issue)
+
+**User Report:**
+> "So changes I make in my profile are not sticking or viewable in the profile. Specifically around matching criteria / qualifications/ certifications etc. This info should be sticking and feeding through for users to see"
+
+Screenshot showed:
+- Accreditation Level: "Senior Practitioner" (displaying)
+- Bio displaying correctly
+- BUT: qualifications, certifications, coaching expertise, CPD qualifications, languages NOT displaying
+
+**Issue:**
+Multiple critical data persistence and display problems:
+1. **Database Update Missing Fields**: `updateCoach()` function was NOT saving gender or currency fields to database
+2. **Data Mapping Missing Fields**: `mapCoachProfile()` was NOT reading gender or currency from database
+3. **LocalProfile Initialization Incomplete**: CoachDashboard was missing 9+ fields from initial state load:
+   - coachingExpertise
+   - cpdQualifications
+   - coachingLanguages
+   - accreditationLevel
+   - qualifications
+   - acknowledgements
+   - additionalCertifications
+   - coachingHours
+   - locationRadius
+4. **Hardcoded Display Value**: CoachDetails.tsx had hardcoded "Senior Practitioner" instead of dynamic `{coach.accreditationLevel}`
+5. **Missing Display Sections**: CoachDetails.tsx was NOT rendering:
+   - CPD Qualifications
+   - Coaching Expertise
+   - Coaching Languages
+   - Gender
+
+**Root Cause:**
+When new fields were added to the database schema, the corresponding:
+- Save logic (updateCoach)
+- Read logic (mapCoachProfile)
+- State initialization (localProfile)
+- Display UI (CoachDetails sections)
+
+Were NOT updated to handle the new fields. This created a disconnect where:
+- Coaches could SELECT values in dashboard UI
+- Values would be in component state temporarily
+- BUT would NOT save to database (missing from updateData object)
+- OR would save but not load on refresh (missing from localProfile init)
+- OR would load but not display (missing UI sections)
+
+**Solution:**
+
+**1. Fixed Database Update** - `services/supabaseService.ts`:
+```typescript
+// Added to updateCoach() updateData object:
+if (coach.gender !== undefined) updateData.gender = coach.gender;
+if (coach.currency !== undefined) updateData.currency = coach.currency;
+```
+
+**2. Fixed Database Read** - `services/supabaseService.ts`:
+```typescript
+// Added to mapCoachProfile():
+gender: data.gender,
+currency: data.currency || 'GBP',
+```
+
+**3. Fixed State Initialization** - `pages/CoachDashboard.tsx`:
+```typescript
+setLocalProfile({
+  name: currentCoach.name,
+  bio: currentCoach.bio,
+  hourlyRate: currentCoach.hourlyRate,
+  currency: currentCoach.currency || 'GBP',
+  photoUrl: currentCoach.photoUrl,
+  gender: currentCoach.gender,
+  specialties: currentCoach.specialties || [],
+  availableFormats: currentCoach.availableFormats || [],
+  socialLinks: currentCoach.socialLinks || [],
+  coachingExpertise: currentCoach.coachingExpertise || [],
+  cpdQualifications: currentCoach.cpdQualifications || [],
+  coachingLanguages: currentCoach.coachingLanguages || [],
+  accreditationLevel: currentCoach.accreditationLevel,
+  qualifications: currentCoach.qualifications || [],
+  acknowledgements: currentCoach.acknowledgements || [],
+  additionalCertifications: currentCoach.additionalCertifications || [],
+  coachingHours: currentCoach.coachingHours,
+  locationRadius: currentCoach.locationRadius
+});
+```
+
+**4. Fixed Hardcoded Display** - `pages/CoachDetails.tsx`:
+```typescript
+// BEFORE (line 491):
+<p className="text-xl font-black text-slate-900">Senior Practitioner</p>
+
+// AFTER:
+{coach.accreditationLevel && (
+  <div>
+    <p className="text-slate-600 text-sm mb-1">Accreditation Level:</p>
+    <p className="text-xl font-black text-slate-900">{coach.accreditationLevel}</p>
+  </div>
+)}
+```
+
+**5. Added Missing Display Sections** - `pages/CoachDetails.tsx`:
+```typescript
+{/* CPD Qualifications */}
+{coach.cpdQualifications && coach.cpdQualifications.length > 0 && (
+  <div>
+    <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">CPD Qualifications:</h3>
+    <div className="flex flex-wrap gap-2">
+      {coach.cpdQualifications.map((qual, idx) => (
+        <span key={idx} className="bg-purple-100 text-purple-900 px-4 py-2 rounded-full text-sm font-bold border border-purple-300">
+          {qual}
+        </span>
+      ))}
+    </div>
+  </div>
+)}
+
+{/* Coaching Expertise */}
+{coach.coachingExpertise && coach.coachingExpertise.length > 0 && (
+  <div>
+    <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Coaching Expertise:</h3>
+    <div className="flex flex-wrap gap-2">
+      {coach.coachingExpertise.map((expertise, idx) => (
+        <span key={idx} className="bg-blue-100 text-blue-900 px-4 py-2 rounded-full text-sm font-bold border border-blue-300">
+          {expertise}
+        </span>
+      ))}
+    </div>
+  </div>
+)}
+
+{/* Coaching Languages */}
+{coach.coachingLanguages && coach.coachingLanguages.length > 0 && (
+  <div>
+    <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Coaching Languages:</h3>
+    <div className="flex flex-wrap gap-2">
+      {coach.coachingLanguages.map((lang, idx) => (
+        <span key={idx} className="bg-green-100 text-green-900 px-4 py-2 rounded-full text-sm font-bold border border-green-300">
+          {lang}
+        </span>
+      ))}
+    </div>
+  </div>
+)}
+
+{/* Gender */}
+{coach.gender && (
+  <div>
+    <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Gender:</h3>
+    <p className="text-slate-900 font-bold text-base">{coach.gender}</p>
+  </div>
+)}
+```
+
+**Files Modified:**
+- `services/supabaseService.ts` - Added gender/currency to updateCoach() and mapCoachProfile()
+- `pages/CoachDashboard.tsx` - Complete localProfile initialization with all 17 fields
+- `pages/CoachDetails.tsx` - Fixed hardcoded accreditation + added 4 new display sections
+
+**Commit:** `93dab55` - "fix: ensure all profile fields persist and display correctly"
+
+**Testing:**
+1. ✅ Edit profile in dashboard → Save → Refresh → Data still there
+2. ✅ Navigate to public profile → All fields display correctly
+3. ✅ Gender selection persists across sessions
+4. ✅ Currency selection persists across sessions
+5. ✅ Coaching expertise selections display as blue badges
+6. ✅ CPD qualifications display as purple badges
+7. ✅ Coaching languages display as green badges
+8. ✅ Accreditation level displays dynamically (not hardcoded)
+
+**Impact:**
+- **CRITICAL**: All coach profile data now properly saves and displays
+- **Scalability**: No manual intervention needed - data flows automatically
+- **User Experience**: Coaches can now fully build their profiles with confidence
+- **Data Integrity**: Complete end-to-end data flow from form → DB → display
+
+**Prevention:**
+1. When adding new database columns, create checklist:
+   - [ ] Add to database schema
+   - [ ] Add to TypeScript interface
+   - [ ] Add to updateCoach() save logic
+   - [ ] Add to mapCoachProfile() read logic
+   - [ ] Add to localProfile initialization
+   - [ ] Add UI display section
+2. Add E2E tests for profile data persistence
+3. Add TypeScript strict mode to catch missing fields
+
+---
+
 **Legend:**
 - 🔴 CRITICAL: Blocks deployment or breaks core functionality
 - 🟡 HIGH/MEDIUM: Impacts user experience but not blocking
