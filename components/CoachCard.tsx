@@ -12,9 +12,10 @@ interface CoachCardProps {
 
 export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchPercentage, filterMatchPercentage }) => {
   const navigate = useNavigate();
-  const avgRating = coach.reviews?.length 
-    ? (coach.reviews.reduce((acc, r) => acc + r.rating, 0) / coach.reviews.length).toFixed(1)
-    : 'New';
+  const totalReviews = coach.totalReviews || coach.reviews?.length || 0;
+  const avgRating = coach.averageRating || (coach.reviews?.length
+    ? (coach.reviews.reduce((acc, r) => acc + r.rating, 0) / coach.reviews.length)
+    : 0);
 
   const handleClick = () => {
     navigate(`/coach/${coach.id}`);
@@ -62,8 +63,14 @@ export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchP
            <MapPin className="h-3.5 w-3.5 mr-1" /> {coach.location}
            <span className="mx-2 text-slate-300">|</span>
            <Star className="h-3.5 w-3.5 text-yellow-400 fill-current mr-1" />
-           <span className="text-slate-700">{avgRating}</span>
-           <span className="text-slate-400 ml-1">({coach.reviews?.length || 0})</span>
+           {totalReviews > 0 ? (
+             <>
+               <span className="text-slate-700 font-bold">{avgRating.toFixed(1)}</span>
+               <span className="text-slate-400 ml-1">({totalReviews})</span>
+             </>
+           ) : (
+             <span className="text-slate-400">No reviews yet</span>
+           )}
         </div>
         
         <p className="text-slate-600 text-sm line-clamp-2 mb-4 leading-relaxed">{coach.bio}</p>
