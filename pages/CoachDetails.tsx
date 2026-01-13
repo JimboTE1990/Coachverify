@@ -35,6 +35,12 @@ export const CoachDetails: React.FC = () => {
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [expandedReview, setExpandedReview] = useState(false);
+  const reviewsSectionRef = React.useRef<HTMLDivElement>(null);
+
+  // Scroll to reviews section
+  const scrollToReviews = () => {
+    reviewsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   // Check for questionnaire data from location state
   useEffect(() => {
@@ -430,8 +436,12 @@ export const CoachDetails: React.FC = () => {
               </p>
             </div>
 
-            {/* Star Rating */}
-            <div className="flex items-center justify-center gap-2 mb-6">
+            {/* Star Rating - Clickable to scroll to reviews */}
+            <button
+              onClick={scrollToReviews}
+              className="flex items-center justify-center gap-2 mb-6 hover:opacity-80 transition-opacity cursor-pointer"
+              aria-label="View reviews"
+            >
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star
@@ -440,8 +450,10 @@ export const CoachDetails: React.FC = () => {
                   />
                 ))}
               </div>
-              <span className="text-lg font-bold text-slate-700">({totalReviews})</span>
-            </div>
+              <span className="text-lg font-bold text-slate-700 hover:text-cyan-600 transition-colors">
+                ({totalReviews})
+              </span>
+            </button>
 
             {/* Contact Icons - Email, WhatsApp, and ALL social links */}
             <div className="flex items-center justify-center gap-4 mb-8 flex-wrap">
@@ -700,7 +712,7 @@ export const CoachDetails: React.FC = () => {
 
           {/* Reviews Section */}
           {coach.reviews && coach.reviews.length > 0 && currentReview && (
-            <div className="px-6 py-8">
+            <div ref={reviewsSectionRef} className="px-6 py-8">
               <div className="bg-gradient-to-br from-cyan-100 via-cyan-50 to-blue-50 rounded-3xl p-8 relative shadow-lg border border-cyan-200">
                 {/* Stars at Top */}
                 <div className="flex justify-center gap-1 mb-5">
@@ -1115,9 +1127,13 @@ export const CoachDetails: React.FC = () => {
       {showAllReviews && coach && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl relative">
-            {/* Dalmatian Logo - Top Right Corner */}
-            <div className="absolute top-4 right-16 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center z-10 border-2 border-slate-200">
-              <span className="text-2xl">🐕</span>
+            {/* CoachDog Logo - Top Right Corner */}
+            <div className="absolute top-4 right-16 w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center z-10 border-2 border-cyan-200 overflow-hidden">
+              <img
+                src="/coachdog-logo.png"
+                alt="CoachDog"
+                className="w-full h-full object-cover"
+              />
             </div>
 
             {/* Header */}
