@@ -147,6 +147,11 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   if (coach.gender !== undefined) updateData.gender = coach.gender;
   if (coach.currency !== undefined) updateData.currency = coach.currency;
 
+  // Specialties and formats as JSONB columns
+  if (coach.specialties !== undefined) updateData.specialties = coach.specialties;
+  if (coach.availableFormats !== undefined) updateData.formats = coach.availableFormats;
+  if (coach.certifications !== undefined) updateData.certifications = coach.certifications;
+
   // Cancellation fields (only add if defined)
   if (coach.cancelledAt !== undefined) updateData.cancelled_at = coach.cancelledAt;
   if (coach.subscriptionEndsAt !== undefined) updateData.subscription_ends_at = coach.subscriptionEndsAt;
@@ -167,15 +172,6 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
     console.error('Error details:', coachError.message, coachError.details, coachError.hint);
     return false;
   }
-
-  // Update specialties
-  await updateCoachSpecialties(coach.id, coach.specialties);
-
-  // Update formats
-  await updateCoachFormats(coach.id, coach.availableFormats);
-
-  // Update certifications
-  await updateCoachCertifications(coach.id, coach.certifications);
 
   // Update social links with error handling
   try {
