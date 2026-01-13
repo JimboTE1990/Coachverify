@@ -161,6 +161,7 @@ export const CoachDashboard: React.FC = () => {
         hourlyRate: currentCoach.hourlyRate,
         currency: currentCoach.currency || 'GBP',
         photoUrl: currentCoach.photoUrl,
+        gender: currentCoach.gender,
         specialties: currentCoach.specialties || [],
         availableFormats: currentCoach.availableFormats || [],
         socialLinks: currentCoach.socialLinks || []
