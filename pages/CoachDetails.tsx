@@ -793,7 +793,7 @@ export const CoachDetails: React.FC = () => {
               </div>
 
               {/* View All Reviews Button */}
-              {coach.reviews.length > 3 && (
+              {coach.reviews.length > 1 && (
                 <div className="mt-4 text-center">
                   <button
                     onClick={() => setShowAllReviews(true)}
