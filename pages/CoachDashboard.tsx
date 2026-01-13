@@ -201,6 +201,9 @@ export const CoachDashboard: React.FC = () => {
   // Toast Notification State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
+  // Review Sub-Tab State
+  const [reviewSubTab, setReviewSubTab] = useState<'pending' | 'archived'>('pending');
+
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000); // Auto-dismiss after 4 seconds
@@ -747,9 +750,9 @@ export const CoachDashboard: React.FC = () => {
               >
                 <Star className="h-4 w-4 inline mr-2" />
                 Reviews
-                {currentCoach?.reviews && currentCoach.reviews.filter(r => r.verificationStatus !== 'verified').length > 0 && (
+                {currentCoach?.reviews && currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').length > 0 && (
                   <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    {currentCoach.reviews.filter(r => r.verificationStatus !== 'verified').length}
+                    {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').length}
                   </span>
                 )}
               </button>
@@ -818,9 +821,9 @@ export const CoachDashboard: React.FC = () => {
                   <div className="flex items-center">
                     <Star className={`h-5 w-5 mr-3 ${activeTab === 'reviews' ? 'text-yellow-600' : 'text-slate-400'}`} /> Reviews
                   </div>
-                  {currentCoach?.reviews && currentCoach.reviews.filter(r => r.verificationStatus !== 'verified').length > 0 && (
+                  {currentCoach?.reviews && currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').length > 0 && (
                     <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                      {currentCoach.reviews.filter(r => r.verificationStatus !== 'verified').length}
+                      {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').length}
                     </span>
                   )}
                 </button>
@@ -1704,8 +1707,46 @@ export const CoachDashboard: React.FC = () => {
                   <h2 className="text-2xl font-display font-bold text-slate-900 mb-6">Manage Reviews</h2>
 
                   {currentCoach?.reviews && currentCoach.reviews.length > 0 ? (
-                    <div className="space-y-4">
-                      {currentCoach.reviews.map((review: Review) => (
+                    <>
+                      {/* Sub-tabs for Pending/Archived */}
+                      <div className="flex gap-2 mb-6 border-b border-slate-200">
+                        <button
+                          onClick={() => setReviewSubTab('pending')}
+                          className={`px-4 py-2 font-bold text-sm transition-colors relative ${
+                            reviewSubTab === 'pending'
+                              ? 'text-yellow-600 border-b-2 border-yellow-600'
+                              : 'text-slate-500 hover:text-slate-700'
+                          }`}
+                        >
+                          Awaiting Approval
+                          {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').length > 0 && (
+                            <span className="ml-2 bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                              {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').length}
+                            </span>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => setReviewSubTab('archived')}
+                          className={`px-4 py-2 font-bold text-sm transition-colors relative ${
+                            reviewSubTab === 'archived'
+                              ? 'text-slate-600 border-b-2 border-slate-600'
+                              : 'text-slate-500 hover:text-slate-700'
+                          }`}
+                        >
+                          Archived
+                          {currentCoach.reviews.filter(r => r.verificationStatus === 'verified' || r.verificationStatus === 'flagged').length > 0 && (
+                            <span className="ml-2 bg-slate-400 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                              {currentCoach.reviews.filter(r => r.verificationStatus === 'verified' || r.verificationStatus === 'flagged').length}
+                            </span>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Pending Reviews */}
+                      {reviewSubTab === 'pending' && (
+                        <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                          {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').length > 0 ? (
+                            currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').map((review: Review) => (
                         <div
                           key={review.id}
                           className={`border-2 rounded-xl p-6 transition-all ${
@@ -1788,8 +1829,94 @@ export const CoachDashboard: React.FC = () => {
                             )}
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      ))
+                          ) : (
+                            <div className="text-center py-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
+                              <CheckCircle className="h-12 w-12 text-green-300 mx-auto mb-4" />
+                              <p className="text-slate-600 font-bold">All caught up!</p>
+                              <p className="text-slate-400 text-sm mt-2">No reviews awaiting approval</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Archived Reviews */}
+                      {reviewSubTab === 'archived' && (
+                        <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                          {currentCoach.reviews.filter(r => r.verificationStatus === 'verified' || r.verificationStatus === 'flagged').length > 0 ? (
+                            currentCoach.reviews.filter(r => r.verificationStatus === 'verified' || r.verificationStatus === 'flagged').map((review: Review) => (
+                              <div
+                                key={review.id}
+                                className={`border-2 rounded-xl p-6 transition-all ${
+                                  review.verificationStatus === 'verified'
+                                    ? 'border-green-200 bg-green-50/30'
+                                    : 'border-red-200 bg-red-50/30'
+                                }`}
+                              >
+                                {/* Review Header */}
+                                <div className="flex items-start justify-between mb-4">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <span className="font-bold text-slate-900">{review.author}</span>
+                                      {review.verificationStatus === 'verified' && (
+                                        <div className="flex items-center gap-1 bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-bold">
+                                          <CheckCircle className="h-3 w-3" />
+                                          Verified
+                                        </div>
+                                      )}
+                                      {review.verificationStatus === 'flagged' && (
+                                        <div className="flex items-center gap-1 bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full font-bold">
+                                          <Flag className="h-3 w-3" />
+                                          Flagged
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Star Rating */}
+                                    <div className="flex gap-1 mb-2">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                          key={star}
+                                          className={`h-4 w-4 ${star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'fill-slate-200 text-slate-200'}`}
+                                        />
+                                      ))}
+                                    </div>
+
+                                    <p className="text-sm text-slate-500 mb-1">
+                                      Coaching period: {review.coachingPeriod || 'Not specified'}
+                                    </p>
+                                    <p className="text-xs text-slate-400">
+                                      Submitted: {review.date}
+                                      {review.verifiedAt && ` • Verified: ${review.verifiedAt}`}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Review Text */}
+                                <p className="text-slate-700 mb-4 leading-relaxed">{review.text}</p>
+
+                                {/* Action Buttons */}
+                                <div className="flex gap-3 pt-4 border-t border-slate-200">
+                                  <button
+                                    onClick={() => handleResetReview(review.id)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-slate-600 text-white rounded-lg font-bold hover:bg-slate-700 transition-colors text-sm"
+                                  >
+                                    <RefreshCw className="h-4 w-4" />
+                                    Move to Pending
+                                  </button>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-center py-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
+                              <Star className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                              <p className="text-slate-600 font-bold">No archived reviews</p>
+                              <p className="text-slate-400 text-sm mt-2">Verified or flagged reviews will appear here</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <div className="text-center py-12">
                       <Star className="h-12 w-12 text-slate-300 mx-auto mb-4" />
