@@ -295,34 +295,47 @@ export const CoachDashboard: React.FC = () => {
   };
 
   const handleVerifyReview = async (reviewId: string) => {
-    if (!currentCoach?.id) return;
+    console.log('[handleVerifyReview] Called with reviewId:', reviewId);
+    console.log('[handleVerifyReview] currentCoach:', currentCoach);
 
+    if (!currentCoach?.id) {
+      console.error('[handleVerifyReview] No coach ID found');
+      showToast('Error: Coach ID not found. Please refresh and try again.', 'error');
+      return;
+    }
+
+    console.log('[handleVerifyReview] Calling verifyReview...');
     const success = await verifyReview(reviewId, currentCoach.id);
+    console.log('[handleVerifyReview] Success:', success);
+
     if (success) {
       // Refresh coach data to get updated reviews
-      const updatedCoach = await getCoachById(currentCoach.id);
-      if (updatedCoach) {
-        setCoach(updatedCoach);
-      }
+      await refreshCoach();
       showToast('Review verified successfully! Badge will show on public profile.', 'success');
     } else {
-      showToast('Failed to verify review. Please try again.', 'error');
+      showToast('Failed to verify review. Please check console for errors.', 'error');
     }
   };
 
   const handleFlagReview = async (reviewId: string) => {
-    if (!currentCoach?.id) return;
+    console.log('[handleFlagReview] Called with reviewId:', reviewId);
 
+    if (!currentCoach?.id) {
+      console.error('[handleFlagReview] No coach ID found');
+      showToast('Error: Coach ID not found. Please refresh and try again.', 'error');
+      return;
+    }
+
+    console.log('[handleFlagReview] Calling flagReview...');
     const success = await flagReview(reviewId, currentCoach.id);
+    console.log('[handleFlagReview] Success:', success);
+
     if (success) {
       // Refresh coach data to get updated reviews
-      const updatedCoach = await getCoachById(currentCoach.id);
-      if (updatedCoach) {
-        setCoach(updatedCoach);
-      }
+      await refreshCoach();
       showToast('Review flagged as possible spam. Warning badge will show on public profile.', 'success');
     } else {
-      showToast('Failed to flag review. Please try again.', 'error');
+      showToast('Failed to flag review. Please check console for errors.', 'error');
     }
   };
 
@@ -332,13 +345,10 @@ export const CoachDashboard: React.FC = () => {
     const success = await resetReviewVerification(reviewId, currentCoach.id);
     if (success) {
       // Refresh coach data to get updated reviews
-      const updatedCoach = await getCoachById(currentCoach.id);
-      if (updatedCoach) {
-        setCoach(updatedCoach);
-      }
+      await refreshCoach();
       showToast('Review status reset to unverified.', 'success');
     } else {
-      showToast('Failed to reset review. Please try again.', 'error');
+      showToast('Failed to reset review. Please check console for errors.', 'error');
     }
   };
 

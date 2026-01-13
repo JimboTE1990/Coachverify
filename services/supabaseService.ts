@@ -376,20 +376,30 @@ export const verifyReview = async (
   reviewId: string,
   coachId: string
 ): Promise<boolean> => {
-  const { error } = await supabase
+  console.log('[verifyReview] Attempting to verify review:', { reviewId, coachId });
+
+  const { data, error } = await supabase
     .from('reviews')
     .update({
       verification_status: 'verified',
       verified_at: new Date().toISOString(),
     })
     .eq('id', reviewId)
-    .eq('coach_id', coachId);
+    .eq('coach_id', coachId)
+    .select();
 
   if (error) {
-    console.error('Error verifying review:', error);
+    console.error('[verifyReview] Error:', error);
+    console.error('[verifyReview] Error details:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint
+    });
     return false;
   }
 
+  console.log('[verifyReview] Success! Updated rows:', data);
   return true;
 };
 
@@ -397,19 +407,29 @@ export const flagReview = async (
   reviewId: string,
   coachId: string
 ): Promise<boolean> => {
-  const { error } = await supabase
+  console.log('[flagReview] Attempting to flag review:', { reviewId, coachId });
+
+  const { data, error } = await supabase
     .from('reviews')
     .update({
       verification_status: 'flagged',
     })
     .eq('id', reviewId)
-    .eq('coach_id', coachId);
+    .eq('coach_id', coachId)
+    .select();
 
   if (error) {
-    console.error('Error flagging review:', error);
+    console.error('[flagReview] Error:', error);
+    console.error('[flagReview] Error details:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint
+    });
     return false;
   }
 
+  console.log('[flagReview] Success! Updated rows:', data);
   return true;
 };
 
