@@ -9,11 +9,14 @@ export { supabase };
 // ============================================================================
 
 export const getCoaches = async (): Promise<Coach[]> => {
+  // Show coaches with active subscriptions (trial or active)
+  // Trial coaches are auto-verified to appear immediately (for scalability)
+  // Only paid coaches require manual verification
   const { data: coaches, error } = await supabase
     .from('coach_profiles')
     .select('*')
-    .eq('is_verified', true)
-    .in('subscription_status', ['trial', 'active']) // Only show coaches with active subscriptions
+    .in('subscription_status', ['trial', 'active']) // Show all coaches with active subscriptions
+    .or('subscription_status.eq.trial,is_verified.eq.true') // Trial coaches OR verified coaches
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -444,11 +447,13 @@ export const searchCoaches = async (filters: {
   maxRate?: number;
   location?: string;
 }): Promise<Coach[]> => {
+  // Show coaches with active subscriptions (trial or active)
+  // Trial coaches are auto-visible, paid coaches need verification
   let query = supabase
     .from('coach_profiles')
     .select('*')
-    .eq('is_verified', true)
-    .in('subscription_status', ['trial', 'active']); // Only show coaches with active subscriptions
+    .in('subscription_status', ['trial', 'active']) // Only show coaches with active subscriptions
+    .or('subscription_status.eq.trial,is_verified.eq.true'); // Trial coaches OR verified coaches
 
   if (filters.specialty) {
     query = query.contains('specialties', [filters.specialty]);
