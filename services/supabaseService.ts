@@ -144,6 +144,8 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   if (coach.coachingExpertise !== undefined) updateData.coaching_expertise = coach.coachingExpertise;
   if (coach.cpdQualifications !== undefined) updateData.cpd_qualifications = coach.cpdQualifications;
   if (coach.coachingLanguages !== undefined) updateData.coaching_languages = coach.coachingLanguages;
+  if (coach.gender !== undefined) updateData.gender = coach.gender;
+  if (coach.currency !== undefined) updateData.currency = coach.currency;
 
   // Cancellation fields (only add if defined)
   if (coach.cancelledAt !== undefined) updateData.cancelled_at = coach.cancelledAt;
@@ -610,6 +612,8 @@ const mapCoachProfile = (data: any): Coach => {
     coachingExpertise: data.coaching_expertise,
     cpdQualifications: data.cpd_qualifications,
     coachingLanguages: data.coaching_languages,
+    gender: data.gender,
+    currency: data.currency || 'GBP',
 
     // Cancellation tracking (Phase 2)
     cancelledAt: data.cancelled_at,

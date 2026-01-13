@@ -164,7 +164,16 @@ export const CoachDashboard: React.FC = () => {
         gender: currentCoach.gender,
         specialties: currentCoach.specialties || [],
         availableFormats: currentCoach.availableFormats || [],
-        socialLinks: currentCoach.socialLinks || []
+        socialLinks: currentCoach.socialLinks || [],
+        coachingExpertise: currentCoach.coachingExpertise || [],
+        cpdQualifications: currentCoach.cpdQualifications || [],
+        coachingLanguages: currentCoach.coachingLanguages || [],
+        accreditationLevel: currentCoach.accreditationLevel,
+        qualifications: currentCoach.qualifications || [],
+        acknowledgements: currentCoach.acknowledgements || [],
+        additionalCertifications: currentCoach.additionalCertifications || [],
+        coachingHours: currentCoach.coachingHours,
+        locationRadius: currentCoach.locationRadius
       });
     }
   }, [currentCoach, localProfile]);

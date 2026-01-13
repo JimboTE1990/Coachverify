@@ -486,10 +486,12 @@ export const CoachDetails: React.FC = () => {
           <div className="px-6 py-6 space-y-6">
 
             {/* Accreditation Level */}
-            <div>
-              <p className="text-slate-600 text-sm mb-1">Accreditation Level:</p>
-              <p className="text-xl font-black text-slate-900">Senior Practitioner</p>
-            </div>
+            {coach.accreditationLevel && (
+              <div>
+                <p className="text-slate-600 text-sm mb-1">Accreditation Level:</p>
+                <p className="text-xl font-black text-slate-900">{coach.accreditationLevel}</p>
+              </div>
+            )}
 
             {/* Additional Certifications */}
             {coach.additionalCertifications && coach.additionalCertifications.length > 0 && (
@@ -536,6 +538,65 @@ export const CoachDetails: React.FC = () => {
                     <p key={idx} className="text-slate-900 font-bold text-base">{qual}</p>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* CPD Qualifications */}
+            {coach.cpdQualifications && coach.cpdQualifications.length > 0 && (
+              <div>
+                <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">CPD Qualifications:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {coach.cpdQualifications.map((qual, idx) => (
+                    <span
+                      key={idx}
+                      className="bg-purple-100 text-purple-900 px-4 py-2 rounded-full text-sm font-bold border border-purple-300"
+                    >
+                      {qual}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Coaching Expertise */}
+            {coach.coachingExpertise && coach.coachingExpertise.length > 0 && (
+              <div>
+                <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Coaching Expertise:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {coach.coachingExpertise.map((expertise, idx) => (
+                    <span
+                      key={idx}
+                      className="bg-blue-100 text-blue-900 px-4 py-2 rounded-full text-sm font-bold border border-blue-300"
+                    >
+                      {expertise}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Coaching Languages */}
+            {coach.coachingLanguages && coach.coachingLanguages.length > 0 && (
+              <div>
+                <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Coaching Languages:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {coach.coachingLanguages.map((lang, idx) => (
+                    <span
+                      key={idx}
+                      className="bg-green-100 text-green-900 px-4 py-2 rounded-full text-sm font-bold border border-green-300"
+                    >
+                      {lang}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Gender */}
+            {coach.gender && (
+              <div>
+                <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Gender:</h3>
+                <p className="text-slate-900 font-bold text-base">{coach.gender}</p>
               </div>
             )}
 
