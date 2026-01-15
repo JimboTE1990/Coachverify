@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { ProfileDropdown } from './navigation/ProfileDropdown';
 import { ExpiredBanner } from './subscription/ExpiredBanner';
 import { TrialCountdownBanner } from './subscription/TrialCountdownBanner';
+import { TrialLoginNotification } from './subscription/TrialLoginNotification';
 
 // --- Using actual logo image from PDF ---
 
@@ -215,16 +216,16 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   </Link>
                 )}
 
-                {/* Upgrade Plan Button - for authenticated trial users without billing */}
+                {/* Upgrade to Premium Button - for authenticated trial users without billing */}
                 {isAuthenticated && coach && coach.subscriptionStatus === 'trial' && !coach.billingCycle && (
                   <Link
                     to="/pricing"
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-bold hover:from-brand-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                    className="relative flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-black hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 transition-all shadow-lg hover:shadow-2xl hover:-translate-y-0.5 animate-pulse-slow border-2 border-white"
                   >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                     </svg>
-                    Upgrade Plan
+                    Upgrade to Premium
                   </Link>
                 )}
 
@@ -362,6 +363,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </div>
         </div>
       </footer>
+
+      {/* Trial Login Notification - Bottom right notification */}
+      {coach && <TrialLoginNotification coach={coach} />}
     </div>
   );
 };

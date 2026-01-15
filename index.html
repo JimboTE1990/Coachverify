@@ -42,6 +42,8 @@
             animation: {
               'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
               'blob': 'blob 7s infinite',
+              'slide-in-right': 'slideInRight 0.5s ease-out forwards',
+              'pulse-slow': 'pulse 3s ease-in-out infinite',
             },
             keyframes: {
               fadeInUp: {
@@ -53,6 +55,10 @@
                 '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
                 '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
                 '100%': { transform: 'translate(0px, 0px) scale(1)' },
+              },
+              slideInRight: {
+                '0%': { opacity: '0', transform: 'translateX(100px)' },
+                '100%': { opacity: '1', transform: 'translateX(0)' },
               }
             }
           }
