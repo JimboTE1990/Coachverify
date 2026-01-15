@@ -218,8 +218,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                       boxShadow: '0 0 20px rgba(249, 115, 22, 0.4), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
                     }}
                   >
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    {/* Dog bone icon */}
+                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M21.5 7.5c0-1.38-1.12-2.5-2.5-2.5-.62 0-1.19.22-1.63.59L14 8.5V6c0-1.1-.9-2-2-2s-2 .9-2 2v2.5L6.63 5.59C6.19 5.22 5.62 5 5 5c-1.38 0-2.5 1.12-2.5 2.5S3.62 10 5 10c.62 0 1.19-.22 1.63-.59L10 6.5V18c0 1.1.9 2 2 2s2-.9 2-2V6.5l3.37 2.91c.44.37 1.01.59 1.63.59 1.38 0 2.5-1.12 2.5-2.5z"/>
                     </svg>
                     Upgrade to Premium
                   </Link>
