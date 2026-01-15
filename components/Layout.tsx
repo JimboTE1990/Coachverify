@@ -213,7 +213,10 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 {isAuthenticated && coach && coach.subscriptionStatus === 'trial' && (
                   <Link
                     to="/pricing"
-                    className="relative flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-black hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 transition-all shadow-lg hover:shadow-2xl hover:-translate-y-0.5 animate-pulse-slow border-2 border-white"
+                    className="relative flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-black hover:from-brand-700 hover:to-indigo-700 transition-all hover:-translate-y-0.5 border-2 border-orange-400/50"
+                    style={{
+                      boxShadow: '0 0 20px rgba(249, 115, 22, 0.4), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                    }}
                   >
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />

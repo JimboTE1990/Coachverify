@@ -10,27 +10,39 @@ interface TrialLoginNotificationProps {
 
 export const TrialLoginNotification: React.FC<TrialLoginNotificationProps> = ({ coach }) => {
   const [isDismissed, setIsDismissed] = useState(false);
+  const [hasShown, setHasShown] = useState(false);
 
-  // Only show for trial users without billing cycle (unpaid trial)
+  // Only show for trial users (show for all trials, regardless of billing)
   const shouldShow =
     coach.subscriptionStatus === 'trial' &&
-    !coach.billingCycle &&
     coach.trialEndsAt;
 
-  // Check if we've already shown this notification in this session
+  // Show notification automatically after a short delay on first render
   useEffect(() => {
-    const shownThisSession = sessionStorage.getItem('trial_notification_shown');
-    if (shownThisSession) {
+    if (shouldShow && !hasShown) {
+      const timer = setTimeout(() => {
+        setHasShown(true);
+      }, 1500); // Show after 1.5 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [shouldShow, hasShown]);
+
+  const handleDismiss = () => {
+    setIsDismissed(true);
+    // Store dismissal in sessionStorage so it doesn't re-appear on navigation
+    sessionStorage.setItem('trial_notification_dismissed', 'true');
+  };
+
+  // Check if user dismissed it in this session
+  useEffect(() => {
+    const wasDismissed = sessionStorage.getItem('trial_notification_dismissed');
+    if (wasDismissed) {
       setIsDismissed(true);
     }
   }, []);
 
-  const handleDismiss = () => {
-    setIsDismissed(true);
-    sessionStorage.setItem('trial_notification_shown', 'true');
-  };
-
-  if (!shouldShow || isDismissed) {
+  if (!shouldShow || isDismissed || !hasShown) {
     return null;
   }
 
