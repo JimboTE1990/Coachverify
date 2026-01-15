@@ -155,8 +155,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                         desc="Simple, transparent plans"
                         colorClass="bg-rose-50 text-rose-600 group-hover:bg-rose-600 group-hover:text-white"
                       />
-                      {/* Upgrade CTA for trial users without billing */}
-                      {isAuthenticated && coach && coach.subscriptionStatus === 'trial' && !coach.billingCycle && (() => {
+                      {/* Upgrade CTA for trial users */}
+                      {isAuthenticated && coach && coach.subscriptionStatus === 'trial' && (() => {
                         const startingPrice = getStartingPrice();
                         return (
                           <div className="mx-3 my-2">
@@ -209,19 +209,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
               {/* Action Buttons */}
               <div className="flex items-center gap-3">
-                {/* Coach Login Button - for unauthenticated users */}
-                {!isAuthenticated && (
-                  <Link
-                    to="/coach-login"
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 transition-all border border-slate-200 shadow-sm"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    Coach Login
-                  </Link>
-                )}
-
-                {/* Upgrade to Premium Button - for authenticated trial users without billing */}
-                {isAuthenticated && coach && coach.subscriptionStatus === 'trial' && !coach.billingCycle && (
+                {/* Upgrade to Premium Button - for trial users (show for any trial, regardless of billing) */}
+                {isAuthenticated && coach && coach.subscriptionStatus === 'trial' && (
                   <Link
                     to="/pricing"
                     className="relative flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-black hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 transition-all shadow-lg hover:shadow-2xl hover:-translate-y-0.5 animate-pulse-slow border-2 border-white"
@@ -230,6 +219,17 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                     </svg>
                     Upgrade to Premium
+                  </Link>
+                )}
+
+                {/* Coach Login Button - for unauthenticated users */}
+                {!isAuthenticated && (
+                  <Link
+                    to="/coach-login"
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 transition-all border border-slate-200 shadow-sm"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    Coach Login
                   </Link>
                 )}
 
