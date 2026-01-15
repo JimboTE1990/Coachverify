@@ -11,6 +11,7 @@ export interface CreateCheckoutSessionParams {
   coachEmail: string;
   billingCycle: 'monthly' | 'annual';
   trialEndsAt?: string;
+  discountCode?: string; // Optional discount code to apply
 }
 
 /**
@@ -18,14 +19,15 @@ export interface CreateCheckoutSessionParams {
  * Calls the Vercel serverless function to create a Stripe session securely
  */
 export const createCheckoutSession = async (params: CreateCheckoutSessionParams): Promise<void> => {
-  const { priceId, coachId, coachEmail, billingCycle, trialEndsAt } = params;
+  const { priceId, coachId, coachEmail, billingCycle, trialEndsAt, discountCode } = params;
 
   console.log('[StripeService] Creating checkout session:', {
     priceId,
     coachId,
     coachEmail,
     billingCycle,
-    hasTrialEndsAt: !!trialEndsAt
+    hasTrialEndsAt: !!trialEndsAt,
+    discountCode: discountCode || 'none'
   });
 
   try {
@@ -50,6 +52,7 @@ export const createCheckoutSession = async (params: CreateCheckoutSessionParams)
         coachEmail,
         billingCycle,
         trialEndsAt,
+        discountCode, // Include discount code if provided
       }),
     });
 

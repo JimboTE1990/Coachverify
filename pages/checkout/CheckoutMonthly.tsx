@@ -5,6 +5,7 @@ import { SUBSCRIPTION_CONSTANTS } from '../../constants/subscription';
 import { supabase } from '../../lib/supabase';
 import { createCheckoutSession, getPriceId } from '../../services/stripeService';
 import type { Coach } from '../../types';
+import { getActivePromoCode, validateDiscountCode, calculateDiscount, DiscountCode } from '../../config/discountCodes';
 
 // Checkout page for monthly subscription plan
 export const CheckoutMonthly: React.FC = () => {
@@ -13,9 +14,22 @@ export const CheckoutMonthly: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [appliedDiscount, setAppliedDiscount] = useState<DiscountCode | null>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   useEffect(() => {
     checkAuthAndFetchCoach();
+
+    // Check for discount code from session storage
+    const promoCode = getActivePromoCode();
+    if (promoCode) {
+      const validation = validateDiscountCode(promoCode);
+      if (validation.valid && validation.discount) {
+        setAppliedDiscount(validation.discount);
+        const calc = calculateDiscount(validation.discount, SUBSCRIPTION_CONSTANTS.MONTHLY_PRICE_GBP, 'monthly');
+        setDiscountAmount(calc.discountAmount);
+      }
+    }
   }, []);
 
   const checkAuthAndFetchCoach = async () => {
@@ -91,7 +105,8 @@ export const CheckoutMonthly: React.FC = () => {
         coachId: currentCoach!.id,
         coachEmail: session.user.email,
         billingCycle: 'monthly',
-        trialEndsAt: currentCoach?.trialEndsAt
+        trialEndsAt: currentCoach?.trialEndsAt,
+        discountCode: appliedDiscount?.code // Pass discount code to Stripe
       });
 
       // Note: Stripe will redirect to checkout page
@@ -269,9 +284,23 @@ export const CheckoutMonthly: React.FC = () => {
                     <span className="font-bold">Monthly</span>
                   </div>
                   <div className="flex justify-between text-slate-700">
-                    <span>Price:</span>
-                    <span className="font-bold">£{SUBSCRIPTION_CONSTANTS.MONTHLY_PRICE_GBP}/month</span>
+                    <span>Base Price:</span>
+                    <span className={discountAmount > 0 ? 'line-through text-slate-400' : 'font-bold'}>£{SUBSCRIPTION_CONSTANTS.MONTHLY_PRICE_GBP}/month</span>
                   </div>
+                  {discountAmount > 0 && appliedDiscount && (
+                    <>
+                      <div className="flex justify-between text-green-700 font-medium">
+                        <span>Discount ({appliedDiscount.code}):</span>
+                        <span>-£{discountAmount.toFixed(2)}</span>
+                      </div>
+                      <div className="pt-2 border-t border-slate-200">
+                        <div className="flex justify-between text-slate-900 text-lg">
+                          <span className="font-bold">Final Price:</span>
+                          <span className="font-black">£{(SUBSCRIPTION_CONSTANTS.MONTHLY_PRICE_GBP - discountAmount).toFixed(2)}/month</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
                   {hasActiveTrial && (
                     <div className="pt-3 border-t border-slate-200">
                       <div className="flex justify-between text-green-700 font-medium">

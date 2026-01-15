@@ -28,7 +28,7 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { priceId, coachId, coachEmail, billingCycle, trialEndsAt } = await req.json();
+    const { priceId, coachId, coachEmail, billingCycle, trialEndsAt, discountCode } = await req.json();
 
     // Validate required fields
     if (!priceId || !coachId || !coachEmail || !billingCycle) {
@@ -47,7 +47,8 @@ serve(async (req) => {
       priceId,
       coachId,
       billingCycle,
-      hasTrialEndsAt: !!trialEndsAt
+      hasTrialEndsAt: !!trialEndsAt,
+      discountCode: discountCode || 'none'
     });
 
     // Get app URL from environment or use production default
@@ -80,6 +81,27 @@ serve(async (req) => {
         sessionParams['subscription_data[trial_end]'] = billingCycleAnchor.toString();
 
         console.log('[Supabase Edge] Trial ends at:', trialEndDate.toISOString());
+      }
+    }
+
+    // Apply discount code if provided
+    if (discountCode) {
+      // Map discount codes to Stripe coupon IDs
+      const discountCodes: Record<string, string> = {
+        'PARTNER2026': 'partner_30_off',
+        'FLASH50': 'flash_50_annual',
+        'EXTRATRIAL': 'trial_extension_14',
+        'WELCOME3': 'welcome_3mo_free',
+      };
+
+      const stripeCouponId = discountCodes[discountCode.toUpperCase()];
+
+      if (stripeCouponId) {
+        sessionParams['discounts[0][coupon]'] = stripeCouponId;
+        sessionParams['subscription_data[metadata][discountCode]'] = discountCode;
+        console.log('[Supabase Edge] Applying discount code:', discountCode, '→', stripeCouponId);
+      } else {
+        console.warn('[Supabase Edge] Unknown discount code:', discountCode);
       }
     }
 

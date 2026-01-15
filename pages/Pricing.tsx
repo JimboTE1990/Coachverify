@@ -1,11 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CheckCircle, Zap, Clock } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { DiscountCodeInput } from '../components/subscription/DiscountCodeInput';
+import { DiscountCode, autoApplyPromoFromUrl } from '../config/discountCodes';
+import { PRICING_CONFIG } from '../config/pricing';
 
 export const Pricing: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, coach } = useAuth();
+
+  // Discount state
+  const [appliedDiscount, setAppliedDiscount] = useState<DiscountCode | null>(null);
+  const [discountAmountMonthly, setDiscountAmountMonthly] = useState(0);
+  const [discountAmountAnnual, setDiscountAmountAnnual] = useState(0);
+  const [showDiscountInput, setShowDiscountInput] = useState(false);
+
+  // Auto-apply promo code from URL on mount
+  useEffect(() => {
+    const autoDiscount = autoApplyPromoFromUrl();
+    if (autoDiscount) {
+      setAppliedDiscount(autoDiscount);
+      setShowDiscountInput(true);
+    }
+  }, []);
 
   // Check if user already has a paid subscription (not trial)
   const hasActiveSubscription = coach && coach.subscriptionStatus === 'active';
@@ -31,18 +49,34 @@ export const Pricing: React.FC = () => {
 
     // If not authenticated, redirect to login
     if (!isAuthenticated) {
-      // Store selected plan in sessionStorage for post-login redirect
+      // Store selected plan and discount code in sessionStorage for post-login redirect
       sessionStorage.setItem('pendingCheckout', JSON.stringify({
         plan,
+        discountCode: appliedDiscount?.code || null,
         timestamp: Date.now()
       }));
       navigate('/coach-login', { state: { from: { pathname: `/checkout/${plan}` } } });
       return;
     }
 
-    // Authenticated and no subscription - go to checkout
+    // Authenticated and no subscription - go to checkout (discount will be retrieved from sessionStorage)
     navigate(`/checkout/${plan}`);
   };
+
+  const handleDiscountApplied = (discount: DiscountCode | null, discountAmount: number, planId: 'monthly' | 'annual') => {
+    setAppliedDiscount(discount);
+    if (planId === 'monthly') {
+      setDiscountAmountMonthly(discountAmount);
+    } else {
+      setDiscountAmountAnnual(discountAmount);
+    }
+  };
+
+  // Calculate final prices
+  const monthlyPrice = PRICING_CONFIG.plans.monthly.price;
+  const annualPrice = PRICING_CONFIG.plans.annual.price;
+  const finalMonthlyPrice = monthlyPrice - discountAmountMonthly;
+  const finalAnnualPrice = annualPrice - discountAmountAnnual;
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
@@ -149,6 +183,50 @@ export const Pricing: React.FC = () => {
              <p className="text-slate-500 mt-2">Add payment during your trial - billing starts after your 30 days end. Lock in the Early Bird 50% discount for life.</p>
           </div>
 
+          {/* Discount Code Section */}
+          <div className="max-w-2xl mx-auto mb-8">
+            {!showDiscountInput && !appliedDiscount && (
+              <div className="text-center">
+                <button
+                  onClick={() => setShowDiscountInput(true)}
+                  className="text-brand-600 hover:text-brand-700 font-bold text-sm underline"
+                >
+                  Have a discount code?
+                </button>
+              </div>
+            )}
+
+            {(showDiscountInput || appliedDiscount) && (
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <h4 className="text-lg font-bold text-slate-900 mb-4">Discount Code</h4>
+                <p className="text-sm text-slate-600 mb-4">
+                  Enter your discount code to see your savings on each plan below.
+                </p>
+                {/* Show discount input for both plans side by side */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase mb-2">Monthly Plan</p>
+                    <DiscountCodeInput
+                      planId="monthly"
+                      planPrice={monthlyPrice}
+                      onDiscountApplied={(discount, amount) => handleDiscountApplied(discount, amount, 'monthly')}
+                      autoApply={true}
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase mb-2">Annual Plan</p>
+                    <DiscountCodeInput
+                      planId="annual"
+                      planPrice={annualPrice}
+                      onDiscountApplied={(discount, amount) => handleDiscountApplied(discount, amount, 'annual')}
+                      autoApply={true}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Paid Plans Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
 
@@ -160,9 +238,19 @@ export const Pricing: React.FC = () => {
               <div className="mt-8 flex flex-col items-center justify-center">
                 <span className="text-sm text-slate-400 font-medium line-through">Standard: £30/mo</span>
                 <div className="flex items-baseline mt-2">
-                  <span className="text-5xl font-display font-black text-slate-900">£15</span>
+                  {discountAmountMonthly > 0 && (
+                    <span className="text-2xl font-display font-bold text-slate-400 line-through mr-2">£{monthlyPrice}</span>
+                  )}
+                  <span className={`text-5xl font-display font-black ${discountAmountMonthly > 0 ? 'text-green-600' : 'text-slate-900'}`}>
+                    £{finalMonthlyPrice}
+                  </span>
                   <span className="ml-1 text-base font-medium text-slate-500">/mo</span>
                 </div>
+                {discountAmountMonthly > 0 && (
+                  <div className="mt-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">
+                    Save £{discountAmountMonthly.toFixed(2)}/mo
+                  </div>
+                )}
               </div>
 
               <div className="mt-8 border-t border-slate-100 w-full pt-8">
@@ -209,10 +297,21 @@ export const Pricing: React.FC = () => {
               <div className="mt-8 flex flex-col items-center justify-center">
                 <span className="text-sm text-slate-400 font-medium line-through">Standard: £300/yr</span>
                 <div className="flex items-baseline mt-2">
-                  <span className="text-5xl font-display font-black text-slate-900">£150</span>
+                  {discountAmountAnnual > 0 && (
+                    <span className="text-2xl font-display font-bold text-slate-400 line-through mr-2">£{annualPrice}</span>
+                  )}
+                  <span className={`text-5xl font-display font-black ${discountAmountAnnual > 0 ? 'text-green-600' : 'text-slate-900'}`}>
+                    £{finalAnnualPrice}
+                  </span>
                   <span className="ml-1 text-base font-medium text-slate-500">/yr</span>
                 </div>
-                <span className="text-xs text-green-600 font-bold mt-2 bg-green-50 px-2 py-1 rounded-md">Save £30/year</span>
+                {discountAmountAnnual > 0 ? (
+                  <div className="mt-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">
+                    Save £{(discountAmountAnnual + 30).toFixed(2)} total
+                  </div>
+                ) : (
+                  <span className="text-xs text-green-600 font-bold mt-2 bg-green-50 px-2 py-1 rounded-md">Save £30/year</span>
+                )}
               </div>
 
               <div className="mt-8 border-t border-slate-100 w-full pt-8">
