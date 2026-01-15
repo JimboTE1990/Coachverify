@@ -6,6 +6,7 @@ import { ProfileDropdown } from './navigation/ProfileDropdown';
 import { ExpiredBanner } from './subscription/ExpiredBanner';
 import { TrialCountdownBanner } from './subscription/TrialCountdownBanner';
 import { TrialLoginNotification } from './subscription/TrialLoginNotification';
+import { getStartingPrice } from '../config/pricing';
 
 // --- Using actual logo image from PDF ---
 
@@ -155,25 +156,28 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                         colorClass="bg-rose-50 text-rose-600 group-hover:bg-rose-600 group-hover:text-white"
                       />
                       {/* Upgrade CTA for trial users without billing */}
-                      {isAuthenticated && coach && coach.subscriptionStatus === 'trial' && !coach.billingCycle && (
-                        <div className="mx-3 my-2">
-                          <Link
-                            to="/pricing"
-                            className="block bg-gradient-to-r from-brand-600 to-indigo-600 text-white rounded-2xl p-4 hover:from-brand-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                            onClick={() => setOpenDropdown(null)}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="font-bold text-sm">🚀 Upgrade to Premium</p>
-                                <p className="text-xs text-brand-100 mt-1">From £15/mo - Lock in your rate</p>
+                      {isAuthenticated && coach && coach.subscriptionStatus === 'trial' && !coach.billingCycle && (() => {
+                        const startingPrice = getStartingPrice();
+                        return (
+                          <div className="mx-3 my-2">
+                            <Link
+                              to="/pricing"
+                              className="block bg-gradient-to-r from-brand-600 to-indigo-600 text-white rounded-2xl p-4 hover:from-brand-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                              onClick={() => setOpenDropdown(null)}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-bold text-sm">🚀 Upgrade to Premium</p>
+                                  <p className="text-xs text-brand-100 mt-1">From {startingPrice}/mo - Lock in your rate</p>
+                                </div>
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                </svg>
                               </div>
-                              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                              </svg>
-                            </div>
-                          </Link>
-                        </div>
-                      )}
+                            </Link>
+                          </div>
+                        );
+                      })()}
                       <div className="border-t border-slate-100 my-2 mx-3"></div>
                       {!isAuthenticated && (
                         <>
