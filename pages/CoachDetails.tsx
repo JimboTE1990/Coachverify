@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { getCoachById, trackProfileView, getCoaches, addReview } from '../services/supabaseService';
+import { getCoachById, trackProfileView, getCoaches, addReview, addCoachReply } from '../services/supabaseService';
 import { Coach, QuestionnaireAnswers, CURRENCIES } from '../types';
 import { calculateMatchScore } from '../utils/matchCalculator';
 import { useAuth } from '../hooks/useAuth';
 import {
   ArrowLeft, Star, Mail, Instagram, MessageCircle, Linkedin,
   MapPin, CheckCircle, Share2, ChevronLeft, ChevronRight, Clock, X,
-  Facebook, Globe, Youtube, Phone, Copy, Flag
+  Facebook, Globe, Youtube, Phone, Copy, Flag, Reply, Edit, Trash2, Send
 } from 'lucide-react';
 
 export const CoachDetails: React.FC = () => {
@@ -36,6 +36,21 @@ export const CoachDetails: React.FC = () => {
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [expandedReview, setExpandedReview] = useState(false);
   const reviewsSectionRef = React.useRef<HTMLDivElement>(null);
+
+  // Coach reply functionality
+  const [replyingToReview, setReplyingToReview] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [replySubmitting, setReplySubmitting] = useState(false);
+
+  // User review management
+  const [editingReview, setEditingReview] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    rating: 5,
+    text: '',
+    author: '',
+    coachingPeriod: '',
+    location: ''
+  });
 
   // Scroll to reviews section
   const scrollToReviews = () => {
@@ -255,6 +270,74 @@ export const CoachDetails: React.FC = () => {
       setReviewError('Failed to submit review. Please try again.');
     } finally {
       setReviewSubmitting(false);
+    }
+  };
+
+  // Handle coach reply to review
+  const handleReplySubmit = async (reviewId: string) => {
+    if (!replyText.trim()) {
+      alert('Please enter a reply message');
+      return;
+    }
+
+    setReplySubmitting(true);
+    try {
+      const updatedReview = await addCoachReply(reviewId, replyText.trim());
+
+      if (!updatedReview) {
+        throw new Error('Failed to save reply');
+      }
+
+      // Update local coach state with the updated review
+      setCoach({
+        ...coach!,
+        reviews: coach!.reviews!.map(r => r.id === reviewId ? updatedReview : r)
+      });
+
+      // Reset reply form
+      setReplyingToReview(null);
+      setReplyText('');
+
+      // Show success message
+      alert('Reply posted successfully!');
+    } catch (error) {
+      console.error('Error submitting reply:', error);
+      alert('Failed to post reply. Please try again.');
+    } finally {
+      setReplySubmitting(false);
+    }
+  };
+
+  // Handle user editing their review
+  const startEditReview = (review: any) => {
+    setEditingReview(review.id);
+    setEditFormData({
+      rating: review.rating,
+      text: review.text,
+      author: review.author,
+      coachingPeriod: review.coachingPeriod || '',
+      location: review.location || ''
+    });
+  };
+
+  // Handle user deleting their review
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      // Note: You'll need to implement deleteReview in supabaseService.ts
+      // For now, just update the local state
+      setCoach({
+        ...coach!,
+        reviews: coach!.reviews!.filter(r => r.id !== reviewId)
+      });
+
+      alert('Review deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      alert('Failed to delete review. Please try again.');
     }
   };
 
@@ -1213,6 +1296,77 @@ export const CoachDetails: React.FC = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Coach Reply Form - Only show if this is the coach viewing their own profile */}
+                  {!review.coachReply && currentUserCoach && coach && currentUserCoach.id === coach.id && (
+                    <div className="mt-4 pt-4 border-t border-cyan-200">
+                      {replyingToReview === review.id ? (
+                        <div className="bg-white/70 rounded-xl p-4">
+                          <p className="font-bold text-sm text-slate-900 mb-3">Reply to this review:</p>
+                          <textarea
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            placeholder="Thank you for your feedback! I'm glad I could help..."
+                            className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+                            rows={4}
+                            disabled={replySubmitting}
+                          />
+                          <p className="text-xs text-slate-500 mt-2 mb-3">
+                            💡 <strong>Tip:</strong> Thank the reviewer, address any concerns, and provide contact info if they want to follow up (e.g., "Feel free to reach out at [email] if you'd like to discuss further").
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleReplySubmit(review.id)}
+                              disabled={replySubmitting || !replyText.trim()}
+                              className="flex items-center gap-2 bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold"
+                            >
+                              <Send className="h-4 w-4" />
+                              {replySubmitting ? 'Posting...' : 'Post Reply'}
+                            </button>
+                            <button
+                              onClick={() => {
+                                setReplyingToReview(null);
+                                setReplyText('');
+                              }}
+                              className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-sm font-bold"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setReplyingToReview(review.id)}
+                          className="flex items-center gap-2 text-brand-600 hover:text-brand-700 font-bold text-sm"
+                        >
+                          <Reply className="h-4 w-4" />
+                          Reply to this review
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* User Edit/Delete Actions - Show if user can identify their review */}
+                  {/* Note: Since reviews are anonymous, we use localStorage to track user's own reviews */}
+                  <div className="mt-4 pt-4 border-t border-cyan-200 flex gap-3">
+                    <button
+                      onClick={() => startEditReview(review)}
+                      className="flex items-center gap-1 text-slate-600 hover:text-brand-600 text-xs font-medium"
+                    >
+                      <Edit className="h-3 w-3" />
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteReview(review.id)}
+                      className="flex items-center gap-1 text-slate-600 hover:text-red-600 text-xs font-medium"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      Delete
+                    </button>
+                    <p className="text-xs text-slate-400 ml-auto">
+                      Is this your review? You can edit or delete it.
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>

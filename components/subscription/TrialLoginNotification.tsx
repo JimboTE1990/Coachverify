@@ -46,10 +46,16 @@ export const TrialLoginNotification: React.FC<TrialLoginNotificationProps> = ({ 
     return null;
   }
 
-  // Calculate days remaining
+  // Calculate days remaining (reset time to midnight for accurate day calculation)
   const trialEndDate = new Date(coach.trialEndsAt);
   const today = new Date();
-  const daysRemaining = Math.ceil((trialEndDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+  // Reset both dates to midnight to get accurate day difference
+  const trialEndMidnight = new Date(trialEndDate.getFullYear(), trialEndDate.getMonth(), trialEndDate.getDate());
+  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+  // Calculate difference in days
+  const daysRemaining = Math.max(0, Math.ceil((trialEndMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24)));
 
   // Format date for display
   const formattedDate = trialEndDate.toLocaleDateString('en-GB', {
