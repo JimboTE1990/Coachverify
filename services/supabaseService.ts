@@ -576,6 +576,137 @@ export const resetReviewVerification = async (
 };
 
 // ============================================================================
+// REVIEW COMMENT SERVICES
+// ============================================================================
+
+/**
+ * Add a comment to a review (coach response)
+ */
+export const addReviewComment = async (
+  reviewId: string,
+  coachId: string,
+  coachName: string,
+  commentText: string
+): Promise<boolean> => {
+  console.log('[addReviewComment] Adding comment to review:', { reviewId, coachId });
+
+  const { error } = await supabase
+    .from('review_comments')
+    .insert({
+      review_id: reviewId,
+      author_id: coachId,
+      author_name: coachName,
+      text: commentText,
+    });
+
+  if (error) {
+    console.error('[addReviewComment] Error adding comment:', error);
+    return false;
+  }
+
+  console.log('[addReviewComment] Successfully added comment');
+  return true;
+};
+
+/**
+ * Get all comments for a review
+ */
+export const getReviewComments = async (reviewId: string): Promise<any[]> => {
+  const { data: comments, error } = await supabase
+    .from('review_comments')
+    .select('*')
+    .eq('review_id', reviewId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('[getReviewComments] Error fetching comments:', error);
+    return [];
+  }
+
+  return comments || [];
+};
+
+/**
+ * Flag a review as spam with AI validation
+ * Returns validation result showing whether the flag is legitimate
+ */
+export const flagReviewAsSpam = async (
+  reviewId: string,
+  coachId: string,
+  coachReason?: string
+): Promise<{
+  success: boolean;
+  isLegitimateFlag: boolean;
+  confidence: number;
+  analysis: string;
+}> => {
+  console.log('[flagReviewAsSpam] Flagging review as spam:', { reviewId, coachId });
+
+  // Get the review to validate
+  const { data: review, error: fetchError } = await supabase
+    .from('reviews')
+    .select('review_text, author_name, spam_score, spam_reasons, spam_category')
+    .eq('id', reviewId)
+    .eq('coach_id', coachId)
+    .single();
+
+  if (fetchError || !review) {
+    console.error('[flagReviewAsSpam] Error fetching review:', fetchError);
+    return {
+      success: false,
+      isLegitimateFlag: false,
+      confidence: 0,
+      analysis: 'Failed to fetch review for validation'
+    };
+  }
+
+  // Import spam validation (dynamic import)
+  const { validateCoachSpamFlag } = await import('../utils/spamDetection');
+
+  // Validate the coach's spam flag
+  const validation = validateCoachSpamFlag(
+    review.review_text,
+    review.author_name,
+    coachReason
+  );
+
+  console.log('[flagReviewAsSpam] Validation result:', validation);
+
+  // Update the review with spam flag
+  const { error: updateError } = await supabase
+    .from('reviews')
+    .update({
+      is_spam: true,
+      spam_score: Math.max(review.spam_score || 0, validation.confidence),
+      spam_category: review.spam_category || 'suspicious',
+      spam_reasons: [
+        ...(review.spam_reasons || []),
+        `Coach flagged as spam${coachReason ? `: ${coachReason}` : ''}`
+      ]
+    })
+    .eq('id', reviewId)
+    .eq('coach_id', coachId);
+
+  if (updateError) {
+    console.error('[flagReviewAsSpam] Error updating review:', updateError);
+    return {
+      success: false,
+      isLegitimateFlag: validation.isLegitimateFlag,
+      confidence: validation.confidence,
+      analysis: validation.analysis
+    };
+  }
+
+  console.log('[flagReviewAsSpam] Successfully flagged review');
+  return {
+    success: true,
+    isLegitimateFlag: validation.isLegitimateFlag,
+    confidence: validation.confidence,
+    analysis: validation.analysis
+  };
+};
+
+// ============================================================================
 // SEARCH & MATCHING SERVICES
 // ============================================================================
 
@@ -791,6 +922,12 @@ const mapReview = (data: any): Review => {
     verificationStatus: data.verification_status || 'unverified',
     verifiedAt: data.verified_at ? new Date(data.verified_at).toISOString().split('T')[0] : undefined,
     location: data.reviewer_location || undefined,
+
+    // Spam detection fields
+    spamScore: data.spam_score,
+    spamReasons: data.spam_reasons || [],
+    isSpam: data.is_spam || false,
+    spamCategory: data.spam_category,
   };
 };
 
