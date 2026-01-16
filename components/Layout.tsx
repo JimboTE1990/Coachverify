@@ -218,9 +218,18 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                       boxShadow: '0 0 20px rgba(249, 115, 22, 0.4), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
                     }}
                   >
-                    {/* Paw print icon */}
+                    {/* Realistic paw print icon */}
                     <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8.5 3C7.67 3 7 3.67 7 4.5S7.67 6 8.5 6 10 5.33 10 4.5 9.33 3 8.5 3zm7 0C14.67 3 14 3.67 14 4.5S14.67 6 15.5 6 17 5.33 17 4.5 16.33 3 15.5 3zM5 6.5C4.17 6.5 3.5 7.17 3.5 8S4.17 9.5 5 9.5 6.5 8.83 6.5 8 5.83 6.5 5 6.5zm14 0c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm-7 3c-2.21 0-4 2.24-4 5 0 2.21 1.79 4 4 4s4-1.79 4-4c0-2.76-1.79-5-4-5z"/>
+                      {/* Main pad (large bottom oval) */}
+                      <ellipse cx="12" cy="17" rx="4.5" ry="3.5" />
+                      {/* Top left toe pad */}
+                      <ellipse cx="7" cy="9" rx="2" ry="2.5" transform="rotate(-15 7 9)" />
+                      {/* Top middle-left toe pad */}
+                      <ellipse cx="10" cy="7" rx="2" ry="2.5" transform="rotate(-5 10 7)" />
+                      {/* Top middle-right toe pad */}
+                      <ellipse cx="14" cy="7" rx="2" ry="2.5" transform="rotate(5 14 7)" />
+                      {/* Top right toe pad */}
+                      <ellipse cx="17" cy="9" rx="2" ry="2.5" transform="rotate(15 17 9)" />
                     </svg>
                     Upgrade to Premium
                   </Link>

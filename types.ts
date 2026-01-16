@@ -251,6 +251,15 @@ export interface SocialLink {
   type?: 'url' | 'email' | 'tel'; // New: identify if it's a URL, email, or telephone
 }
 
+export interface ReviewComment {
+  id: string;
+  reviewId: string;
+  authorId: string; // Coach ID
+  authorName: string; // Coach name
+  text: string;
+  createdAt: string;
+}
+
 export interface Review {
   id: string;
   coachId: string;
@@ -260,13 +269,22 @@ export interface Review {
   text: string;
   isFlagged: boolean;
   date: string;
-  isVerifiedClient?: boolean; // Legacy field - now using verificationStatus
+  isVerifiedClient?: boolean; // Legacy field - no longer used
   coachReply?: string; // Coach's response to the review
   coachReplyDate?: string; // When the coach replied
   coachingPeriod?: string; // When coaching took place (e.g., "December 2024")
-  verificationStatus?: 'unverified' | 'verified' | 'flagged'; // Coach-managed verification
-  verifiedAt?: string; // When coach verified the review
+  verificationStatus?: 'unverified' | 'verified' | 'flagged'; // DEPRECATED - replaced by spam system
+  verifiedAt?: string; // DEPRECATED
   location?: string; // General location of reviewer (e.g., "Cardiff, Wales")
+
+  // New spam detection fields
+  spamScore?: number; // 0-100 confidence that review is spam
+  spamReasons?: string[]; // Reasons flagged as spam
+  isSpam?: boolean; // Auto-detected spam
+  spamCategory?: 'abusive' | 'promotional' | 'nonsense' | 'repetitive' | 'suspicious';
+
+  // New comment system
+  comments?: ReviewComment[]; // Coach comments on the review
 }
 
 export interface Acknowledgement {

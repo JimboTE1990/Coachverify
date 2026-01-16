@@ -304,6 +304,18 @@ export const addReview = async (
   location?: string,
   reviewToken?: string // Optional token - will be generated if not provided
 ): Promise<Review | null> => {
+  // Import spam detection (dynamic import to avoid circular dependencies)
+  const { detectSpam, getSpamMessage } = await import('../utils/spamDetection');
+
+  // Run spam detection before submitting
+  const spamCheck = detectSpam(reviewText, authorName);
+
+  // If spam is detected with high confidence, reject the review
+  if (spamCheck.isSpam && spamCheck.confidence >= 70) {
+    console.warn('[addReview] Spam detected:', spamCheck);
+    throw new Error(getSpamMessage(spamCheck));
+  }
+
   // Generate token if not provided
   const token = reviewToken || generateReviewToken();
 
@@ -317,6 +329,10 @@ export const addReview = async (
       coaching_period: coachingPeriod,
       reviewer_location: location || null,
       review_token: token, // Store token for ownership verification
+      spam_score: spamCheck.confidence,
+      spam_reasons: spamCheck.reasons,
+      is_spam: spamCheck.isSpam,
+      spam_category: spamCheck.category || null,
     })
     .select()
     .single();
