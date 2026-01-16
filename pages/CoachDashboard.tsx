@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { updateCoach, getCoachAnalytics, getCoachById, verifyReview, flagReview, resetReviewVerification, type CoachAnalytics } from '../services/supabaseService';
+import { updateCoach, getCoachAnalytics, getCoachById, verifyReview, flagReview, resetReviewVerification, addReviewComment, getReviewComments, flagReviewAsSpam, type CoachAnalytics } from '../services/supabaseService';
 import {
   Coach,
   Review,
@@ -25,7 +25,7 @@ import {
   Plus, Trash2, Link as LinkIcon, CheckCircle, Shield,
   AlertTriangle, Mail, Smartphone, RefreshCw, Eye, EyeOff,
   Tag, Monitor, LayoutDashboard, Sparkles, BarChart, TrendingUp, Calendar,
-  Award, GraduationCap, Trophy, Star, Flag
+  Award, GraduationCap, Trophy, Star, Flag, MessageCircle, Send
 } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
 import { useAuth } from '../hooks/useAuth';
@@ -204,6 +204,15 @@ export const CoachDashboard: React.FC = () => {
   // Review Sub-Tab State
   const [reviewSubTab, setReviewSubTab] = useState<'pending' | 'archived'>('pending');
 
+  // Comment and spam flag state
+  const [commentingOnReview, setCommentingOnReview] = useState<string | null>(null);
+  const [commentText, setCommentText] = useState('');
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [reviewComments, setReviewComments] = useState<Record<string, any[]>>({});
+  const [flaggingReview, setFlaggingReview] = useState<string | null>(null);
+  const [flagReason, setFlagReason] = useState('');
+  const [flagSubmitting, setFlagSubmitting] = useState(false);
+
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000); // Auto-dismiss after 4 seconds
@@ -353,6 +362,95 @@ export const CoachDashboard: React.FC = () => {
     } else {
       showToast('Failed to reset review. Please check console for errors.', 'error');
     }
+  };
+
+  // Handle coach adding a comment to a review
+  const handleCommentSubmit = async (reviewId: string) => {
+    if (!commentText.trim()) {
+      showToast('Please enter a comment', 'error');
+      return;
+    }
+
+    if (!currentCoach?.id) {
+      showToast('Error: Coach ID not found', 'error');
+      return;
+    }
+
+    setCommentSubmitting(true);
+    try {
+      const success = await addReviewComment(
+        reviewId,
+        currentCoach.id,
+        currentCoach.name,
+        commentText.trim()
+      );
+
+      if (!success) {
+        throw new Error('Failed to save comment');
+      }
+
+      // Reload comments for this review
+      const comments = await getReviewComments(reviewId);
+      setReviewComments(prev => ({ ...prev, [reviewId]: comments }));
+
+      // Reset form
+      setCommentingOnReview(null);
+      setCommentText('');
+
+      showToast('Comment posted successfully!', 'success');
+    } catch (error) {
+      console.error('Error submitting comment:', error);
+      showToast('Failed to post comment. Please try again.', 'error');
+    } finally {
+      setCommentSubmitting(false);
+    }
+  };
+
+  // Handle coach flagging review as spam
+  const handleFlagAsSpam = async (reviewId: string) => {
+    if (!currentCoach?.id) {
+      showToast('Error: Coach ID not found', 'error');
+      return;
+    }
+
+    setFlagSubmitting(true);
+    try {
+      const result = await flagReviewAsSpam(
+        reviewId,
+        currentCoach.id,
+        flagReason.trim() || undefined
+      );
+
+      if (!result.success) {
+        throw new Error('Failed to flag review');
+      }
+
+      // Show validation result
+      if (result.isLegitimateFlag) {
+        showToast(`✅ Review flagged as spam! AI Confidence: ${result.confidence}%`, 'success');
+      } else {
+        showToast(`⚠️ Review flagged, but AI suggests it may be legitimate (${result.confidence}% confidence)`, 'success');
+      }
+
+      // Refresh coach data
+      await refreshCoach();
+
+      // Reset form
+      setFlaggingReview(null);
+      setFlagReason('');
+    } catch (error) {
+      console.error('Error flagging review:', error);
+      showToast('Failed to flag review. Please try again.', 'error');
+    } finally {
+      setFlagSubmitting(false);
+    }
+  };
+
+  // Load comments for a review
+  const loadReviewComments = async (reviewId: string) => {
+    if (reviewComments[reviewId]) return; // Already loaded
+    const comments = await getReviewComments(reviewId);
+    setReviewComments(prev => ({ ...prev, [reviewId]: comments }));
   };
 
   // Update local profile state (doesn't save to database)
@@ -1798,34 +1896,143 @@ export const CoachDashboard: React.FC = () => {
                           {/* Review Text */}
                           <p className="text-slate-700 mb-4 leading-relaxed">{review.text}</p>
 
-                          {/* Action Buttons */}
-                          <div className="flex gap-3 pt-4 border-t border-slate-200">
-                            {review.verificationStatus !== 'verified' && (
-                              <button
-                                onClick={() => handleVerifyReview(review.id)}
-                                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors text-sm"
-                              >
-                                <CheckCircle className="h-4 w-4" />
-                                Verify Review
-                              </button>
+                          {/* Spam Warning Badge */}
+                          {review.isSpam && review.spamScore && review.spamScore >= 50 && (
+                            <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 ${
+                              review.spamScore >= 70
+                                ? 'bg-red-100 text-red-800 border border-red-200'
+                                : 'bg-orange-100 text-orange-800 border border-orange-200'
+                            }`}>
+                              <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                              <div className="text-sm">
+                                <strong>Flagged as spam ({review.spamScore}% confidence)</strong>
+                                {review.spamCategory && <span> - {review.spamCategory}</span>}
+                                {review.spamReasons && review.spamReasons.length > 0 && (
+                                  <div className="text-xs mt-1 opacity-80">
+                                    {review.spamReasons[review.spamReasons.length - 1]}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Action Buttons / Forms */}
+                          <div className="pt-4 border-t border-slate-200">
+                            {commentingOnReview === review.id ? (
+                              /* Comment Form */
+                              <div className="bg-slate-50 rounded-lg p-4 mb-4">
+                                <p className="font-bold text-sm text-slate-900 mb-3">Add a public comment:</p>
+                                <textarea
+                                  value={commentText}
+                                  onChange={(e) => setCommentText(e.target.value)}
+                                  placeholder="Share your thoughts about this review..."
+                                  className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+                                  rows={3}
+                                  disabled={commentSubmitting}
+                                />
+                                <div className="flex gap-2 mt-3">
+                                  <button
+                                    onClick={() => handleCommentSubmit(review.id)}
+                                    disabled={commentSubmitting || !commentText.trim()}
+                                    className="flex items-center gap-2 bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold"
+                                  >
+                                    <Send className="h-4 w-4" />
+                                    {commentSubmitting ? 'Posting...' : 'Post Comment'}
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setCommentingOnReview(null);
+                                      setCommentText('');
+                                    }}
+                                    className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-sm font-bold"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : flaggingReview === review.id ? (
+                              /* Flag as Spam Form */
+                              <div className="bg-red-50 rounded-lg p-4 mb-4 border border-red-200">
+                                <p className="font-bold text-sm text-red-900 mb-3">Flag this review as spam:</p>
+                                <textarea
+                                  value={flagReason}
+                                  onChange={(e) => setFlagReason(e.target.value)}
+                                  placeholder="Optional: Explain why this is spam (e.g., 'This person was never my client')"
+                                  className="w-full border border-red-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                                  rows={3}
+                                  disabled={flagSubmitting}
+                                />
+                                <p className="text-xs text-red-700 mt-2 mb-3">
+                                  ℹ️ Our AI will validate your spam flag to ensure it's legitimate
+                                </p>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => handleFlagAsSpam(review.id)}
+                                    disabled={flagSubmitting}
+                                    className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold"
+                                  >
+                                    <Flag className="h-4 w-4" />
+                                    {flagSubmitting ? 'Flagging...' : 'Flag as Spam'}
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setFlaggingReview(null);
+                                      setFlagReason('');
+                                    }}
+                                    className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-sm font-bold"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              /* Action Buttons */
+                              <div className="flex gap-3">
+                                <button
+                                  onClick={() => {
+                                    setCommentingOnReview(review.id);
+                                    loadReviewComments(review.id);
+                                  }}
+                                  className="flex items-center gap-2 text-brand-600 hover:text-brand-700 font-bold text-sm"
+                                >
+                                  <MessageCircle className="h-4 w-4" />
+                                  Add Comment
+                                </button>
+                                {!review.isSpam && (
+                                  <button
+                                    onClick={() => setFlaggingReview(review.id)}
+                                    className="flex items-center gap-2 text-red-600 hover:text-red-700 font-bold text-sm"
+                                  >
+                                    <Flag className="h-4 w-4" />
+                                    Flag as Spam
+                                  </button>
+                                )}
+                              </div>
                             )}
-                            {review.verificationStatus !== 'flagged' && (
-                              <button
-                                onClick={() => handleFlagReview(review.id)}
-                                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors text-sm"
-                              >
-                                <Flag className="h-4 w-4" />
-                                Flag as Fake
-                              </button>
-                            )}
-                            {(review.verificationStatus === 'verified' || review.verificationStatus === 'flagged') && (
-                              <button
-                                onClick={() => handleResetReview(review.id)}
-                                className="flex items-center gap-2 px-4 py-2 bg-slate-600 text-white rounded-lg font-bold hover:bg-slate-700 transition-colors text-sm"
-                              >
-                                <RefreshCw className="h-4 w-4" />
-                                Reset to Unverified
-                              </button>
+
+                            {/* Display Comments */}
+                            {reviewComments[review.id] && reviewComments[review.id].length > 0 && (
+                              <div className="mt-4 space-y-3">
+                                <p className="text-sm font-bold text-slate-600">Comments:</p>
+                                {reviewComments[review.id].map((comment: any) => (
+                                  <div key={comment.id} className="bg-white rounded-lg p-3 border border-slate-200">
+                                    <div className="flex items-start gap-2">
+                                      <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
+                                        <span className="text-brand-600 font-bold text-xs">
+                                          {comment.author_name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
+                                        </span>
+                                      </div>
+                                      <div className="flex-1">
+                                        <p className="font-bold text-xs text-slate-900">{comment.author_name}</p>
+                                        <p className="text-slate-700 text-sm mt-1">{comment.text}</p>
+                                        <p className="text-xs text-slate-500 mt-1">
+                                          {new Date(comment.created_at).toLocaleDateString()}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             )}
                           </div>
                         </div>
