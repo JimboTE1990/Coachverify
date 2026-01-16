@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { getCoachById, trackProfileView, getCoaches, addReview, addCoachReply } from '../services/supabaseService';
+import { getCoachById, trackProfileView, getCoaches, addReview, addCoachReply, deleteReview, updateReview } from '../services/supabaseService';
+import { storeReviewToken, getReviewToken, canManageReview, removeReviewToken } from '../utils/reviewTokens';
 import { Coach, QuestionnaireAnswers, CURRENCIES } from '../types';
 import { calculateMatchScore } from '../utils/matchCalculator';
 import { useAuth } from '../hooks/useAuth';
@@ -236,6 +237,13 @@ export const CoachDetails: React.FC = () => {
         throw new Error('Failed to save review');
       }
 
+      // Store the review token in localStorage for future editing/deleting
+      const token = (newReview as any).token;
+      if (token) {
+        storeReviewToken(newReview.id, token);
+        console.log('[CoachDetails] Stored review token for:', newReview.id);
+      }
+
       // Update local coach state with the new review
       setCoach({
         ...coach,
@@ -322,13 +330,30 @@ export const CoachDetails: React.FC = () => {
 
   // Handle user deleting their review
   const handleDeleteReview = async (reviewId: string) => {
+    // Get token from localStorage
+    const token = getReviewToken(reviewId);
+
+    if (!token) {
+      alert('You cannot delete this review. Only the original author can delete their review on the device they used to submit it.');
+      return;
+    }
+
     if (!confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
       return;
     }
 
     try {
-      // Note: You'll need to implement deleteReview in supabaseService.ts
-      // For now, just update the local state
+      // Delete from database with token validation
+      const success = await deleteReview(reviewId, token);
+
+      if (!success) {
+        throw new Error('Failed to delete review');
+      }
+
+      // Remove token from localStorage
+      removeReviewToken(reviewId);
+
+      // Update local state
       setCoach({
         ...coach!,
         reviews: coach!.reviews!.filter(r => r.id !== reviewId)
@@ -1346,27 +1371,32 @@ export const CoachDetails: React.FC = () => {
                     </div>
                   )}
 
-                  {/* User Edit/Delete Actions - Show if user can identify their review */}
-                  {/* Note: Since reviews are anonymous, we use localStorage to track user's own reviews */}
-                  <div className="mt-4 pt-4 border-t border-cyan-200 flex gap-3">
-                    <button
-                      onClick={() => startEditReview(review)}
-                      className="flex items-center gap-1 text-slate-600 hover:text-brand-600 text-xs font-medium"
-                    >
-                      <Edit className="h-3 w-3" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteReview(review.id)}
-                      className="flex items-center gap-1 text-slate-600 hover:text-red-600 text-xs font-medium"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                      Delete
-                    </button>
-                    <p className="text-xs text-slate-400 ml-auto">
-                      Is this your review? You can edit or delete it.
-                    </p>
-                  </div>
+                  {/* User Edit/Delete Actions - Only show if user has token for this review */}
+                  {canManageReview(review.id) && (
+                    <div className="mt-4 pt-4 border-t border-cyan-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => startEditReview(review)}
+                            className="flex items-center gap-1 text-slate-600 hover:text-brand-600 text-xs font-medium"
+                          >
+                            <Edit className="h-3 w-3" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteReview(review.id)}
+                            className="flex items-center gap-1 text-slate-600 hover:text-red-600 text-xs font-medium"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            Delete
+                          </button>
+                        </div>
+                        <p className="text-xs text-slate-400">
+                          This is your review
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

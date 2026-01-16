@@ -301,8 +301,12 @@ export const addReview = async (
   rating: number,
   reviewText: string,
   coachingPeriod: string,
-  location?: string
+  location?: string,
+  reviewToken?: string // Optional token - will be generated if not provided
 ): Promise<Review | null> => {
+  // Generate token if not provided
+  const token = reviewToken || generateReviewToken();
+
   const { data: review, error } = await supabase
     .from('reviews')
     .insert({
@@ -312,6 +316,7 @@ export const addReview = async (
       review_text: reviewText,
       coaching_period: coachingPeriod,
       reviewer_location: location || null,
+      review_token: token, // Store token for ownership verification
     })
     .select()
     .single();
@@ -321,7 +326,107 @@ export const addReview = async (
     return null;
   }
 
-  return mapReview(review);
+  const mappedReview = mapReview(review);
+  // Add token to response so it can be stored in localStorage
+  (mappedReview as any).token = token;
+
+  return mappedReview;
+};
+
+// Helper function to generate secure review token
+const generateReviewToken = (): string => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+
+/**
+ * Delete a review (requires token for ownership verification)
+ */
+export const deleteReview = async (
+  reviewId: string,
+  reviewToken: string
+): Promise<boolean> => {
+  console.log('[deleteReview] Attempting to delete review:', { reviewId });
+
+  // Verify token matches before deleting
+  const { data: review } = await supabase
+    .from('reviews')
+    .select('review_token')
+    .eq('id', reviewId)
+    .single();
+
+  if (!review || review.review_token !== reviewToken) {
+    console.error('[deleteReview] Invalid token or review not found');
+    return false;
+  }
+
+  const { error } = await supabase
+    .from('reviews')
+    .delete()
+    .eq('id', reviewId);
+
+  if (error) {
+    console.error('[deleteReview] Error deleting review:', error);
+    return false;
+  }
+
+  console.log('[deleteReview] Successfully deleted review');
+  return true;
+};
+
+/**
+ * Update a review (requires token for ownership verification)
+ */
+export const updateReview = async (
+  reviewId: string,
+  reviewToken: string,
+  updates: {
+    rating?: number;
+    reviewText?: string;
+    authorName?: string;
+    coachingPeriod?: string;
+    location?: string;
+  }
+): Promise<Review | null> => {
+  console.log('[updateReview] Attempting to update review:', { reviewId });
+
+  // Verify token matches before updating
+  const { data: review } = await supabase
+    .from('reviews')
+    .select('review_token')
+    .eq('id', reviewId)
+    .single();
+
+  if (!review || review.review_token !== reviewToken) {
+    console.error('[updateReview] Invalid token or review not found');
+    return null;
+  }
+
+  // Build update object with snake_case field names
+  const updateData: Record<string, any> = {};
+  if (updates.rating !== undefined) updateData.rating = updates.rating;
+  if (updates.reviewText !== undefined) updateData.review_text = updates.reviewText;
+  if (updates.authorName !== undefined) updateData.author_name = updates.authorName;
+  if (updates.coachingPeriod !== undefined) updateData.coaching_period = updates.coachingPeriod;
+  if (updates.location !== undefined) updateData.reviewer_location = updates.location;
+
+  const { data: updatedReview, error } = await supabase
+    .from('reviews')
+    .update(updateData)
+    .eq('id', reviewId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[updateReview] Error updating review:', error);
+    return null;
+  }
+
+  console.log('[updateReview] Successfully updated review');
+  return mapReview(updatedReview);
 };
 
 export const toggleFlagReview = async (
