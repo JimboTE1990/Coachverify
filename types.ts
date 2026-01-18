@@ -34,6 +34,8 @@ export type AccreditationLevel =
   | 'Senior Practitioner'
   | 'Master Practitioner';
 
+export type AccreditationBody = 'EMCC' | 'ICF' | 'Other' | '';
+
 // New: Comprehensive Coaching Areas of Expertise (7 categories)
 export type CoachingExpertiseCategory =
   | 'Career & Professional Development'
@@ -320,8 +322,12 @@ export interface Coach {
   reviews: Review[];
   documentsSubmitted: boolean;
 
-  // New fields from mockup
+  // Accreditation & Verification
+  accreditationBody?: AccreditationBody; // Selected accreditation body (EMCC, ICF, Other)
   accreditationLevel?: AccreditationLevel; // e.g. "Senior Practitioner"
+  emccVerified?: boolean; // Whether coach was verified via EMCC directory
+  emccVerifiedAt?: string; // When EMCC verification was completed
+  emccProfileUrl?: string; // Link to coach's EMCC directory profile
   additionalCertifications?: AdditionalCertification[]; // e.g. ["Mental Health First Aid Trained", "Trauma Informed"]
   coachingHours?: number; // Total hours of coaching experience (e.g. 500)
   locationRadius?: string; // e.g. "within 5 miles of London"

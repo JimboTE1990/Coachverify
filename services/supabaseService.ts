@@ -135,7 +135,11 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   if (coach.lastPaymentDate !== undefined) updateData.last_payment_date = coach.lastPaymentDate;
 
   // Enhanced profile fields (only add if defined)
+  if (coach.accreditationBody !== undefined) updateData.accreditation_body = coach.accreditationBody;
   if (coach.accreditationLevel !== undefined) updateData.accreditation_level = coach.accreditationLevel;
+  if (coach.emccVerified !== undefined) updateData.emcc_verified = coach.emccVerified;
+  if (coach.emccVerifiedAt !== undefined) updateData.emcc_verified_at = coach.emccVerifiedAt;
+  if (coach.emccProfileUrl !== undefined) updateData.emcc_profile_url = coach.emccProfileUrl;
   if (coach.additionalCertifications !== undefined) updateData.additional_certifications = coach.additionalCertifications;
   if (coach.coachingHours !== undefined) updateData.coaching_hours = coach.coachingHours;
   if (coach.locationRadius !== undefined) updateData.location_radius = coach.locationRadius;
@@ -869,7 +873,11 @@ const mapCoachProfile = (data: any): Coach => {
     twoFactorEnabled: data.two_factor_enabled || false,
 
     // Enhanced profile fields
+    accreditationBody: data.accreditation_body,
     accreditationLevel: data.accreditation_level,
+    emccVerified: data.emcc_verified,
+    emccVerifiedAt: data.emcc_verified_at,
+    emccProfileUrl: data.emcc_profile_url,
     additionalCertifications: data.additional_certifications,
     coachingHours: data.coaching_hours,
     locationRadius: data.location_radius,
