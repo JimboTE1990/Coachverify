@@ -202,7 +202,8 @@ export const CoachDashboard: React.FC = () => {
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationData, setVerificationData] = useState({
     membershipNumber: '',
-    fullName: ''
+    fullName: '',
+    profileUrl: '' // EMCC directory profile URL
   });
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
@@ -487,7 +488,8 @@ export const CoachDashboard: React.FC = () => {
         setShowVerificationModal(true);
         setVerificationData({
           membershipNumber: '',
-          fullName: updated.name // Pre-fill with their profile name
+          fullName: updated.name, // Pre-fill with their profile name
+          profileUrl: '' // Coach will paste their EMCC profile URL
         });
       }
     } else {
@@ -520,7 +522,8 @@ export const CoachDashboard: React.FC = () => {
         fullName: verificationData.fullName.trim(),
         accreditationLevel: currentCoach.accreditationLevel,
         country: currentCoach.location,
-        membershipNumber: verificationData.membershipNumber.trim()
+        membershipNumber: verificationData.membershipNumber.trim(),
+        profileUrl: verificationData.profileUrl.trim() || undefined // Optional but highly recommended
       });
 
       const message = getVerificationStatusMessage(verificationResult);
@@ -1272,7 +1275,8 @@ export const CoachDashboard: React.FC = () => {
                                       setShowVerificationModal(true);
                                       setVerificationData({
                                         membershipNumber: '',
-                                        fullName: currentCoach?.name || ''
+                                        fullName: currentCoach?.name || '',
+                                        profileUrl: ''
                                       });
                                     }}
                                     className="flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-lg text-sm font-bold hover:bg-amber-200 transition-all"
@@ -1946,6 +1950,24 @@ export const CoachDashboard: React.FC = () => {
                              <p className="text-xs text-slate-500 mt-2">Example: "Dr Jane Smith" or "John Michael Doe"</p>
                            </div>
 
+                           {/* Profile URL Field (NEW - Highly Recommended) */}
+                           <div>
+                             <label className="block text-sm font-bold text-slate-900 mb-2">
+                               EMCC Profile URL <span className="text-amber-600">(Recommended)</span>
+                             </label>
+                             <input
+                               type="url"
+                               value={verificationData.profileUrl}
+                               onChange={(e) => setVerificationData({ ...verificationData, profileUrl: e.target.value })}
+                               placeholder="https://www.emccglobal.org/directory/profile/..."
+                               className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
+                               disabled={isVerifying}
+                             />
+                             <p className="text-xs text-slate-500 mt-2">
+                               Copy the URL of your EMCC directory profile for <strong>instant verification</strong> ⚡
+                             </p>
+                           </div>
+
                            {/* Membership Number Field */}
                            <div>
                              <label className="block text-sm font-bold text-slate-900 mb-2">
@@ -1965,7 +1987,7 @@ export const CoachDashboard: React.FC = () => {
                            {/* Privacy Notice */}
                            <div className="bg-green-50 border border-green-200 rounded-xl p-3">
                              <p className="text-xs text-green-900">
-                               🔒 <strong>Privacy:</strong> Your membership number is only used for verification and is not stored in our system.
+                               🔒 <strong>Privacy:</strong> Your membership number and profile URL are only used for verification and are not stored in our system.
                              </p>
                            </div>
                          </div>

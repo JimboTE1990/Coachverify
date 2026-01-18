@@ -15,6 +15,7 @@ interface VerificationRequest {
   accreditationLevel?: string;
   country?: string;
   membershipNumber?: string; // EMCC membership/reference number (not stored)
+  profileUrl?: string; // EMCC directory profile URL for direct verification
 }
 
 interface VerificationResult {
@@ -47,7 +48,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Parse request
-    const { coachId, fullName, accreditationLevel, country, membershipNumber }: VerificationRequest = await req.json();
+    const { coachId, fullName, accreditationLevel, country, membershipNumber, profileUrl }: VerificationRequest = await req.json();
 
     if (!coachId || !fullName) {
       return new Response(
@@ -61,15 +62,18 @@ serve(async (req) => {
       fullName,
       accreditationLevel,
       country,
-      hasMembershipNumber: !!membershipNumber
+      hasMembershipNumber: !!membershipNumber,
+      hasProfileUrl: !!profileUrl
     });
 
     // Normalize name for search
     const normalizedName = fullName.trim().toLowerCase();
 
-    // Perform EMCC directory search (mimic human search)
-    // Pass membership number for enhanced matching
-    const result = await searchEMCCDirectory(normalizedName, accreditationLevel, country, membershipNumber);
+    // If profile URL provided, use direct verification (higher confidence)
+    // Otherwise, fall back to directory search
+    const result = profileUrl
+      ? await verifyFromProfileUrl(profileUrl, normalizedName, accreditationLevel, country, membershipNumber)
+      : await searchEMCCDirectory(normalizedName, accreditationLevel, country, membershipNumber);
 
     console.log('[EMCC Verification] Search result:', result);
 
@@ -121,6 +125,193 @@ serve(async (req) => {
     );
   }
 });
+
+/**
+ * Verify coach by fetching their EMCC profile URL directly
+ * This is the HIGHEST confidence verification method
+ */
+async function verifyFromProfileUrl(
+  profileUrl: string,
+  expectedName: string,
+  expectedLevel?: string,
+  expectedCountry?: string,
+  membershipNumber?: string
+): Promise<VerificationResult> {
+  try {
+    console.log('[EMCC Verification] Verifying from profile URL:', profileUrl);
+
+    // Validate URL format
+    if (!profileUrl.includes('emccglobal.org')) {
+      return {
+        verified: false,
+        confidence: 0,
+        reason: 'Invalid EMCC profile URL. Please copy the URL from the EMCC directory.',
+      };
+    }
+
+    // Fetch the profile page
+    const response = await fetch(profileUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; CoachVerify/1.0; +https://coachverify.vercel.app)',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      },
+      signal: AbortSignal.timeout(10000), // 10 second timeout
+    });
+
+    if (!response.ok) {
+      return {
+        verified: false,
+        confidence: 0,
+        reason: `Could not access profile page (HTTP ${response.status}). Please verify the URL is correct.`,
+      };
+    }
+
+    const html = await response.text();
+
+    // Extract profile data from the HTML
+    const profileData = extractProfileData(html);
+
+    if (!profileData.name) {
+      return {
+        verified: false,
+        confidence: 0,
+        reason: 'Could not extract coach name from profile page. The page format may have changed.',
+      };
+    }
+
+    // Calculate name similarity
+    const nameSimilarity = calculateSimilarity(
+      profileData.name.toLowerCase(),
+      expectedName.toLowerCase()
+    );
+
+    console.log('[EMCC Profile Verification] Extracted:', profileData);
+    console.log('[EMCC Profile Verification] Expected:', { expectedName, expectedLevel, expectedCountry });
+    console.log('[EMCC Profile Verification] Name similarity:', nameSimilarity);
+
+    // Check if name matches (exact or very close)
+    if (nameSimilarity < 0.8) {
+      return {
+        verified: false,
+        confidence: Math.round(nameSimilarity * 100),
+        reason: `Name on profile page ("${profileData.name}") doesn't match the name you provided ("${expectedName}"). Please double-check.`,
+      };
+    }
+
+    // Check if level matches (if we have both)
+    let levelMatch = true;
+    if (expectedLevel && profileData.level) {
+      levelMatch = profileData.level.toLowerCase().includes(expectedLevel.toLowerCase()) ||
+                   expectedLevel.toLowerCase().includes(profileData.level.toLowerCase());
+    }
+
+    if (!levelMatch) {
+      return {
+        verified: false,
+        confidence: 70,
+        reason: `Accreditation level on profile ("${profileData.level}") doesn't match what you selected ("${expectedLevel}").`,
+      };
+    }
+
+    // Calculate final confidence score
+    let confidence = 95; // Base confidence for profile URL verification
+
+    // Boost for exact name match
+    if (nameSimilarity >= 0.95) {
+      confidence = 98;
+    }
+
+    // Boost if membership number provided (shows genuine knowledge)
+    if (membershipNumber) {
+      confidence = Math.min(100, confidence + 2);
+    }
+
+    // Return successful verification
+    return {
+      verified: true,
+      confidence,
+      matchDetails: {
+        name: profileData.name,
+        level: profileData.level,
+        country: profileData.country,
+        profileUrl: profileUrl,
+      },
+    };
+
+  } catch (error) {
+    console.error('[EMCC Profile Verification] Error:', error);
+    return {
+      verified: false,
+      confidence: 0,
+      reason: `Could not verify profile: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+}
+
+/**
+ * Extract coach profile data from EMCC profile page HTML
+ */
+function extractProfileData(html: string): {
+  name?: string;
+  level?: string;
+  country?: string;
+} {
+  const data: { name?: string; level?: string; country?: string } = {};
+
+  try {
+    // Pattern 1: Extract name from common HTML structures
+    // Look for h1, h2, or strong tags that typically contain the coach name
+    const namePatterns = [
+      /<h1[^>]*>(.*?)<\/h1>/i,
+      /<h2[^>]*class="[^"]*name[^"]*"[^>]*>(.*?)<\/h2>/i,
+      /<div[^>]*class="[^"]*coach-name[^"]*"[^>]*>(.*?)<\/div>/i,
+      /<strong[^>]*>(Dr\.?|Mr\.?|Mrs\.?|Ms\.?)?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)<\/strong>/i,
+    ];
+
+    for (const pattern of namePatterns) {
+      const match = html.match(pattern);
+      if (match && match[1]) {
+        // Clean HTML tags and extract text
+        data.name = match[1].replace(/<[^>]+>/g, '').trim();
+        if (data.name.length > 3 && data.name.length < 100) break;
+      }
+    }
+
+    // Pattern 2: Extract accreditation level
+    const levelPatterns = [
+      /(?:Accreditation|Level|Credential):\s*<[^>]*>([^<]+)</i,
+      /(Foundation|Practitioner|Senior Practitioner|Master Practitioner)/i,
+      /<span[^>]*class="[^"]*level[^"]*"[^>]*>([^<]+)<\/span>/i,
+    ];
+
+    for (const pattern of levelPatterns) {
+      const match = html.match(pattern);
+      if (match && match[1]) {
+        data.level = match[1].trim();
+        break;
+      }
+    }
+
+    // Pattern 3: Extract country/location
+    const countryPatterns = [
+      /(?:Country|Location):\s*<[^>]*>([^<]+)</i,
+      /<span[^>]*class="[^"]*country[^"]*"[^>]*>([^<]+)<\/span>/i,
+    ];
+
+    for (const pattern of countryPatterns) {
+      const match = html.match(pattern);
+      if (match && match[1]) {
+        data.country = match[1].trim();
+        break;
+      }
+    }
+
+  } catch (error) {
+    console.error('[Profile Data Extraction] Error:', error);
+  }
+
+  return data;
+}
 
 /**
  * Search EMCC public directory for a coach by name

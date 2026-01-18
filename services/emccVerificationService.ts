@@ -11,6 +11,7 @@ export interface EMCCVerificationRequest {
   accreditationLevel?: string;
   country?: string;
   membershipNumber?: string; // EMCC membership/reference number (not stored, just for verification)
+  profileUrl?: string; // EMCC directory profile URL (e.g., https://www.emccglobal.org/directory/profile/12345)
 }
 
 export interface EMCCVerificationResult {
