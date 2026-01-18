@@ -197,6 +197,15 @@ export const CoachDashboard: React.FC = () => {
 
   // Trial Expired Modal State
   const [isTrialExpiredModalOpen, setIsTrialExpiredModalOpen] = useState(false);
+
+  // EMCC Verification Modal State
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [verificationData, setVerificationData] = useState({
+    membershipNumber: '',
+    fullName: ''
+  });
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
   const trialStatus = useTrialStatus(currentCoach);
 
   // Toast Notification State
@@ -473,35 +482,68 @@ export const CoachDashboard: React.FC = () => {
       setHasUnsavedChanges(false);
       showToast('Profile updated successfully!', 'success');
 
-      // Trigger EMCC verification if needed
+      // Show verification modal if EMCC selected and not yet verified
       if (needsEMCCVerification(updated)) {
-        showToast('Verifying EMCC accreditation...', 'info');
-
-        try {
-          const verificationResult = await verifyEMCCAccreditation({
-            coachId: updated.id,
-            fullName: updated.name,
-            accreditationLevel: updated.accreditationLevel,
-            country: updated.location
-          });
-
-          const message = getVerificationStatusMessage(verificationResult);
-
-          if (verificationResult.verified) {
-            showToast(message, 'success');
-            await refreshCoach(); // Refresh to show updated verification status
-          } else {
-            showToast(message, 'warning');
-          }
-        } catch (error) {
-          console.error('[EMCC Verification] Error:', error);
-          showToast('EMCC verification encountered an error. Please try again later.', 'error');
-        }
+        setShowVerificationModal(true);
+        setVerificationData({
+          membershipNumber: '',
+          fullName: updated.name // Pre-fill with their profile name
+        });
       }
     } else {
       showToast('Failed to save changes. Please try again.', 'error');
     }
     setIsSaving(false);
+  };
+
+  // Handle EMCC verification submission
+  const handleVerificationSubmit = async () => {
+    if (!currentCoach) return;
+
+    // Validation
+    if (!verificationData.fullName.trim()) {
+      setVerificationError('Please enter your full name exactly as it appears in the EMCC directory');
+      return;
+    }
+
+    if (!verificationData.membershipNumber.trim()) {
+      setVerificationError('Please enter your EMCC membership number');
+      return;
+    }
+
+    setIsVerifying(true);
+    setVerificationError(null);
+
+    try {
+      const verificationResult = await verifyEMCCAccreditation({
+        coachId: currentCoach.id,
+        fullName: verificationData.fullName.trim(),
+        accreditationLevel: currentCoach.accreditationLevel,
+        country: currentCoach.location,
+        membershipNumber: verificationData.membershipNumber.trim()
+      });
+
+      const message = getVerificationStatusMessage(verificationResult);
+
+      if (verificationResult.verified) {
+        showToast(message, 'success');
+        setShowVerificationModal(false);
+        await refreshCoach(); // Refresh to show updated verification status
+      } else {
+        // Show error in modal for retry
+        setVerificationError(
+          verificationResult.reason ||
+          'We couldn\'t verify your EMCC accreditation. Please double-check that your name and membership number exactly match your EMCC directory entry, then try again. If the problem persists, contact support at support@coachdog.com'
+        );
+      }
+    } catch (error) {
+      console.error('[EMCC Verification] Error:', error);
+      setVerificationError(
+        'Verification service is temporarily unavailable. Please try again later or contact support at support@coachdog.com'
+      );
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   // For subscription/account changes that still need immediate saves
@@ -1217,10 +1259,28 @@ export const CoachDashboard: React.FC = () => {
                               <option value="ICF">ICF (International Coaching Federation)</option>
                               <option value="Other">Other</option>
                             </select>
-                            {localProfile?.accreditationBody === 'EMCC' && localProfile?.emccVerified && (
-                              <div className="flex items-center gap-2 mt-2 text-green-700 text-sm font-bold">
-                                <CheckCircle className="h-4 w-4" />
-                                EMCC Verified
+                            {localProfile?.accreditationBody === 'EMCC' && (
+                              <div className="mt-3">
+                                {localProfile?.emccVerified ? (
+                                  <div className="flex items-center gap-2 text-green-700 text-sm font-bold">
+                                    <CheckCircle className="h-4 w-4" />
+                                    EMCC Verified
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => {
+                                      setShowVerificationModal(true);
+                                      setVerificationData({
+                                        membershipNumber: '',
+                                        fullName: currentCoach?.name || ''
+                                      });
+                                    }}
+                                    className="flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-lg text-sm font-bold hover:bg-amber-200 transition-all"
+                                  >
+                                    <Shield className="h-4 w-4" />
+                                    Verify EMCC Accreditation
+                                  </button>
+                                )}
                               </div>
                             )}
                           </div>
@@ -1842,6 +1902,106 @@ export const CoachDashboard: React.FC = () => {
                        onClose={() => setIsTrialExpiredModalOpen(false)}
                        onDeleteAccount={handleDeleteAccount}
                      />
+                   )}
+
+                   {/* EMCC Verification Modal */}
+                   {showVerificationModal && (
+                     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                       <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl">
+                         {/* Header */}
+                         <div className="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-6 py-5 rounded-t-3xl">
+                           <h3 className="text-2xl font-black">Verify EMCC Accreditation</h3>
+                           <p className="text-brand-50 text-sm mt-1">Confirm your credentials</p>
+                         </div>
+
+                         {/* Content */}
+                         <div className="p-6 space-y-5">
+                           {/* Info Banner */}
+                           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                             <p className="text-sm text-blue-900">
+                               <strong>ℹ️ Important:</strong> Enter your details exactly as they appear in the <a href="https://www.emccglobal.org/directory" target="_blank" rel="noopener noreferrer" className="underline font-bold">EMCC Directory</a>. We'll verify your accreditation securely without storing your membership number.
+                             </p>
+                           </div>
+
+                           {/* Error Message */}
+                           {verificationError && (
+                             <div className="bg-red-50 border-2 border-red-200 text-red-800 px-4 py-3 rounded-xl text-sm">
+                               <strong>❌ Verification Failed:</strong> {verificationError}
+                             </div>
+                           )}
+
+                           {/* Full Name Field */}
+                           <div>
+                             <label className="block text-sm font-bold text-slate-900 mb-2">
+                               Full Name <span className="text-red-500">*</span>
+                             </label>
+                             <input
+                               type="text"
+                               value={verificationData.fullName}
+                               onChange={(e) => setVerificationData({ ...verificationData, fullName: e.target.value })}
+                               placeholder="Exactly as shown in EMCC directory"
+                               className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
+                               disabled={isVerifying}
+                             />
+                             <p className="text-xs text-slate-500 mt-2">Example: "Dr Jane Smith" or "John Michael Doe"</p>
+                           </div>
+
+                           {/* Membership Number Field */}
+                           <div>
+                             <label className="block text-sm font-bold text-slate-900 mb-2">
+                               EMCC Membership Number <span className="text-red-500">*</span>
+                             </label>
+                             <input
+                               type="text"
+                               value={verificationData.membershipNumber}
+                               onChange={(e) => setVerificationData({ ...verificationData, membershipNumber: e.target.value })}
+                               placeholder="e.g., EMCC12345"
+                               className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
+                               disabled={isVerifying}
+                             />
+                             <p className="text-xs text-slate-500 mt-2">Your EMCC membership/registration number</p>
+                           </div>
+
+                           {/* Privacy Notice */}
+                           <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+                             <p className="text-xs text-green-900">
+                               🔒 <strong>Privacy:</strong> Your membership number is only used for verification and is not stored in our system.
+                             </p>
+                           </div>
+                         </div>
+
+                         {/* Footer */}
+                         <div className="px-6 pb-6 flex gap-3">
+                           <button
+                             onClick={() => {
+                               setShowVerificationModal(false);
+                               setVerificationError(null);
+                             }}
+                             disabled={isVerifying}
+                             className="flex-1 bg-slate-100 text-slate-700 px-5 py-3 rounded-xl font-bold hover:bg-slate-200 transition-all disabled:opacity-50"
+                           >
+                             Cancel
+                           </button>
+                           <button
+                             onClick={handleVerificationSubmit}
+                             disabled={isVerifying || !verificationData.fullName.trim() || !verificationData.membershipNumber.trim()}
+                             className="flex-1 bg-brand-600 text-white px-5 py-3 rounded-xl font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                           >
+                             {isVerifying ? (
+                               <>
+                                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                 Verifying...
+                               </>
+                             ) : (
+                               <>
+                                 <Shield className="h-4 w-4 mr-2" />
+                                 Verify Now
+                               </>
+                             )}
+                           </button>
+                         </div>
+                       </div>
+                     </div>
                    )}
                </div>
             )}

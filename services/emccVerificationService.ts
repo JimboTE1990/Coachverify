@@ -10,6 +10,7 @@ export interface EMCCVerificationRequest {
   fullName: string;
   accreditationLevel?: string;
   country?: string;
+  membershipNumber?: string; // EMCC membership/reference number (not stored, just for verification)
 }
 
 export interface EMCCVerificationResult {

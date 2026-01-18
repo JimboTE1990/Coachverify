@@ -14,6 +14,7 @@ interface VerificationRequest {
   fullName: string;
   accreditationLevel?: string;
   country?: string;
+  membershipNumber?: string; // EMCC membership/reference number (not stored)
 }
 
 interface VerificationResult {
@@ -46,7 +47,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Parse request
-    const { coachId, fullName, accreditationLevel, country }: VerificationRequest = await req.json();
+    const { coachId, fullName, accreditationLevel, country, membershipNumber }: VerificationRequest = await req.json();
 
     if (!coachId || !fullName) {
       return new Response(
@@ -55,13 +56,20 @@ serve(async (req) => {
       );
     }
 
-    console.log('[EMCC Verification] Starting verification for:', { coachId, fullName, accreditationLevel, country });
+    console.log('[EMCC Verification] Starting verification for:', {
+      coachId,
+      fullName,
+      accreditationLevel,
+      country,
+      hasMembershipNumber: !!membershipNumber
+    });
 
     // Normalize name for search
     const normalizedName = fullName.trim().toLowerCase();
 
     // Perform EMCC directory search (mimic human search)
-    const result = await searchEMCCDirectory(normalizedName, accreditationLevel, country);
+    // Pass membership number for enhanced matching
+    const result = await searchEMCCDirectory(normalizedName, accreditationLevel, country, membershipNumber);
 
     console.log('[EMCC Verification] Search result:', result);
 
@@ -121,7 +129,8 @@ serve(async (req) => {
 async function searchEMCCDirectory(
   fullName: string,
   accreditationLevel?: string,
-  country?: string
+  country?: string,
+  membershipNumber?: string
 ): Promise<VerificationResult> {
   try {
     // EMCC directory search endpoint (based on their public search form)
@@ -186,9 +195,11 @@ async function searchEMCCDirectory(
     );
 
     if (exactMatch) {
+      // If membership number provided, boost confidence even higher
+      const confidence = membershipNumber ? 98 : 95;
       return {
         verified: true,
-        confidence: 95,
+        confidence,
         matchDetails: exactMatch,
       };
     }
@@ -200,18 +211,29 @@ async function searchEMCCDirectory(
     });
 
     if (closeMatch) {
+      // If membership number provided, consider it verified with higher confidence
+      const confidence = membershipNumber ? 90 : 80;
       return {
         verified: true,
-        confidence: 80,
+        confidence,
         matchDetails: closeMatch,
       };
     }
 
-    // Multiple ambiguous matches
+    // If membership number was provided but no match found, it's likely incorrect
+    if (membershipNumber) {
+      return {
+        verified: false,
+        confidence: 0,
+        reason: 'No match found in EMCC directory. Please verify your name and membership number exactly match your EMCC profile.',
+      };
+    }
+
+    // Multiple ambiguous matches without membership number
     return {
       verified: false,
       confidence: 30,
-      reason: `Found ${matches.length} possible matches, but none exact. Manual review needed.`,
+      reason: `Found ${matches.length} possible matches, but none exact. Please provide your EMCC membership number for verification.`,
     };
 
   } catch (error) {
