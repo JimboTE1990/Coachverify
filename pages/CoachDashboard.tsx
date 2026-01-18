@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { updateCoach, getCoachAnalytics, getCoachById, verifyReview, flagReview, resetReviewVerification, addReviewComment, getReviewComments, flagReviewAsSpam, type CoachAnalytics } from '../services/supabaseService';
+import { verifyEMCCAccreditation, needsEMCCVerification, getVerificationStatusMessage } from '../services/emccVerificationService';
 import {
   Coach,
   Review,
@@ -471,6 +472,32 @@ export const CoachDashboard: React.FC = () => {
       await refreshCoach(); // Refresh auth context with updated data
       setHasUnsavedChanges(false);
       showToast('Profile updated successfully!', 'success');
+
+      // Trigger EMCC verification if needed
+      if (needsEMCCVerification(updated)) {
+        showToast('Verifying EMCC accreditation...', 'info');
+
+        try {
+          const verificationResult = await verifyEMCCAccreditation({
+            coachId: updated.id,
+            fullName: updated.name,
+            accreditationLevel: updated.accreditationLevel,
+            country: updated.location
+          });
+
+          const message = getVerificationStatusMessage(verificationResult);
+
+          if (verificationResult.verified) {
+            showToast(message, 'success');
+            await refreshCoach(); // Refresh to show updated verification status
+          } else {
+            showToast(message, 'warning');
+          }
+        } catch (error) {
+          console.error('[EMCC Verification] Error:', error);
+          showToast('EMCC verification encountered an error. Please try again later.', 'error');
+        }
+      }
     } else {
       showToast('Failed to save changes. Please try again.', 'error');
     }
@@ -1177,6 +1204,27 @@ export const CoachDashboard: React.FC = () => {
                     iconTextColor="text-indigo-600"
                   >
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Accreditation Body */}
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-3">Accreditation Body</label>
+                            <select
+                              value={localProfile?.accreditationBody || ''}
+                              onChange={(e) => updateLocalProfile({accreditationBody: e.target.value as any})}
+                              className="w-full border border-slate-200 bg-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-slate-800"
+                            >
+                              <option value="">Select body...</option>
+                              <option value="EMCC">EMCC (European Mentoring & Coaching Council)</option>
+                              <option value="ICF">ICF (International Coaching Federation)</option>
+                              <option value="Other">Other</option>
+                            </select>
+                            {localProfile?.accreditationBody === 'EMCC' && localProfile?.emccVerified && (
+                              <div className="flex items-center gap-2 mt-2 text-green-700 text-sm font-bold">
+                                <CheckCircle className="h-4 w-4" />
+                                EMCC Verified
+                              </div>
+                            )}
+                          </div>
+
                           {/* Accreditation Level */}
                           <div>
                             <label className="block text-sm font-bold text-slate-700 mb-3">Accreditation Level</label>

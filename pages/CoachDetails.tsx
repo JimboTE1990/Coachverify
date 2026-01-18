@@ -642,9 +642,21 @@ export const CoachDetails: React.FC = () => {
             {/* Name and Accreditation */}
             <div className="text-center mb-4">
               <h2 className="text-4xl font-black text-slate-900 mb-2 tracking-tight">{coach.name}</h2>
-              <p className="text-brand-600 font-bold text-base uppercase tracking-wide">
-                {coach.verificationBody || 'EMCC'} Accredited
-              </p>
+
+              {/* Accreditation Badge with Verification Status */}
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                <p className="text-brand-600 font-bold text-base uppercase tracking-wide">
+                  {coach.accreditationBody || coach.verificationBody || 'EMCC'} Accredited
+                </p>
+
+                {/* EMCC Verified Badge */}
+                {coach.accreditationBody === 'EMCC' && coach.emccVerified && (
+                  <div className="flex items-center gap-1.5 bg-green-100 text-green-800 px-3 py-1 rounded-full border border-green-300">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span className="text-xs font-bold">EMCC Verified</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Star Rating - Clickable to scroll to reviews */}
