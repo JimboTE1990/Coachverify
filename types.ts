@@ -324,10 +324,19 @@ export interface Coach {
 
   // Accreditation & Verification
   accreditationBody?: AccreditationBody; // Selected accreditation body (EMCC, ICF, Other)
-  accreditationLevel?: AccreditationLevel; // e.g. "Senior Practitioner"
+  accreditationLevel?: AccreditationLevel; // e.g. "Senior Practitioner" (EMCC) or "PCC" (ICF)
+
+  // EMCC Verification
   emccVerified?: boolean; // Whether coach was verified via EMCC directory
   emccVerifiedAt?: string; // When EMCC verification was completed
   emccProfileUrl?: string; // Link to coach's EMCC directory profile
+
+  // ICF Verification
+  icfVerified?: boolean; // Whether coach was verified via ICF directory
+  icfVerifiedAt?: string; // When ICF verification was completed
+  icfAccreditationLevel?: 'ACC' | 'PCC' | 'MCC' | ''; // ICF credential level
+  icfProfileUrl?: string; // Link to coach's ICF directory profile
+
   additionalCertifications?: AdditionalCertification[]; // e.g. ["Mental Health First Aid Trained", "Trauma Informed"]
   coachingHours?: number; // Total hours of coaching experience (e.g. 500)
   locationRadius?: string; // e.g. "within 5 miles of London"
