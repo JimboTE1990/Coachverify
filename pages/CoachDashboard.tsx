@@ -201,9 +201,10 @@ export const CoachDashboard: React.FC = () => {
   // EMCC Verification Modal State
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationData, setVerificationData] = useState({
-    membershipNumber: '',
+    eiaNumber: '', // EIA number (Reference field) - PRIMARY verification method
     fullName: '',
-    profileUrl: '' // EMCC directory profile URL
+    profileUrl: '', // EMCC directory profile URL - SECONDARY verification method
+    membershipNumber: '' // DEPRECATED - not publicly available
   });
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
@@ -487,9 +488,10 @@ export const CoachDashboard: React.FC = () => {
       if (needsEMCCVerification(updated)) {
         setShowVerificationModal(true);
         setVerificationData({
-          membershipNumber: '',
+          eiaNumber: '', // EIA/Reference number from EMCC database
           fullName: updated.name, // Pre-fill with their profile name
-          profileUrl: '' // Coach will paste their EMCC profile URL
+          profileUrl: '', // EMCC directory profile URL (optional)
+          membershipNumber: '' // Deprecated - not publicly available
         });
       }
     } else {
@@ -508,8 +510,9 @@ export const CoachDashboard: React.FC = () => {
       return;
     }
 
-    if (!verificationData.membershipNumber.trim()) {
-      setVerificationError('Please enter your EMCC membership number');
+    // At least one verification method must be provided
+    if (!verificationData.eiaNumber.trim() && !verificationData.profileUrl.trim()) {
+      setVerificationError('Please provide either your EIA number (recommended) or EMCC profile URL for verification');
       return;
     }
 
@@ -522,8 +525,9 @@ export const CoachDashboard: React.FC = () => {
         fullName: verificationData.fullName.trim(),
         accreditationLevel: currentCoach.accreditationLevel,
         country: currentCoach.location,
-        membershipNumber: verificationData.membershipNumber.trim(),
-        profileUrl: verificationData.profileUrl.trim() || undefined // Optional but highly recommended
+        eiaNumber: verificationData.eiaNumber.trim() || undefined, // PRIMARY: EIA number
+        profileUrl: verificationData.profileUrl.trim() || undefined, // SECONDARY: Profile URL
+        membershipNumber: verificationData.membershipNumber.trim() || undefined // DEPRECATED
       });
 
       const message = getVerificationStatusMessage(verificationResult);
@@ -1274,9 +1278,10 @@ export const CoachDashboard: React.FC = () => {
                                     onClick={() => {
                                       setShowVerificationModal(true);
                                       setVerificationData({
-                                        membershipNumber: '',
+                                        eiaNumber: '',
                                         fullName: currentCoach?.name || '',
-                                        profileUrl: ''
+                                        profileUrl: '',
+                                        membershipNumber: ''
                                       });
                                     }}
                                     className="flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-lg text-sm font-bold hover:bg-amber-200 transition-all"
@@ -1923,7 +1928,7 @@ export const CoachDashboard: React.FC = () => {
                            {/* Info Banner */}
                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                              <p className="text-sm text-blue-900">
-                               <strong>ℹ️ Important:</strong> Enter your details exactly as they appear in the <a href="https://www.emccglobal.org/directory" target="_blank" rel="noopener noreferrer" className="underline font-bold">EMCC Directory</a>. We'll verify your accreditation securely without storing your membership number.
+                               <strong>ℹ️ Quick Verification:</strong> Find your <strong>EIA number</strong> (Reference field) in the <a href="https://www.emccglobal.org/directory" target="_blank" rel="noopener noreferrer" className="underline font-bold">EMCC Directory</a> search for instant verification! Format: EIA12345678
                              </p>
                            </div>
 
@@ -1933,6 +1938,24 @@ export const CoachDashboard: React.FC = () => {
                                <strong>❌ Verification Failed:</strong> {verificationError}
                              </div>
                            )}
+
+                           {/* EIA Number Field (PRIMARY - NEW) */}
+                           <div>
+                             <label className="block text-sm font-bold text-slate-900 mb-2">
+                               EIA Number (Reference) <span className="text-green-600">✨ Recommended</span>
+                             </label>
+                             <input
+                               type="text"
+                               value={verificationData.eiaNumber}
+                               onChange={(e) => setVerificationData({ ...verificationData, eiaNumber: e.target.value.toUpperCase() })}
+                               placeholder="EIA20260083"
+                               className="w-full border-2 border-green-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                               disabled={isVerifying}
+                             />
+                             <p className="text-xs text-slate-500 mt-2">
+                               <strong>⚡ Instant verification!</strong> Find this in your EMCC directory "Reference" column
+                             </p>
+                           </div>
 
                            {/* Full Name Field */}
                            <div>
@@ -1950,10 +1973,10 @@ export const CoachDashboard: React.FC = () => {
                              <p className="text-xs text-slate-500 mt-2">Example: "Dr Jane Smith" or "John Michael Doe"</p>
                            </div>
 
-                           {/* Profile URL Field (NEW - Highly Recommended) */}
+                           {/* Profile URL Field (OPTIONAL - Backup method) */}
                            <div>
                              <label className="block text-sm font-bold text-slate-900 mb-2">
-                               EMCC Profile URL <span className="text-amber-600">(Recommended)</span>
+                               EMCC Profile URL <span className="text-slate-500">(Optional)</span>
                              </label>
                              <input
                                type="url"
@@ -1964,30 +1987,14 @@ export const CoachDashboard: React.FC = () => {
                                disabled={isVerifying}
                              />
                              <p className="text-xs text-slate-500 mt-2">
-                               Copy the URL of your EMCC directory profile for <strong>instant verification</strong> ⚡
+                               Alternative: paste your profile URL if you don't have your EIA number
                              </p>
-                           </div>
-
-                           {/* Membership Number Field */}
-                           <div>
-                             <label className="block text-sm font-bold text-slate-900 mb-2">
-                               EMCC Membership Number <span className="text-red-500">*</span>
-                             </label>
-                             <input
-                               type="text"
-                               value={verificationData.membershipNumber}
-                               onChange={(e) => setVerificationData({ ...verificationData, membershipNumber: e.target.value })}
-                               placeholder="e.g., EMCC12345"
-                               className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
-                               disabled={isVerifying}
-                             />
-                             <p className="text-xs text-slate-500 mt-2">Your EMCC membership/registration number</p>
                            </div>
 
                            {/* Privacy Notice */}
                            <div className="bg-green-50 border border-green-200 rounded-xl p-3">
                              <p className="text-xs text-green-900">
-                               🔒 <strong>Privacy:</strong> Your membership number and profile URL are only used for verification and are not stored in our system.
+                               🔒 <strong>Privacy:</strong> Your EIA number and profile URL are only used for verification and are not stored in our system.
                              </p>
                            </div>
                          </div>
@@ -2006,7 +2013,7 @@ export const CoachDashboard: React.FC = () => {
                            </button>
                            <button
                              onClick={handleVerificationSubmit}
-                             disabled={isVerifying || !verificationData.fullName.trim() || !verificationData.membershipNumber.trim()}
+                             disabled={isVerifying || !verificationData.fullName.trim() || (!verificationData.eiaNumber.trim() && !verificationData.profileUrl.trim())}
                              className="flex-1 bg-brand-600 text-white px-5 py-3 rounded-xl font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                            >
                              {isVerifying ? (

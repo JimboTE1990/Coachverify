@@ -14,8 +14,9 @@ interface VerificationRequest {
   fullName: string;
   accreditationLevel?: string;
   country?: string;
-  membershipNumber?: string; // EMCC membership/reference number (not stored)
+  eiaNumber?: string; // EIA (EMCC Individual Accreditation) number - BEST for verification
   profileUrl?: string; // EMCC directory profile URL for direct verification
+  membershipNumber?: string; // DEPRECATED: Not publicly available
 }
 
 interface VerificationResult {
