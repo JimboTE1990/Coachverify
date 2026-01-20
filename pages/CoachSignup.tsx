@@ -20,7 +20,25 @@ export const CoachSignup: React.FC = () => {
   const [signupError, setSignupError] = useState('');
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [showAccreditationInfo, setShowAccreditationInfo] = useState(false);
+  const infoButtonRef = useRef<HTMLButtonElement>(null);
   const hasRedirected = useRef(false);
+
+  // Close popup when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showAccreditationInfo && infoButtonRef.current && !infoButtonRef.current.contains(event.target as Node)) {
+        const popup = document.getElementById('accreditation-info-popup');
+        if (popup && !popup.contains(event.target as Node)) {
+          setShowAccreditationInfo(false);
+        }
+      }
+    };
+
+    if (showAccreditationInfo) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showAccreditationInfo]);
 
   // Redirect if already logged in (wait for auth to finish loading)
   useEffect(() => {
@@ -535,12 +553,13 @@ export const CoachSignup: React.FC = () => {
                     </select>
                  </div>
 
-                 <div className="relative">
+                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
                       {formData.body === 'EMCC' ? 'EIA Number (Reference)' :
                        formData.body === 'ICF' ? 'ICF Credential Level' :
                        'Registration / Member Number'}
                       <button
+                        ref={infoButtonRef}
                         type="button"
                         onClick={() => setShowAccreditationInfo(!showAccreditationInfo)}
                         className="text-brand-500 hover:text-brand-600 transition-colors"
@@ -550,9 +569,17 @@ export const CoachSignup: React.FC = () => {
                       </button>
                     </label>
 
-                    {/* Dynamic Info Popup - positioned below to avoid clipping */}
-                    {showAccreditationInfo && (
-                      <div className="absolute z-50 left-0 right-0 mt-2 bg-white border-2 border-brand-200 rounded-xl p-4 shadow-xl overflow-y-auto max-h-[400px] top-full">
+                    {/* Dynamic Info Popup - uses fixed positioning to overflow container */}
+                    {showAccreditationInfo && infoButtonRef.current && (
+                      <div
+                        id="accreditation-info-popup"
+                        className="fixed z-50 bg-white border-2 border-brand-200 rounded-xl p-4 shadow-xl overflow-y-auto max-h-[500px]
+                                   md:w-96 w-[calc(100vw-2rem)] left-4 md:left-auto"
+                        style={{
+                          left: window.innerWidth >= 768 ? `${infoButtonRef.current.getBoundingClientRect().right + 16}px` : '1rem',
+                          top: `${infoButtonRef.current.getBoundingClientRect().top}px`,
+                        }}
+                      >
                         <div className="flex justify-between items-start mb-3">
                           <h4 className="font-bold text-slate-900 flex items-center gap-2">
                             <Info className="h-4 w-4 text-brand-500" />

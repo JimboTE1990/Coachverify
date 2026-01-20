@@ -207,6 +207,7 @@ export const CoachDashboard: React.FC = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [showEiaInfoPopup, setShowEiaInfoPopup] = useState(false);
+  const eiaInfoButtonRef = useRef<HTMLButtonElement>(null);
   const trialStatus = useTrialStatus(currentCoach);
 
   // Toast Notification State
@@ -238,6 +239,23 @@ export const CoachDashboard: React.FC = () => {
     }
     return url;
   };
+
+  // Close EIA info popup when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showEiaInfoPopup && eiaInfoButtonRef.current && !eiaInfoButtonRef.current.contains(event.target as Node)) {
+        const popup = document.getElementById('eia-info-popup-dashboard');
+        if (popup && !popup.contains(event.target as Node)) {
+          setShowEiaInfoPopup(false);
+        }
+      }
+    };
+
+    if (showEiaInfoPopup) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showEiaInfoPopup]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -1936,10 +1954,11 @@ export const CoachDashboard: React.FC = () => {
                            )}
 
                            {/* EIA Number Field (REQUIRED) */}
-                           <div className="relative">
+                           <div>
                              <label className="block text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
                                EIA Number (Reference) <span className="text-red-500">*</span>
                                <button
+                                 ref={eiaInfoButtonRef}
                                  type="button"
                                  onClick={() => setShowEiaInfoPopup(!showEiaInfoPopup)}
                                  className="text-brand-500 hover:text-brand-600 transition-colors"
@@ -1949,9 +1968,17 @@ export const CoachDashboard: React.FC = () => {
                                </button>
                              </label>
 
-                             {/* Info Popup */}
-                             {showEiaInfoPopup && (
-                               <div className="absolute z-50 left-0 right-0 mt-2 bg-white border-2 border-brand-200 rounded-xl p-4 shadow-xl overflow-y-auto max-h-[400px] top-full">
+                             {/* Info Popup - uses fixed positioning to overflow container */}
+                             {showEiaInfoPopup && eiaInfoButtonRef.current && (
+                               <div
+                                 id="eia-info-popup-dashboard"
+                                 className="fixed z-50 bg-white border-2 border-brand-200 rounded-xl p-4 shadow-xl overflow-y-auto max-h-[500px]
+                                            md:w-96 w-[calc(100vw-2rem)] left-4 md:left-auto"
+                                 style={{
+                                   left: window.innerWidth >= 768 ? `${eiaInfoButtonRef.current.getBoundingClientRect().right + 16}px` : '1rem',
+                                   top: `${eiaInfoButtonRef.current.getBoundingClientRect().top}px`,
+                                 }}
+                               >
                                  <div className="flex justify-between items-start mb-3">
                                    <h4 className="font-bold text-slate-900 flex items-center gap-2">
                                      <Info className="h-4 w-4 text-brand-500" />
