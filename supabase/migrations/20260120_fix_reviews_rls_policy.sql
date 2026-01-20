@@ -17,12 +17,13 @@ FOR INSERT
 TO anon, authenticated
 WITH CHECK (true);
 
--- Policy 2: Allow public READ access to non-spam reviews
+-- Policy 2: Allow public READ access to all reviews
+-- Note: Spam filtering will be added in future enhancement
 CREATE POLICY "Allow public read reviews"
 ON reviews
 FOR SELECT
 TO anon, authenticated, public
-USING (is_spam = false OR is_spam IS NULL);
+USING (true);
 
 -- Policy 3: Allow authenticated coaches to UPDATE their own reviews via review_token
 -- (This allows editing reviews if user has the token stored in localStorage)
@@ -41,6 +42,6 @@ USING (true); -- Token validation happens in application layer
 
 -- Add comments
 COMMENT ON POLICY "Allow anonymous insert reviews" ON reviews IS 'Allows anyone to submit reviews (anonymous or authenticated)';
-COMMENT ON POLICY "Allow public read reviews" ON reviews IS 'Allows anyone to read non-spam reviews';
+COMMENT ON POLICY "Allow public read reviews" ON reviews IS 'Allows anyone to read reviews (spam filtering to be added in future)';
 COMMENT ON POLICY "Allow review owner update" ON reviews IS 'Allows review updates with token validation in app layer';
 COMMENT ON POLICY "Allow review owner delete" ON reviews IS 'Allows review deletion with token validation in app layer';
