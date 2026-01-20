@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, CheckCircle, ArrowRight, Loader, Mail, AlertTriangle, Eye, EyeOff, XCircle } from 'lucide-react';
+import { ShieldCheck, CheckCircle, ArrowRight, Loader, Mail, AlertTriangle, Eye, EyeOff, XCircle, Info, ExternalLink } from 'lucide-react';
 import { verifyCoachLicense } from '../services/supabaseService';
 import { supabase } from '../lib/supabase';
 import { validatePassword } from '../utils/passwordValidation';
@@ -19,6 +19,7 @@ export const CoachSignup: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [signupError, setSignupError] = useState('');
   const [checkingEmail, setCheckingEmail] = useState(false);
+  const [showAccreditationInfo, setShowAccreditationInfo] = useState(false);
   const hasRedirected = useRef(false);
 
   // Redirect if already logged in (wait for auth to finish loading)
@@ -534,9 +535,149 @@ export const CoachSignup: React.FC = () => {
                     </select>
                  </div>
 
-                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Registration / Member Number</label>
-                    <input name="regNumber" type="text" value={formData.regNumber} onChange={handleChange} className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none" placeholder="e.g. 12345-AB" />
+                 <div className="relative">
+                    <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                      {formData.body === 'EMCC' ? 'EIA Number (Reference)' :
+                       formData.body === 'ICF' ? 'ICF Credential Level' :
+                       'Registration / Member Number'}
+                      <button
+                        type="button"
+                        onClick={() => setShowAccreditationInfo(!showAccreditationInfo)}
+                        className="text-brand-500 hover:text-brand-600 transition-colors"
+                        title="Where to find your accreditation details"
+                      >
+                        <Info className="h-4 w-4" />
+                      </button>
+                    </label>
+
+                    {/* Dynamic Info Popup */}
+                    {showAccreditationInfo && (
+                      <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border-2 border-brand-200 rounded-xl p-4 shadow-xl max-w-md">
+                        <div className="flex justify-between items-start mb-3">
+                          <h4 className="font-bold text-slate-900 flex items-center gap-2">
+                            <Info className="h-4 w-4 text-brand-500" />
+                            {formData.body === 'EMCC' && 'Find Your EIA Number'}
+                            {formData.body === 'ICF' && 'Find Your ICF Credential'}
+                            {formData.body === 'AC' && 'AC Member Information'}
+                          </h4>
+                          <button
+                            onClick={() => setShowAccreditationInfo(false)}
+                            className="text-slate-400 hover:text-slate-600"
+                          >
+                            ✕
+                          </button>
+                        </div>
+
+                        {/* EMCC Instructions */}
+                        {formData.body === 'EMCC' && (
+                          <div className="space-y-3 text-sm text-slate-700">
+                            <div>
+                              <p className="font-semibold text-brand-600 mb-1">📍 Step 1: Visit EMCC Directory</p>
+                              <a
+                                href="https://www.emccglobal.org/directory"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-brand-500 hover:text-brand-600 underline flex items-center gap-1"
+                              >
+                                Open EMCC Directory <ExternalLink className="h-3 w-3" />
+                              </a>
+                            </div>
+
+                            <div>
+                              <p className="font-semibold text-brand-600 mb-1">🔍 Step 2: Search for Your Name</p>
+                              <p className="text-slate-600">Use the search box to find your profile</p>
+                            </div>
+
+                            <div>
+                              <p className="font-semibold text-brand-600 mb-1">📋 Step 3: Find the Reference Column</p>
+                              <p className="text-slate-600">Look for the "Reference" column in the search results</p>
+                            </div>
+
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                              <p className="font-semibold text-green-800 mb-1">✅ Example Format:</p>
+                              <code className="bg-white px-2 py-1 rounded border border-green-300 text-green-700 font-mono text-xs">
+                                EIA20260083
+                              </code>
+                              <p className="text-xs text-green-700 mt-2">
+                                Your EIA number always starts with "EIA" followed by numbers
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ICF Instructions */}
+                        {formData.body === 'ICF' && (
+                          <div className="space-y-3 text-sm text-slate-700">
+                            <div>
+                              <p className="font-semibold text-brand-600 mb-1">📍 Step 1: Visit ICF Directory</p>
+                              <a
+                                href="https://apps.coachingfederation.org/eweb/DynamicPage.aspx?WebCode=ICFDirectory&Site=ICFAppsR"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-brand-500 hover:text-brand-600 underline flex items-center gap-1"
+                              >
+                                Open ICF Directory <ExternalLink className="h-3 w-3" />
+                              </a>
+                            </div>
+
+                            <div>
+                              <p className="font-semibold text-brand-600 mb-1">🔍 Step 2: Search for Your Name</p>
+                              <p className="text-slate-600">Enter your first and last name</p>
+                            </div>
+
+                            <div>
+                              <p className="font-semibold text-brand-600 mb-1">📋 Step 3: Note Your Credential Level</p>
+                              <p className="text-slate-600">You'll see ACC, PCC, or MCC listed next to your name</p>
+                            </div>
+
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                              <p className="font-semibold text-blue-800 mb-1">✅ Credential Levels:</p>
+                              <div className="space-y-1 text-xs text-blue-700">
+                                <div><code className="bg-white px-2 py-1 rounded border border-blue-300 font-mono">ACC</code> - Associate Certified Coach</div>
+                                <div><code className="bg-white px-2 py-1 rounded border border-blue-300 font-mono">PCC</code> - Professional Certified Coach</div>
+                                <div><code className="bg-white px-2 py-1 rounded border border-blue-300 font-mono">MCC</code> - Master Certified Coach</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* AC Instructions */}
+                        {formData.body === 'AC' && (
+                          <div className="space-y-3 text-sm text-slate-700">
+                            <div>
+                              <p className="font-semibold text-brand-600 mb-1">📍 Visit AC Website</p>
+                              <a
+                                href="https://www.associationforcoaching.com"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-brand-500 hover:text-brand-600 underline flex items-center gap-1"
+                              >
+                                Open AC Website <ExternalLink className="h-3 w-3" />
+                              </a>
+                            </div>
+
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                              <p className="text-xs text-amber-700">
+                                ⚠️ AC verification is not yet automated. Please enter your member number and we'll verify manually.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <input
+                      name="regNumber"
+                      type="text"
+                      value={formData.regNumber}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
+                      placeholder={
+                        formData.body === 'EMCC' ? 'e.g. EIA20260083' :
+                        formData.body === 'ICF' ? 'e.g. PCC' :
+                        'e.g. 12345-AB'
+                      }
+                    />
                  </div>
 
                  {!verified ? (

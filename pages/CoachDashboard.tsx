@@ -26,7 +26,7 @@ import {
   Plus, Trash2, Link as LinkIcon, CheckCircle, Shield,
   AlertTriangle, Mail, Smartphone, RefreshCw, Eye, EyeOff,
   Tag, Monitor, LayoutDashboard, Sparkles, BarChart, TrendingUp, Calendar,
-  Award, GraduationCap, Trophy, Star, Flag, MessageCircle, Send
+  Award, GraduationCap, Trophy, Star, Flag, MessageCircle, Send, Info, ExternalLink
 } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
 import { useAuth } from '../hooks/useAuth';
@@ -206,6 +206,7 @@ export const CoachDashboard: React.FC = () => {
   });
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [showEiaInfoPopup, setShowEiaInfoPopup] = useState(false);
   const trialStatus = useTrialStatus(currentCoach);
 
   // Toast Notification State
@@ -1935,10 +1936,71 @@ export const CoachDashboard: React.FC = () => {
                            )}
 
                            {/* EIA Number Field (REQUIRED) */}
-                           <div>
-                             <label className="block text-sm font-bold text-slate-900 mb-2">
+                           <div className="relative">
+                             <label className="block text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
                                EIA Number (Reference) <span className="text-red-500">*</span>
+                               <button
+                                 type="button"
+                                 onClick={() => setShowEiaInfoPopup(!showEiaInfoPopup)}
+                                 className="text-brand-500 hover:text-brand-600 transition-colors"
+                                 title="Where to find your EIA number"
+                               >
+                                 <Info className="h-4 w-4" />
+                               </button>
                              </label>
+
+                             {/* Info Popup */}
+                             {showEiaInfoPopup && (
+                               <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border-2 border-brand-200 rounded-xl p-4 shadow-xl">
+                                 <div className="flex justify-between items-start mb-3">
+                                   <h4 className="font-bold text-slate-900 flex items-center gap-2">
+                                     <Info className="h-4 w-4 text-brand-500" />
+                                     Where to Find Your EIA Number
+                                   </h4>
+                                   <button
+                                     onClick={() => setShowEiaInfoPopup(false)}
+                                     className="text-slate-400 hover:text-slate-600"
+                                   >
+                                     ✕
+                                   </button>
+                                 </div>
+
+                                 <div className="space-y-3 text-sm text-slate-700">
+                                   <div>
+                                     <p className="font-semibold text-brand-600 mb-1">📍 Step 1: Visit EMCC Directory</p>
+                                     <a
+                                       href="https://www.emccglobal.org/directory"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       className="text-brand-500 hover:text-brand-600 underline flex items-center gap-1"
+                                     >
+                                       Open EMCC Directory <ExternalLink className="h-3 w-3" />
+                                     </a>
+                                   </div>
+
+                                   <div>
+                                     <p className="font-semibold text-brand-600 mb-1">🔍 Step 2: Search for Your Name</p>
+                                     <p className="text-slate-600">Use the search box to find your profile</p>
+                                   </div>
+
+                                   <div>
+                                     <p className="font-semibold text-brand-600 mb-1">📋 Step 3: Find the Reference Column</p>
+                                     <p className="text-slate-600">Look for the "Reference" column in the results</p>
+                                   </div>
+
+                                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                                     <p className="font-semibold text-green-800 mb-1">✅ Example Format:</p>
+                                     <code className="bg-white px-2 py-1 rounded border border-green-300 text-green-700 font-mono text-xs">
+                                       EIA20260083
+                                     </code>
+                                     <p className="text-xs text-green-700 mt-2">
+                                       Your EIA number always starts with "EIA" followed by numbers
+                                     </p>
+                                   </div>
+                                 </div>
+                               </div>
+                             )}
+
                              <input
                                type="text"
                                value={verificationData.eiaNumber}
@@ -1949,7 +2011,7 @@ export const CoachDashboard: React.FC = () => {
                                required
                              />
                              <p className="text-xs text-slate-500 mt-2">
-                               <strong>⚡ Required for verification.</strong> Find this in your EMCC directory "Reference" column
+                               <strong>⚡ Required for verification.</strong> Click the info icon above for help
                              </p>
                            </div>
 
