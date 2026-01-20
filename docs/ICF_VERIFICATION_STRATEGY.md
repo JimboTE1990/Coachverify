@@ -1,37 +1,55 @@
 # ICF Verification Strategy
 
-## ICF Database Structure (From Screenshot Analysis)
+## ICF Database Structure
 
-**Available Fields:**
+**ICF Directory URL:**
+`https://apps.coachingfederation.org/eweb/DynamicPage.aspx?WebCode=ICFDirectory&Site=ICFAppsR`
+
+**Search Form Fields:**
+- `firstname` - First name search field
+- `lastname` - Last name search field
+- `sort` - Sort order (1 = Last Name A-Z)
+
+**Available Data:**
 - ICF Member: Yes/No
 - ICF Credential: ACC, PCC, MCC (with validity dates)
 - Format: "PCC 9/2019 - 9/2028", "ACC 12/2024 - 12/2027"
+- First Name / Last Name search fields
+- Country/Location filters
 
 **NOT Available:**
-- ❌ No public member ID numbers
+- ❌ No public member ID numbers (unlike EMCC's EIA)
 - ❌ No unique identifiers visible
 - ❌ No "reference number" field
 
 ## Verification Approach for ICF
 
-Since ICF doesn't provide public ID numbers, we use a **multi-factor matching system**:
+Since ICF doesn't provide public ID numbers (unlike EMCC's EIA), we use a **multi-factor matching system** combined with HTTP GET requests to mimic human search behavior:
 
 ### Verification Factors
 1. **Name Matching** (Primary - fuzzy with 85%+ similarity)
 2. **Credential Level** (Secondary - must match exactly)
-3. **Credential Validity** (Tertiary - check if current)
-4. **Country/Location** (Disambiguator - helps with common names)
+3. **Country/Location** (Disambiguator - helps with common names)
+
+**Note on Credential Expiry:**
+- ICF credentials expire after 2 years
+- EMCC credentials expire after 5 years
+- **We verify credentials ONLY at onboarding** (not ongoing)
+- This reduces friction and complexity for coaches
+- Verification status is a snapshot at time of onboarding
 
 ### Confidence Scoring
 
 | Scenario | Confidence | Verified? |
 |----------|-----------|-----------|
-| Exact name + credential + valid dates + location | 95% | ✅ Yes |
-| Exact name + credential + valid dates | 90% | ✅ Yes |
-| Fuzzy name (>90%) + credential + valid dates | 85% | ✅ Yes |
-| Fuzzy name (>85%) + credential + valid dates | 80% | ✅ Yes |
-| Name match but expired credential | 50% | ❌ No |
+| Exact name + credential + location | 95% | ✅ Yes |
+| Exact name + credential | 90% | ✅ Yes |
+| Fuzzy name (>90%) + credential | 85% | ✅ Yes |
+| Fuzzy name (>85%) + credential | 80% | ✅ Yes |
+| Name match but credential mismatch | 30% | ❌ No |
 | No name match | 0% | ❌ No |
+
+**Note:** Credential expiry dates are NOT checked. Verification is a one-time check at onboarding.
 
 ### Verification Flow
 
@@ -80,8 +98,28 @@ interface ICFVerificationRequest {
   fullName: string;
   credentialLevel: 'ACC' | 'PCC' | 'MCC'; // Required for ICF
   country?: string;
-  profileUrl?: string; // Optional but recommended
 }
+```
+
+### Search Request (Mimics Human Behavior)
+```typescript
+// Split full name into first and last name
+const nameParts = fullName.trim().split(/\s+/);
+const firstName = nameParts[0];
+const lastName = nameParts.slice(1).join(' ');
+
+// Build GET request exactly like the ICF form does
+const searchUrl = 'https://apps.coachingfederation.org/eweb/DynamicPage.aspx';
+const params = new URLSearchParams({
+  'WebCode': 'ICFDirectory',
+  'Site': 'ICFAppsR',
+  'firstname': firstName,
+  'lastname': lastName,
+  'sort': '1'
+});
+
+// Make GET request: https://apps.coachingfederation.org/eweb/DynamicPage.aspx?WebCode=ICFDirectory&Site=ICFAppsR&firstname=Paul&lastname=Smith&sort=1
+const response = await fetch(`${searchUrl}?${params.toString()}`);
 ```
 
 ### Verification Logic
@@ -89,17 +127,11 @@ interface ICFVerificationRequest {
 async function verifyICFCredential(
   fullName: string,
   credentialLevel: string,
-  country?: string,
-  profileUrl?: string
+  country?: string
 ): Promise<VerificationResult> {
 
-  // Priority 1: Profile URL (if provided)
-  if (profileUrl) {
-    return await verifyFromICFProfileUrl(profileUrl, fullName, credentialLevel);
-  }
-
-  // Priority 2: Search ICF directory
-  const results = await searchICFDirectory(fullName, country);
+  // Search ICF directory (no profile URL needed)
+  const results = await searchICFDirectory(firstName, lastName, fullName, credentialLevel);
 
   // Find matches with correct credential
   const matches = results.filter(r =>

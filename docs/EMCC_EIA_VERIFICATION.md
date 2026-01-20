@@ -25,108 +25,83 @@
 - ✅ **Zero ambiguity**
 - ✅ Confidence: **100%**
 
-## Updated Verification Hierarchy
+## Verification Method
 
-### Priority 1: EIA Number (BEST - 100% Confidence)
+### EIA Number (REQUIRED - 100% Confidence)
 ```
-Coach provides EIA number → Search database → Exact match
-→ Verify name matches → VERIFIED ✅
-```
-
-### Priority 2: Profile URL (EXCELLENT - 95-98% Confidence)
-```
-Coach provides profile URL → Fetch profile page → Extract data
-→ Cross-check with input → VERIFIED ✅
+Coach provides EIA number + Name → Search EMCC database → Exact match
+→ Verify name matches → VERIFIED ✅ (100% confidence)
 ```
 
-### Priority 3: Name + Membership Number (GOOD - 90-95% Confidence)
-```
-Coach provides name + membership # → Search directory
-→ Fuzzy match with confidence boost → VERIFIED ✅
-```
+**Why EIA Only?**
+- EIA numbers are unique identifiers - no ambiguity
+- Publicly available in EMCC directory
+- Provides 100% confidence verification
+- Simple for coaches to find (in "Reference" column)
+- No need for fallback methods
 
-### Priority 4: Name Only (FALLBACK - 80-90% Confidence)
-```
-Coach provides name only → Search directory
-→ Fuzzy match → VERIFIED if close enough ✅
-```
+**Verification Policy:**
+- ✅ Verification happens ONCE at onboarding
+- ❌ No ongoing credential expiry checking
+- EMCC credentials expire after 5 years, but we don't re-verify
+- Keeps UX simple and reduces complexity
 
-## Implementation Plan
+## Implementation
 
-### 1. Update Verification Modal UI
-Add EIA Number field as PRIMARY option:
+### Verification Modal UI
+Simplified to two required fields:
 ```
-1. EIA Number (Recommended for instant verification ⚡)
+1. EIA Number (Required ✨)
 2. Full Name (Required)
-3. Profile URL (Optional - boosts confidence)
-4. Membership Number (Optional - not publicly available)
 ```
 
-### 2. Update Edge Function Logic
+### Edge Function Logic
 ```typescript
-if (eiaNumber) {
-  // Priority 1: EIA Number lookup (100% confidence)
-  return await verifyFromEIADatabase(eiaNumber, fullName, level);
-} else if (profileUrl) {
-  // Priority 2: Profile URL verification (95-98% confidence)
-  return await verifyFromProfileUrl(profileUrl, fullName, level);
-} else {
-  // Priority 3/4: Name search (80-95% confidence)
-  return await searchEMCCDirectory(fullName, level, country, membershipNumber);
-}
+// Simple: Only EIA number verification
+const result = await verifyFromEIANumber(eiaNumber, fullName, level, country);
 ```
 
-### 3. EIA Database Search Function
+### EIA Verification Function
 ```typescript
-async function verifyFromEIADatabase(
+async function verifyFromEIANumber(
   eiaNumber: string,
   expectedName: string,
-  expectedLevel?: string
+  expectedLevel?: string,
+  expectedCountry?: string
 ): Promise<VerificationResult> {
-  // 1. Query public EIA database view
-  // 2. Find record matching EIA number
-  // 3. Verify name matches (fuzzy match OK - EIA number is unique)
-  // 4. Verify level matches
-  // 5. Return 100% confidence if all checks pass
+  // 1. Normalize and validate EIA format
+  // 2. Query EMCC directory via HTTP GET request
+  // 3. Parse HTML response for EIA number match
+  // 4. Extract coach data (name, level, country)
+  // 5. Verify name matches (fuzzy match with 70% threshold)
+  // 6. Verify level matches (if provided)
+  // 7. Return 100% confidence if all checks pass
 }
 ```
 
-## Confidence Scoring with EIA Number
+## Confidence Scoring
 
 | Verification Method | Confidence | Notes |
 |---------------------|-----------|-------|
 | **EIA Number + Name Match** | **100%** | EIA is unique identifier |
-| EIA Number + Name Mismatch | 0% | Wrong EIA or typo |
-| Profile URL + Exact Match | 98% | Direct profile verification |
-| Profile URL + Close Match | 95% | URL is reliable |
-| Name + Membership # + Exact | 95% | High confidence |
-| Name + Membership # + Fuzzy | 90% | Good confidence |
-| Name Only + Exact Match | 90% | Moderate confidence |
-| Name Only + Fuzzy Match | 80% | Lower confidence |
+| EIA Number + Name Mismatch (< 70%) | 0% | Wrong EIA or typo |
 
-## User Experience Updates
+## User Experience
 
-### Modal Field Order (Priority-Based)
+### Verification Modal (Simplified)
 ```
 ┌────────────────────────────────────────────────────┐
 │ Verify EMCC Accreditation                         │
 ├────────────────────────────────────────────────────┤
 │                                                    │
-│ [Info] For instant verification, provide your     │
-│ EIA number from the EMCC database                 │
-│                                                    │
-│ EIA Number (Recommended ⚡)                        │
-│ [__________] e.g., EIA12345                       │
-│ → Find your EIA number in the EMCC database       │
+│ EIA Number (Reference) *                           │
+│ [__________] e.g., EIA20260083                    │
+│ ⚡ Required for verification. Find this in your   │
+│ EMCC directory "Reference" column                 │
 │                                                    │
 │ Full Name *                                        │
 │ [__________] Dr Jane Smith                        │
-│                                                    │
-│ Profile URL (Optional - boosts confidence)         │
-│ [__________] https://emccglobal.org/...           │
-│                                                    │
-│ Accreditation Level *                              │
-│ [Dropdown: Senior Practitioner ▼]                 │
+│ Example: "Dr Jane Smith" or "John Michael Doe"    │
 │                                                    │
 │ 🔒 Privacy: EIA number used for verification      │
 │    only, not stored in our system                 │
@@ -135,28 +110,27 @@ async function verifyFromEIADatabase(
 └────────────────────────────────────────────────────┘
 ```
 
-### Verification Flow Messages
+### Verification Messages
 
-**With EIA Number**:
+**Success**:
 ```
 ✅ EMCC accreditation verified!
-   EIA12345 matches Dr Jane Smith, Senior Practitioner
+   EIA20260083 matches Dr Jane Smith, Senior Practitioner
    Confidence: 100%
 ```
 
-**Without EIA Number (Profile URL)**:
+**Failure - Wrong EIA**:
 ```
-✅ EMCC accreditation verified!
-   Profile data matches your details
-   Confidence: 98%
+❌ Could not verify EMCC accreditation
+   No EMCC record found with EIA number EIA20260083.
+   Please verify your EIA number is correct.
 ```
 
-**Without EIA Number (Name Only)**:
+**Failure - Name Mismatch**:
 ```
-✅ EMCC accreditation verified!
-   Found match in EMCC directory
-   Confidence: 85%
-   💡 Tip: Add your EIA number for instant verification next time
+❌ Could not verify EMCC accreditation
+   EIA20260083 belongs to "John Smith", which doesn't match
+   the name you provided ("Jane Doe"). Please check your EIA number.
 ```
 
 ## Database Integration Options

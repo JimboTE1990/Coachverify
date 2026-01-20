@@ -10,9 +10,7 @@ export interface EMCCVerificationRequest {
   fullName: string;
   accreditationLevel?: string;
   country?: string;
-  eiaNumber?: string; // EIA (EMCC Individual Accreditation) number - BEST for verification (e.g., EIA12345)
-  profileUrl?: string; // EMCC directory profile URL (e.g., https://www.emccglobal.org/directory/profile/12345)
-  membershipNumber?: string; // DEPRECATED: Not publicly available, replaced by EIA number
+  eiaNumber: string; // EIA (EMCC Individual Accreditation) number - REQUIRED for verification (e.g., EIA12345)
 }
 
 export interface EMCCVerificationResult {

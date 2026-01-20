@@ -14,9 +14,7 @@ interface VerificationRequest {
   fullName: string;
   accreditationLevel?: string;
   country?: string;
-  eiaNumber?: string; // EIA (EMCC Individual Accreditation) number - BEST for verification
-  profileUrl?: string; // EMCC directory profile URL for direct verification
-  membershipNumber?: string; // DEPRECATED: Not publicly available
+  eiaNumber: string; // EIA (EMCC Individual Accreditation) number - REQUIRED for verification
 }
 
 interface VerificationResult {
@@ -49,11 +47,11 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Parse request
-    const { coachId, fullName, accreditationLevel, country, membershipNumber, profileUrl }: VerificationRequest = await req.json();
+    const { coachId, fullName, accreditationLevel, country, eiaNumber }: VerificationRequest = await req.json();
 
-    if (!coachId || !fullName) {
+    if (!coachId || !fullName || !eiaNumber) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: coachId, fullName' }),
+        JSON.stringify({ error: 'Missing required fields: coachId, fullName, eiaNumber' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -63,18 +61,14 @@ serve(async (req) => {
       fullName,
       accreditationLevel,
       country,
-      hasMembershipNumber: !!membershipNumber,
-      hasProfileUrl: !!profileUrl
+      eiaNumber
     });
 
     // Normalize name for search
     const normalizedName = fullName.trim().toLowerCase();
 
-    // If profile URL provided, use direct verification (higher confidence)
-    // Otherwise, fall back to directory search
-    const result = profileUrl
-      ? await verifyFromProfileUrl(profileUrl, normalizedName, accreditationLevel, country, membershipNumber)
-      : await searchEMCCDirectory(normalizedName, accreditationLevel, country, membershipNumber);
+    // Verify using EIA number (100% confidence)
+    const result = await verifyFromEIANumber(eiaNumber, normalizedName, accreditationLevel, country);
 
     console.log('[EMCC Verification] Search result:', result);
 
@@ -128,215 +122,39 @@ serve(async (req) => {
 });
 
 /**
- * Verify coach by fetching their EMCC profile URL directly
- * This is the HIGHEST confidence verification method
+ * Verify coach using EIA number lookup in EMCC database
+ * This is the BEST verification method (100% confidence when matched)
+ * EIA numbers are unique identifiers in the "Reference" column
  */
-async function verifyFromProfileUrl(
-  profileUrl: string,
+async function verifyFromEIANumber(
+  eiaNumber: string,
   expectedName: string,
   expectedLevel?: string,
-  expectedCountry?: string,
-  membershipNumber?: string
+  expectedCountry?: string
 ): Promise<VerificationResult> {
   try {
-    console.log('[EMCC Verification] Verifying from profile URL:', profileUrl);
+    console.log('[EMCC EIA Verification] Starting verification for EIA:', eiaNumber);
 
-    // Validate URL format
-    if (!profileUrl.includes('emccglobal.org')) {
+    // Normalize EIA number (ensure uppercase, remove spaces)
+    const normalizedEIA = eiaNumber.trim().toUpperCase().replace(/\s+/g, '');
+
+    // Validate EIA format (should be like EIA20260083)
+    if (!/^EIA\d+$/i.test(normalizedEIA)) {
       return {
         verified: false,
         confidence: 0,
-        reason: 'Invalid EMCC profile URL. Please copy the URL from the EMCC directory.',
+        reason: 'Invalid EIA number format. EIA numbers should look like "EIA20260083".',
       };
     }
 
-    // Fetch the profile page
-    const response = await fetch(profileUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; CoachVerify/1.0; +https://coachverify.vercel.app)',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      },
-      signal: AbortSignal.timeout(10000), // 10 second timeout
-    });
-
-    if (!response.ok) {
-      return {
-        verified: false,
-        confidence: 0,
-        reason: `Could not access profile page (HTTP ${response.status}). Please verify the URL is correct.`,
-      };
-    }
-
-    const html = await response.text();
-
-    // Extract profile data from the HTML
-    const profileData = extractProfileData(html);
-
-    if (!profileData.name) {
-      return {
-        verified: false,
-        confidence: 0,
-        reason: 'Could not extract coach name from profile page. The page format may have changed.',
-      };
-    }
-
-    // Calculate name similarity
-    const nameSimilarity = calculateSimilarity(
-      profileData.name.toLowerCase(),
-      expectedName.toLowerCase()
-    );
-
-    console.log('[EMCC Profile Verification] Extracted:', profileData);
-    console.log('[EMCC Profile Verification] Expected:', { expectedName, expectedLevel, expectedCountry });
-    console.log('[EMCC Profile Verification] Name similarity:', nameSimilarity);
-
-    // Check if name matches (exact or very close)
-    if (nameSimilarity < 0.8) {
-      return {
-        verified: false,
-        confidence: Math.round(nameSimilarity * 100),
-        reason: `Name on profile page ("${profileData.name}") doesn't match the name you provided ("${expectedName}"). Please double-check.`,
-      };
-    }
-
-    // Check if level matches (if we have both)
-    let levelMatch = true;
-    if (expectedLevel && profileData.level) {
-      levelMatch = profileData.level.toLowerCase().includes(expectedLevel.toLowerCase()) ||
-                   expectedLevel.toLowerCase().includes(profileData.level.toLowerCase());
-    }
-
-    if (!levelMatch) {
-      return {
-        verified: false,
-        confidence: 70,
-        reason: `Accreditation level on profile ("${profileData.level}") doesn't match what you selected ("${expectedLevel}").`,
-      };
-    }
-
-    // Calculate final confidence score
-    let confidence = 95; // Base confidence for profile URL verification
-
-    // Boost for exact name match
-    if (nameSimilarity >= 0.95) {
-      confidence = 98;
-    }
-
-    // Boost if membership number provided (shows genuine knowledge)
-    if (membershipNumber) {
-      confidence = Math.min(100, confidence + 2);
-    }
-
-    // Return successful verification
-    return {
-      verified: true,
-      confidence,
-      matchDetails: {
-        name: profileData.name,
-        level: profileData.level,
-        country: profileData.country,
-        profileUrl: profileUrl,
-      },
-    };
-
-  } catch (error) {
-    console.error('[EMCC Profile Verification] Error:', error);
-    return {
-      verified: false,
-      confidence: 0,
-      reason: `Could not verify profile: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    };
-  }
-}
-
-/**
- * Extract coach profile data from EMCC profile page HTML
- */
-function extractProfileData(html: string): {
-  name?: string;
-  level?: string;
-  country?: string;
-} {
-  const data: { name?: string; level?: string; country?: string } = {};
-
-  try {
-    // Pattern 1: Extract name from common HTML structures
-    // Look for h1, h2, or strong tags that typically contain the coach name
-    const namePatterns = [
-      /<h1[^>]*>(.*?)<\/h1>/i,
-      /<h2[^>]*class="[^"]*name[^"]*"[^>]*>(.*?)<\/h2>/i,
-      /<div[^>]*class="[^"]*coach-name[^"]*"[^>]*>(.*?)<\/div>/i,
-      /<strong[^>]*>(Dr\.?|Mr\.?|Mrs\.?|Ms\.?)?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)<\/strong>/i,
-    ];
-
-    for (const pattern of namePatterns) {
-      const match = html.match(pattern);
-      if (match && match[1]) {
-        // Clean HTML tags and extract text
-        data.name = match[1].replace(/<[^>]+>/g, '').trim();
-        if (data.name.length > 3 && data.name.length < 100) break;
-      }
-    }
-
-    // Pattern 2: Extract accreditation level
-    const levelPatterns = [
-      /(?:Accreditation|Level|Credential):\s*<[^>]*>([^<]+)</i,
-      /(Foundation|Practitioner|Senior Practitioner|Master Practitioner)/i,
-      /<span[^>]*class="[^"]*level[^"]*"[^>]*>([^<]+)<\/span>/i,
-    ];
-
-    for (const pattern of levelPatterns) {
-      const match = html.match(pattern);
-      if (match && match[1]) {
-        data.level = match[1].trim();
-        break;
-      }
-    }
-
-    // Pattern 3: Extract country/location
-    const countryPatterns = [
-      /(?:Country|Location):\s*<[^>]*>([^<]+)</i,
-      /<span[^>]*class="[^"]*country[^"]*"[^>]*>([^<]+)<\/span>/i,
-    ];
-
-    for (const pattern of countryPatterns) {
-      const match = html.match(pattern);
-      if (match && match[1]) {
-        data.country = match[1].trim();
-        break;
-      }
-    }
-
-  } catch (error) {
-    console.error('[Profile Data Extraction] Error:', error);
-  }
-
-  return data;
-}
-
-/**
- * Search EMCC public directory for a coach by name
- * Mimics human search behavior on https://www.emccglobal.org/directory
- */
-async function searchEMCCDirectory(
-  fullName: string,
-  accreditationLevel?: string,
-  country?: string,
-  membershipNumber?: string
-): Promise<VerificationResult> {
-  try {
-    // EMCC directory search endpoint (based on their public search form)
+    // Search EMCC directory by EIA number
+    // Mimicking human form submission with reference/EIA number search
     const searchUrl = 'https://www.emccglobal.org/directory';
-
-    // Build search params (mimicking human search form submission)
     const params = new URLSearchParams({
-      'search': fullName,
-      // Add optional filters if provided
-      ...(accreditationLevel && { 'accreditation_level': accreditationLevel }),
-      ...(country && { 'country': country }),
+      'search': normalizedEIA,
+      'reference': normalizedEIA, // Search specifically in Reference field
     });
 
-    // Polite headers (mimic browser, respect robots.txt)
     const headers = {
       'User-Agent': 'Mozilla/5.0 (compatible; CoachVerify/1.0; +https://coachverify.vercel.app)',
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -344,173 +162,217 @@ async function searchEMCCDirectory(
       'Referer': 'https://www.emccglobal.org/',
     };
 
-    console.log('[EMCC Search] Querying:', `${searchUrl}?${params.toString()}`);
-
-    // Perform search with timeout and rate limiting
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    console.log('[EMCC EIA Verification] Querying:', `${searchUrl}?${params.toString()}`);
 
     const response = await fetch(`${searchUrl}?${params.toString()}`, {
       headers,
-      signal: controller.signal,
+      signal: AbortSignal.timeout(10000), // 10 second timeout
     });
-
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
-      console.error('[EMCC Search] HTTP error:', response.status);
       return {
         verified: false,
         confidence: 0,
-        reason: `EMCC directory returned status ${response.status}`,
+        reason: `EMCC directory search failed (HTTP ${response.status}). Please try again later.`,
       };
     }
 
-    // Parse HTML response
     const html = await response.text();
 
-    // Simple HTML parsing to find coach entries
-    // Look for common patterns in EMCC directory results
-    const matches = parseEMCCResults(html, fullName, accreditationLevel);
+    // Parse results looking for EIA number match
+    const match = parseEIAResult(html, normalizedEIA);
 
-    if (matches.length === 0) {
+    if (!match || !match.name) {
       return {
         verified: false,
         confidence: 0,
-        reason: 'No matches found in EMCC directory',
+        reason: `No EMCC record found with EIA number ${normalizedEIA}. Please verify your EIA number is correct.`,
       };
     }
 
-    // Check for exact match
-    const exactMatch = matches.find(m =>
-      m.name.toLowerCase() === fullName.toLowerCase()
+    console.log('[EMCC EIA Verification] Found match:', match);
+    console.log('[EMCC EIA Verification] Expected:', { expectedName, expectedLevel, expectedCountry });
+
+    // Verify name matches (fuzzy matching OK since EIA is unique)
+    const nameSimilarity = calculateSimilarity(
+      match.name.toLowerCase(),
+      expectedName.toLowerCase()
     );
 
-    if (exactMatch) {
-      // If membership number provided, boost confidence even higher
-      const confidence = membershipNumber ? 98 : 95;
-      return {
-        verified: true,
-        confidence,
-        matchDetails: exactMatch,
-      };
-    }
+    console.log('[EMCC EIA Verification] Name similarity:', nameSimilarity);
 
-    // Check for close match (fuzzy matching)
-    const closeMatch = matches.find(m => {
-      const similarity = calculateSimilarity(m.name.toLowerCase(), fullName.toLowerCase());
-      return similarity > 0.85; // 85% similarity threshold
-    });
-
-    if (closeMatch) {
-      // If membership number provided, consider it verified with higher confidence
-      const confidence = membershipNumber ? 90 : 80;
-      return {
-        verified: true,
-        confidence,
-        matchDetails: closeMatch,
-      };
-    }
-
-    // If membership number was provided but no match found, it's likely incorrect
-    if (membershipNumber) {
+    if (nameSimilarity < 0.7) {
       return {
         verified: false,
         confidence: 0,
-        reason: 'No match found in EMCC directory. Please verify your name and membership number exactly match your EMCC profile.',
+        reason: `EIA ${normalizedEIA} belongs to "${match.name}", which doesn't match the name you provided ("${expectedName}"). Please check your EIA number.`,
       };
     }
 
-    // Multiple ambiguous matches without membership number
+    // Verify accreditation level matches (if provided)
+    if (expectedLevel && match.level) {
+      const levelMatch = match.level.toLowerCase().includes(expectedLevel.toLowerCase()) ||
+                        expectedLevel.toLowerCase().includes(match.level.toLowerCase());
+
+      if (!levelMatch) {
+        return {
+          verified: false,
+          confidence: 0,
+          reason: `EIA ${normalizedEIA} shows accreditation level "${match.level}", but you selected "${expectedLevel}". Please verify your level.`,
+        };
+      }
+    }
+
+    // EIA number + name match = 100% confidence!
     return {
-      verified: false,
-      confidence: 30,
-      reason: `Found ${matches.length} possible matches, but none exact. Please provide your EMCC membership number for verification.`,
+      verified: true,
+      confidence: 100,
+      matchDetails: {
+        name: match.name,
+        level: match.level,
+        country: match.country,
+        profileUrl: match.profileUrl,
+      },
+      reason: `Successfully verified via EIA number ${normalizedEIA}`,
     };
 
   } catch (error) {
-    console.error('[EMCC Search] Error:', error);
+    console.error('[EMCC EIA Verification] Error:', error);
     return {
       verified: false,
       confidence: 0,
-      reason: `Search failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      reason: `EIA verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
     };
   }
 }
 
 /**
- * Parse EMCC directory HTML results
- * Looks for coach entries and extracts name, level, country, profile URL
+ * Parse EMCC search result to extract coach data for a specific EIA number
  */
-function parseEMCCResults(
+function parseEIAResult(
   html: string,
-  searchName: string,
-  expectedLevel?: string
-): Array<{ name: string; level?: string; country?: string; profileUrl?: string }> {
-  const results: Array<{ name: string; level?: string; country?: string; profileUrl?: string }> = [];
-
+  eiaNumber: string
+): { name: string; level?: string; country?: string; profileUrl?: string } | null {
   try {
-    // EMCC directory typically shows results in a structured format
-    // Look for common HTML patterns (div.coach-entry, tr.result, etc.)
+    // Look for the EIA number in the HTML and extract surrounding data
+    // EMCC typically displays results in table rows or div containers
 
-    // Pattern 1: Look for coach names in common result containers
-    const namePattern = /<(?:div|td|h\d)[^>]*class="[^"]*(?:coach|member|result)[^"]*"[^>]*>([^<]+)<\/(?:div|td|h\d)>/gi;
-    const nameMatches = [...html.matchAll(namePattern)];
+    // Pattern 1: Find EIA number in text
+    const eiaPattern = new RegExp(eiaNumber, 'i');
+    if (!eiaPattern.test(html)) {
+      console.log('[EMCC EIA Parse] EIA number not found in HTML');
+      return null;
+    }
 
-    // Pattern 2: Look for profile links
-    const linkPattern = /<a[^>]+href="([^"]+)"[^>]*>([^<]+)<\/a>/gi;
-    const linkMatches = [...html.matchAll(linkPattern)];
+    // Pattern 2: Extract coach entry containing this EIA number
+    // Look for table row or div containing the EIA
+    const rowPatterns = [
+      new RegExp(`<tr[^>]*>([\\s\\S]*?${eiaNumber}[\\s\\S]*?)<\\/tr>`, 'i'),
+      new RegExp(`<div[^>]*class="[^"]*(?:coach|member|result)[^"]*"[^>]*>([\\s\\S]*?${eiaNumber}[\\s\\S]*?)<\\/div>`, 'i'),
+    ];
 
-    // Combine patterns to extract coach info
-    for (const match of linkMatches) {
-      const profileUrl = match[1];
-      const text = match[2].trim();
-
-      // Check if this looks like a coach name
-      if (text && isLikelyName(text, searchName)) {
-        results.push({
-          name: text,
-          profileUrl: profileUrl.startsWith('http') ? profileUrl : `https://www.emccglobal.org${profileUrl}`,
-        });
+    let rowHtml = '';
+    for (const pattern of rowPatterns) {
+      const match = html.match(pattern);
+      if (match && match[1]) {
+        rowHtml = match[1];
+        break;
       }
     }
 
-    // Fallback: Extract any text that looks like names
-    if (results.length === 0) {
-      for (const match of nameMatches) {
-        const text = match[1].trim();
-        if (isLikelyName(text, searchName)) {
-          results.push({ name: text });
-        }
+    if (!rowHtml) {
+      // Fallback: Get HTML context around EIA number (500 chars before and after)
+      const eiaIndex = html.search(eiaPattern);
+      if (eiaIndex >= 0) {
+        rowHtml = html.substring(Math.max(0, eiaIndex - 500), eiaIndex + 500);
       }
     }
 
-    console.log('[EMCC Parse] Found', results.length, 'potential matches');
+    if (!rowHtml) {
+      console.log('[EMCC EIA Parse] Could not extract row HTML');
+      return null;
+    }
+
+    // Extract name (look for common name patterns)
+    const namePatterns = [
+      /<td[^>]*class="[^"]*name[^"]*"[^>]*>([^<]+)<\/td>/i,
+      /<a[^>]+href="[^"]+"[^>]*>([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)<\/a>/i,
+      /<(?:strong|b)>([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)<\/(?:strong|b)>/i,
+      /(?:Dr\.?|Mr\.?|Mrs\.?|Ms\.?)?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})/,
+    ];
+
+    let name = '';
+    for (const pattern of namePatterns) {
+      const match = rowHtml.match(pattern);
+      if (match && match[1]) {
+        name = match[1].trim();
+        if (name.length > 3 && name.length < 100) break;
+      }
+    }
+
+    // Extract level
+    const levelPatterns = [
+      /(Foundation|Practitioner|Senior Practitioner|Master Practitioner)/i,
+      /<td[^>]*class="[^"]*level[^"]*"[^>]*>([^<]+)<\/td>/i,
+    ];
+
+    let level = '';
+    for (const pattern of levelPatterns) {
+      const match = rowHtml.match(pattern);
+      if (match && match[1]) {
+        level = match[1].trim();
+        break;
+      }
+    }
+
+    // Extract country
+    const countryPatterns = [
+      /<td[^>]*class="[^"]*country[^"]*"[^>]*>([^<]+)<\/td>/i,
+      /(?:Country|Location):\s*([A-Za-z\s]+)/i,
+    ];
+
+    let country = '';
+    for (const pattern of countryPatterns) {
+      const match = rowHtml.match(pattern);
+      if (match && match[1]) {
+        country = match[1].trim();
+        break;
+      }
+    }
+
+    // Extract profile URL
+    const urlPattern = /<a[^>]+href="([^"]+profile[^"]+)"[^>]*>/i;
+    const urlMatch = rowHtml.match(urlPattern);
+    let profileUrl = '';
+    if (urlMatch && urlMatch[1]) {
+      profileUrl = urlMatch[1].startsWith('http')
+        ? urlMatch[1]
+        : `https://www.emccglobal.org${urlMatch[1]}`;
+    }
+
+    if (!name) {
+      console.log('[EMCC EIA Parse] Could not extract name from row HTML');
+      return null;
+    }
+
+    console.log('[EMCC EIA Parse] Extracted:', { name, level, country, profileUrl });
+
+    return {
+      name,
+      level: level || undefined,
+      country: country || undefined,
+      profileUrl: profileUrl || undefined,
+    };
 
   } catch (error) {
-    console.error('[EMCC Parse] Error parsing HTML:', error);
+    console.error('[EMCC EIA Parse] Error:', error);
+    return null;
   }
-
-  return results;
-}
-
-/**
- * Check if a text string is likely a person's name (not a title, heading, etc.)
- */
-function isLikelyName(text: string, searchName: string): boolean {
-  // Basic heuristics
-  if (text.length < 3 || text.length > 100) return false;
-  if (!/[a-z]/i.test(text)) return false; // Must contain letters
-  if (/^(search|results|directory|members?|coach|profile)/i.test(text)) return false; // Exclude common headings
-
-  // Check if it has at least one word in common with search name
-  const searchWords = searchName.toLowerCase().split(/\s+/);
-  const textWords = text.toLowerCase().split(/\s+/);
-  return searchWords.some(sw => textWords.some(tw => tw.includes(sw) || sw.includes(tw)));
 }
 
 /**
  * Calculate string similarity (Levenshtein distance normalized)
+ * Used by verifyFromEIANumber to match names
  */
 function calculateSimilarity(str1: string, str2: string): number {
   const len1 = str1.length;
@@ -525,6 +387,7 @@ function calculateSimilarity(str1: string, str2: string): number {
 
 /**
  * Levenshtein distance algorithm
+ * Used to calculate string similarity for name matching
  */
 function levenshteinDistance(str1: string, str2: string): number {
   const matrix: number[][] = [];

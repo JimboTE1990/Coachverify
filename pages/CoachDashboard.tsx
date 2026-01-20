@@ -201,10 +201,8 @@ export const CoachDashboard: React.FC = () => {
   // EMCC Verification Modal State
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationData, setVerificationData] = useState({
-    eiaNumber: '', // EIA number (Reference field) - PRIMARY verification method
-    fullName: '',
-    profileUrl: '', // EMCC directory profile URL - SECONDARY verification method
-    membershipNumber: '' // DEPRECATED - not publicly available
+    eiaNumber: '', // EIA number (Reference field) - REQUIRED for verification
+    fullName: ''
   });
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
@@ -510,9 +508,8 @@ export const CoachDashboard: React.FC = () => {
       return;
     }
 
-    // At least one verification method must be provided
-    if (!verificationData.eiaNumber.trim() && !verificationData.profileUrl.trim()) {
-      setVerificationError('Please provide either your EIA number (recommended) or EMCC profile URL for verification');
+    if (!verificationData.eiaNumber.trim()) {
+      setVerificationError('Please provide your EIA number from the EMCC directory');
       return;
     }
 
@@ -525,9 +522,7 @@ export const CoachDashboard: React.FC = () => {
         fullName: verificationData.fullName.trim(),
         accreditationLevel: currentCoach.accreditationLevel,
         country: currentCoach.location,
-        eiaNumber: verificationData.eiaNumber.trim() || undefined, // PRIMARY: EIA number
-        profileUrl: verificationData.profileUrl.trim() || undefined, // SECONDARY: Profile URL
-        membershipNumber: verificationData.membershipNumber.trim() || undefined // DEPRECATED
+        eiaNumber: verificationData.eiaNumber.trim()
       });
 
       const message = getVerificationStatusMessage(verificationResult);
@@ -1939,10 +1934,10 @@ export const CoachDashboard: React.FC = () => {
                              </div>
                            )}
 
-                           {/* EIA Number Field (PRIMARY - NEW) */}
+                           {/* EIA Number Field (REQUIRED) */}
                            <div>
                              <label className="block text-sm font-bold text-slate-900 mb-2">
-                               EIA Number (Reference) <span className="text-green-600">✨ Recommended</span>
+                               EIA Number (Reference) <span className="text-red-500">*</span>
                              </label>
                              <input
                                type="text"
@@ -1951,9 +1946,10 @@ export const CoachDashboard: React.FC = () => {
                                placeholder="EIA20260083"
                                className="w-full border-2 border-green-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
                                disabled={isVerifying}
+                               required
                              />
                              <p className="text-xs text-slate-500 mt-2">
-                               <strong>⚡ Instant verification!</strong> Find this in your EMCC directory "Reference" column
+                               <strong>⚡ Required for verification.</strong> Find this in your EMCC directory "Reference" column
                              </p>
                            </div>
 
@@ -1969,32 +1965,15 @@ export const CoachDashboard: React.FC = () => {
                                placeholder="Exactly as shown in EMCC directory"
                                className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
                                disabled={isVerifying}
+                               required
                              />
                              <p className="text-xs text-slate-500 mt-2">Example: "Dr Jane Smith" or "John Michael Doe"</p>
-                           </div>
-
-                           {/* Profile URL Field (OPTIONAL - Backup method) */}
-                           <div>
-                             <label className="block text-sm font-bold text-slate-900 mb-2">
-                               EMCC Profile URL <span className="text-slate-500">(Optional)</span>
-                             </label>
-                             <input
-                               type="url"
-                               value={verificationData.profileUrl}
-                               onChange={(e) => setVerificationData({ ...verificationData, profileUrl: e.target.value })}
-                               placeholder="https://www.emccglobal.org/directory/profile/..."
-                               className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
-                               disabled={isVerifying}
-                             />
-                             <p className="text-xs text-slate-500 mt-2">
-                               Alternative: paste your profile URL if you don't have your EIA number
-                             </p>
                            </div>
 
                            {/* Privacy Notice */}
                            <div className="bg-green-50 border border-green-200 rounded-xl p-3">
                              <p className="text-xs text-green-900">
-                               🔒 <strong>Privacy:</strong> Your EIA number and profile URL are only used for verification and are not stored in our system.
+                               🔒 <strong>Privacy:</strong> Your EIA number is only used for verification and is not stored in our system.
                              </p>
                            </div>
                          </div>
@@ -2013,7 +1992,7 @@ export const CoachDashboard: React.FC = () => {
                            </button>
                            <button
                              onClick={handleVerificationSubmit}
-                             disabled={isVerifying || !verificationData.fullName.trim() || (!verificationData.eiaNumber.trim() && !verificationData.profileUrl.trim())}
+                             disabled={isVerifying || !verificationData.fullName.trim() || !verificationData.eiaNumber.trim()}
                              className="flex-1 bg-brand-600 text-white px-5 py-3 rounded-xl font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                            >
                              {isVerifying ? (
