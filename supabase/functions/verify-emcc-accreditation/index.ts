@@ -75,28 +75,28 @@ serve(async (req) => {
     // Update coach profile with verification result
     if (result.verified && result.matchDetails) {
       // Check if EIA number is already used by another coach
-      const { data: existingCoach, error: checkError } = await supabase
+      // Note: Only checks active coaches (not soft-deleted ones if you use deleted_at pattern)
+      const { data: existingCoaches, error: checkError } = await supabase
         .from('coaches')
         .select('id, name, email')
         .eq('emcc_verified', true)
         .eq('accreditation_level', result.matchDetails.level)
         .ilike('name', `%${fullName.split(' ')[fullName.split(' ').length - 1]}%`) // Check by last name
-        .neq('id', coachId)
-        .limit(1)
-        .single();
+        .neq('id', coachId);
 
-      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned (which is fine)
+      if (checkError) {
         console.error('[EMCC Verification] Error checking for duplicates:', checkError);
       }
 
       // If another verified coach exists with similar name and same level, flag potential duplicate
-      if (existingCoach) {
+      if (existingCoaches && existingCoaches.length > 0) {
+        const existingCoach = existingCoaches[0];
         console.warn('[EMCC Verification] Potential duplicate detected:', existingCoach);
         return new Response(
           JSON.stringify({
             verified: false,
             confidence: 0,
-            reason: `This EIA number appears to be already verified by another coach in our system. If you believe this is an error, please contact support at support@coachdog.com with your EIA number: ${eiaNumber}`,
+            reason: `This EIA number appears to be already verified by another coach in our system (${existingCoach.name}). If you believe this is an error, please contact support at support@coachdog.com with your EIA number: ${eiaNumber}`,
           }),
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
