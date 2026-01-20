@@ -74,6 +74,34 @@ serve(async (req) => {
 
     // Update coach profile with verification result
     if (result.verified && result.matchDetails) {
+      // Check if EIA number is already used by another coach
+      const { data: existingCoach, error: checkError } = await supabase
+        .from('coaches')
+        .select('id, name, email')
+        .eq('emcc_verified', true)
+        .eq('accreditation_level', result.matchDetails.level)
+        .ilike('name', `%${fullName.split(' ')[fullName.split(' ').length - 1]}%`) // Check by last name
+        .neq('id', coachId)
+        .limit(1)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned (which is fine)
+        console.error('[EMCC Verification] Error checking for duplicates:', checkError);
+      }
+
+      // If another verified coach exists with similar name and same level, flag potential duplicate
+      if (existingCoach) {
+        console.warn('[EMCC Verification] Potential duplicate detected:', existingCoach);
+        return new Response(
+          JSON.stringify({
+            verified: false,
+            confidence: 0,
+            reason: `This EIA number appears to be already verified by another coach in our system. If you believe this is an error, please contact support at support@coachdog.com with your EIA number: ${eiaNumber}`,
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       const { error: updateError } = await supabase
         .from('coach_profiles')
         .update({

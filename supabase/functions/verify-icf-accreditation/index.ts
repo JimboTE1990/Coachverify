@@ -74,6 +74,34 @@ serve(async (req) => {
 
     // Update coach profile with verification result
     if (result.verified && result.matchDetails) {
+      // Check if this credential is already used by another coach
+      const { data: existingCoach, error: checkError } = await supabase
+        .from('coaches')
+        .select('id, name, email')
+        .eq('icf_verified', true)
+        .eq('icf_accreditation_level', credentialLevel)
+        .ilike('name', `%${fullName.split(' ')[fullName.split(' ').length - 1]}%`) // Check by last name
+        .neq('id', coachId)
+        .limit(1)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned (which is fine)
+        console.error('[ICF Verification] Error checking for duplicates:', checkError);
+      }
+
+      // If another verified coach exists with similar name and same credential, flag potential duplicate
+      if (existingCoach) {
+        console.warn('[ICF Verification] Potential duplicate detected:', existingCoach);
+        return new Response(
+          JSON.stringify({
+            verified: false,
+            confidence: 0,
+            reason: `This ${credentialLevel} credential appears to be already verified by another coach in our system (${existingCoach.name}). If you believe this is an error, please contact support at support@coachdog.com`,
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       const { error: updateError } = await supabase
         .from('coach_profiles')
         .update({
