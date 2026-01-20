@@ -550,9 +550,11 @@ export const CoachSignup: React.FC = () => {
                       </button>
                     </label>
 
-                    {/* Dynamic Info Popup */}
+                    {/* Dynamic Info Popup - positioned to the right on desktop, below on mobile */}
                     {showAccreditationInfo && (
-                      <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border-2 border-brand-200 rounded-xl p-4 shadow-xl max-w-md">
+                      <div className="absolute z-50 mt-2 bg-white border-2 border-brand-200 rounded-xl p-4 shadow-xl overflow-y-auto
+                                      md:left-full md:top-0 md:ml-4 md:w-96 md:max-h-[500px]
+                                      left-0 right-0 top-full max-md:max-w-full max-md:max-h-96">
                         <div className="flex justify-between items-start mb-3">
                           <h4 className="font-bold text-slate-900 flex items-center gap-2">
                             <Info className="h-4 w-4 text-brand-500" />
