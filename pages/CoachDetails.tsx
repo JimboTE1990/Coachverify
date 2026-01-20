@@ -5,6 +5,7 @@ import { storeReviewToken, getReviewToken, canManageReview, removeReviewToken } 
 import { Coach, QuestionnaireAnswers, CURRENCIES } from '../types';
 import { calculateMatchScore } from '../utils/matchCalculator';
 import { useAuth } from '../hooks/useAuth';
+import { majorCities } from '../data/cities';
 import {
   ArrowLeft, Star, Mail, Instagram, MessageCircle, Linkedin,
   MapPin, CheckCircle, Share2, ChevronLeft, ChevronRight, Clock, X,
@@ -657,6 +658,17 @@ export const CoachDetails: React.FC = () => {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Big Bold Share Button */}
+            <div className="flex justify-center mb-6">
+              <button
+                onClick={handleShare}
+                className="bg-gradient-to-r from-cyan-500 to-brand-600 text-white px-8 py-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center gap-3 font-black text-lg"
+              >
+                <Share2 className="h-6 w-6" />
+                SHARE PROFILE
+              </button>
             </div>
 
             {/* Star Rating - Clickable to scroll to reviews */}
@@ -1426,13 +1438,19 @@ export const CoachDetails: React.FC = () => {
                 <input
                   id="review-location"
                   type="text"
+                  list="cities-list"
                   value={reviewFormData.location}
                   onChange={(e) => setReviewFormData({ ...reviewFormData, location: e.target.value })}
-                  placeholder="e.g., Cardiff, Wales or London, UK"
+                  placeholder="Select a city or type your own..."
                   className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
                   disabled={reviewSubmitting}
                 />
-                <p className="text-xs text-slate-500 mt-2">Keep it general for privacy (e.g., city and country)</p>
+                <datalist id="cities-list">
+                  {majorCities.map((city) => (
+                    <option key={city} value={city} />
+                  ))}
+                </datalist>
+                <p className="text-xs text-slate-500 mt-2">Choose from popular cities or type your own (e.g., "Cardiff, Wales")</p>
               </div>
 
               {/* Review Text */}

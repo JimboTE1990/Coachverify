@@ -345,6 +345,7 @@ export interface Coach {
   languages?: string[]; // Legacy - now superseded by coachingLanguages
   averageRating?: number; // Calculated from reviews (1-5)
   totalReviews?: number; // Count of reviews
+  customUrl?: string; // Custom vanity URL slug (e.g., "jonnysmith" for /coach/jonnysmith)
 
   // New: Enhanced Expertise & Qualifications
   coachingExpertise?: CoachingExpertise[]; // Areas of coaching expertise (from 7 categories)
