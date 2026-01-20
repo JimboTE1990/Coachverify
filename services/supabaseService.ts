@@ -323,6 +323,8 @@ export const addReview = async (
   // Generate token if not provided
   const token = reviewToken || generateReviewToken();
 
+  // TEMPORARY: Insert without spam columns until migration is run
+  // TODO: Add spam columns back after running 20260116_spam_detection_and_comments.sql
   const { data: review, error } = await supabase
     .from('reviews')
     .insert({
@@ -333,10 +335,10 @@ export const addReview = async (
       coaching_period: coachingPeriod,
       reviewer_location: location || null,
       review_token: token, // Store token for ownership verification
-      spam_score: spamCheck.confidence,
-      spam_reasons: spamCheck.reasons,
-      is_spam: spamCheck.isSpam,
-      spam_category: spamCheck.category || null,
+      // spam_score: spamCheck.confidence,
+      // spam_reasons: spamCheck.reasons,
+      // is_spam: spamCheck.isSpam,
+      // spam_category: spamCheck.category || null,
     })
     .select()
     .single();
