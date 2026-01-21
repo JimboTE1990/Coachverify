@@ -284,15 +284,89 @@ export const toggleVerifyCoach = async (coachId: string): Promise<boolean> => {
 
 export const verifyCoachLicense = async (
   body: string,
-  regNumber: string
-): Promise<boolean> => {
-  // TODO: Integrate with actual verification APIs (EMCC, ICF, etc.)
-  // For now, simulate verification
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(body.length > 0 && regNumber.length > 3);
-    }, 1000);
-  });
+  regNumber: string,
+  coachId: string,
+  fullName: string,
+  accreditationLevel?: string,
+  country?: string
+): Promise<{ verified: boolean; reason?: string }> => {
+  console.log('[verifyCoachLicense] Starting verification:', { body, regNumber, coachId, fullName });
+
+  // Validate required fields
+  if (!coachId || !fullName || !regNumber) {
+    return {
+      verified: false,
+      reason: 'Missing required information for verification'
+    };
+  }
+
+  try {
+    if (body === 'EMCC') {
+      // Call EMCC verification edge function
+      const { data, error } = await supabase.functions.invoke('verify-emcc-accreditation', {
+        body: {
+          coachId,
+          fullName,
+          accreditationLevel,
+          country,
+          eiaNumber: regNumber
+        }
+      });
+
+      if (error) {
+        console.error('[verifyCoachLicense] EMCC verification error:', error);
+        return {
+          verified: false,
+          reason: error.message || 'Verification service error'
+        };
+      }
+
+      console.log('[verifyCoachLicense] EMCC verification result:', data);
+      return {
+        verified: data.verified || false,
+        reason: data.reason
+      };
+
+    } else if (body === 'ICF') {
+      // Call ICF verification edge function
+      const { data, error } = await supabase.functions.invoke('verify-icf-accreditation', {
+        body: {
+          coachId,
+          fullName,
+          credentialLevel: regNumber, // For ICF, regNumber is the credential level (ACC/PCC/MCC)
+          country
+        }
+      });
+
+      if (error) {
+        console.error('[verifyCoachLicense] ICF verification error:', error);
+        return {
+          verified: false,
+          reason: error.message || 'Verification service error'
+        };
+      }
+
+      console.log('[verifyCoachLicense] ICF verification result:', data);
+      return {
+        verified: data.verified || false,
+        reason: data.reason
+      };
+
+    } else {
+      // For other accreditation bodies (AC, etc.), skip verification for now
+      console.log('[verifyCoachLicense] Skipping verification for body:', body);
+      return {
+        verified: true,
+        reason: `Verification not required for ${body}`
+      };
+    }
+  } catch (error) {
+    console.error('[verifyCoachLicense] Unexpected error:', error);
+    return {
+      verified: false,
+      reason: error instanceof Error ? error.message : 'Unknown verification error'
+    };
+  }
 };
 
 // ============================================================================

@@ -177,12 +177,34 @@ export const CoachSignup: React.FC = () => {
 
   const handleVerification = async () => {
     setLoading(true);
-    const isValid = await verifyCoachLicense(formData.body, formData.regNumber);
-    setLoading(false);
-    if (isValid) {
-      setVerified(true);
-    } else {
-      alert("Could not verify license. Please check your number.");
+    setSignupError('');
+
+    try {
+      const fullName = `${formData.first_name} ${formData.last_name}`.trim();
+
+      // Use a temporary ID for verification (will be replaced with real coach ID after signup)
+      const tempCoachId = `temp_${Date.now()}`;
+
+      const result = await verifyCoachLicense(
+        formData.body,
+        formData.regNumber,
+        tempCoachId,
+        fullName,
+        undefined, // accreditationLevel - optional
+        undefined  // country - optional
+      );
+
+      setLoading(false);
+
+      if (result.verified) {
+        setVerified(true);
+      } else {
+        setSignupError(result.reason || "Could not verify your accreditation. Please check your details.");
+      }
+    } catch (error) {
+      setLoading(false);
+      setSignupError("Verification failed. Please try again or contact support.");
+      console.error('[handleVerification] Error:', error);
     }
   };
 
