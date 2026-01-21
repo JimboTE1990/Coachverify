@@ -1996,7 +1996,7 @@ export const CoachDashboard: React.FC = () => {
                                    <div>
                                      <p className="font-semibold text-brand-600 mb-1">📍 Step 1: Visit EMCC Directory</p>
                                      <a
-                                       href="https://www.emccglobal.org/directory"
+                                       href="https://www.emccglobal.org/accreditation/eia/eia-awards/"
                                        target="_blank"
                                        rel="noopener noreferrer"
                                        className="text-brand-500 hover:text-brand-600 underline flex items-center gap-1"

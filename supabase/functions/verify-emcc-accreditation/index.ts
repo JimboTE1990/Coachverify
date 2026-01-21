@@ -210,11 +210,24 @@ async function verifyFromEIANumber(
     // Parse results looking for EIA number match
     const match = parseEIAResult(html, normalizedEIA);
 
-    if (!match || !match.name) {
+    console.log('[EMCC EIA Verification] Parse result:', match);
+    console.log('[EMCC EIA Verification] Expected name:', expectedName);
+
+    if (!match) {
+      console.error('[EMCC EIA Verification] Failed to parse HTML - no match found');
       return {
         verified: false,
         confidence: 0,
         reason: `No EMCC record found with EIA number ${normalizedEIA}. Please verify your EIA number is correct.`,
+      };
+    }
+
+    if (!match.name || match.name.trim().length === 0) {
+      console.error('[EMCC EIA Verification] Failed to extract name from HTML');
+      return {
+        verified: false,
+        confidence: 0,
+        reason: `Found EIA ${normalizedEIA} in EMCC directory, but couldn't extract the coach name. This may be a technical issue - please contact support.`,
       };
     }
 
@@ -223,17 +236,25 @@ async function verifyFromEIANumber(
 
     // Verify name matches (fuzzy matching OK since EIA is unique)
     const nameSimilarity = calculateSimilarity(
-      match.name.toLowerCase(),
-      expectedName.toLowerCase()
+      match.name.toLowerCase().trim(),
+      expectedName.toLowerCase().trim()
     );
 
     console.log('[EMCC EIA Verification] Name similarity:', nameSimilarity);
+    console.log('[EMCC EIA Verification] Comparing:', {
+      found: match.name,
+      expected: expectedName,
+      similarity: nameSimilarity,
+      threshold: 0.7
+    });
 
+    // Strict name matching: 70% similarity threshold
     if (nameSimilarity < 0.7) {
+      console.warn('[EMCC EIA Verification] Name mismatch detected');
       return {
         verified: false,
         confidence: 0,
-        reason: `EIA ${normalizedEIA} belongs to "${match.name}", which doesn't match the name you provided ("${expectedName}"). Please check your EIA number.`,
+        reason: `EIA ${normalizedEIA} belongs to "${match.name}", which doesn't match the name you provided ("${expectedName}"). Please check that you're using YOUR OWN EIA number.`,
       };
     }
 
