@@ -36,7 +36,7 @@ export const verifyEMCCAccreditation = async (
     console.log('[EMCC Verification] Starting verification:', request);
 
     // Call Supabase Edge Function
-    const { data, error } = await supabase.functions.invoke('verify-emcc-accreditation', {
+    const { data, error } = await supabase.functions.invoke('bright-processor', {
       body: request,
     });
 
