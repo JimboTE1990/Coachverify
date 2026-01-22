@@ -303,8 +303,7 @@ export const verifyCoachLicense = async (
   try {
     if (body === 'EMCC') {
       // Call EMCC verification edge function
-      // Using bright-processor as verify-emcc-accreditation returns 404
-      const { data, error } = await supabase.functions.invoke('bright-processor', {
+      const { data, error } = await supabase.functions.invoke('verify-emcc-accreditation', {
         body: {
           coachId,
           fullName,
