@@ -198,6 +198,12 @@ export const CoachSignup: React.FC = () => {
 
       if (result.verified) {
         setVerified(true);
+      } else if ((result as any).pendingManualReview) {
+        // Allow signup to continue with pending verification
+        setVerified(true); // Allow them to proceed
+        setSignupError(''); // Clear any errors
+        // Show info message instead
+        alert('✓ Credentials submitted! Your accreditation will be manually verified within 24 hours. You can complete your signup now.');
       } else {
         setSignupError(result.reason || "Could not verify your accreditation. Please check your details.");
       }
@@ -730,14 +736,34 @@ export const CoachSignup: React.FC = () => {
                  </div>
 
                  {!verified ? (
-                   <button
-                     onClick={handleVerification}
-                     disabled={loading || !formData.regNumber}
-                     className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 disabled:opacity-50 transition-all flex justify-center items-center shadow-md"
-                   >
-                     {loading ? <Loader className="h-5 w-5 animate-spin mr-2" /> : <ShieldCheck className="h-5 w-5 mr-2" />}
-                     {loading ? 'Verifying...' : 'Verify Now'}
-                   </button>
+                   <div className="space-y-2">
+                     <button
+                       onClick={handleVerification}
+                       disabled={loading || !formData.regNumber}
+                       className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 disabled:opacity-50 transition-all flex justify-center items-center shadow-md"
+                     >
+                       {loading ? <Loader className="h-5 w-5 animate-spin mr-2" /> : <ShieldCheck className="h-5 w-5 mr-2" />}
+                       {loading ? 'Verifying...' : 'Verify Now'}
+                     </button>
+                     {loading && (
+                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 animate-fade-in">
+                         <div className="flex items-start gap-3">
+                           <Loader className="h-5 w-5 animate-spin text-blue-600 flex-shrink-0 mt-0.5" />
+                           <div className="flex-1 text-left">
+                             <p className="text-sm font-semibold text-blue-800">
+                               Verification in progress...
+                             </p>
+                             <p className="text-xs text-blue-700 mt-1">
+                               This process can take up to 1 minute as we verify your credentials with the official directory.
+                             </p>
+                             <p className="text-xs font-medium text-blue-800 mt-2">
+                               ⚠️ Please do not leave or refresh this page.
+                             </p>
+                           </div>
+                         </div>
+                       </div>
+                     )}
+                   </div>
                  ) : (
                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-center text-green-700 animate-fade-in shadow-sm">
                       <CheckCircle className="h-6 w-6 mr-2" />
