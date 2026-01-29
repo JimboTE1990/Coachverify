@@ -289,7 +289,7 @@ export const verifyCoachLicense = async (
   fullName: string,
   accreditationLevel?: string,
   country?: string
-): Promise<{ verified: boolean; reason?: string }> => {
+): Promise<{ verified: boolean; reason?: string; pendingManualReview?: boolean }> => {
   console.log('[verifyCoachLicense] Starting verification:', { body, regNumber, coachId, fullName });
 
   // Validate required fields
@@ -302,14 +302,13 @@ export const verifyCoachLicense = async (
 
   try {
     if (body === 'EMCC') {
-      // Call EMCC verification edge function
-      const { data, error } = await supabase.functions.invoke('verify-emcc-accreditation', {
+      // Call EMCC URL verification edge function (new method)
+      const { data, error } = await supabase.functions.invoke('verify-emcc-url', {
         body: {
           coachId,
           fullName,
-          accreditationLevel,
-          country,
-          eiaNumber: regNumber
+          profileUrl: regNumber, // regNumber now contains the EMCC profile URL
+          accreditationLevel
         }
       });
 
@@ -324,7 +323,8 @@ export const verifyCoachLicense = async (
       console.log('[verifyCoachLicense] EMCC verification result:', data);
       return {
         verified: data.verified || false,
-        reason: data.reason
+        reason: data.reason,
+        pendingManualReview: data.pendingManualReview || false
       };
 
     } else if (body === 'ICF') {

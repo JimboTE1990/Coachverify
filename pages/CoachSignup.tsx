@@ -583,7 +583,7 @@ export const CoachSignup: React.FC = () => {
 
                  <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
-                      {formData.body === 'EMCC' ? 'EIA Number (Reference)' :
+                      {formData.body === 'EMCC' ? 'EMCC Profile URL' :
                        formData.body === 'ICF' ? 'ICF Credential Level' :
                        'Registration / Member Number'}
                       <button
@@ -611,7 +611,7 @@ export const CoachSignup: React.FC = () => {
                         <div className="flex justify-between items-start mb-3">
                           <h4 className="font-bold text-slate-900 flex items-center gap-2">
                             <Info className="h-4 w-4 text-brand-500" />
-                            {formData.body === 'EMCC' && 'Find Your EIA Number'}
+                            {formData.body === 'EMCC' && 'How to Get Your EMCC Profile URL'}
                             {formData.body === 'ICF' && 'Find Your ICF Credential'}
                             {formData.body === 'AC' && 'AC Member Information'}
                           </h4>
@@ -639,23 +639,36 @@ export const CoachSignup: React.FC = () => {
                             </div>
 
                             <div>
-                              <p className="font-semibold text-brand-600 mb-1">🔍 Step 2: Search for Your Name</p>
-                              <p className="text-slate-600">Use the search box to find your profile</p>
+                              <p className="font-semibold text-brand-600 mb-1">🔍 Step 2: Search by EIA Number ONLY</p>
+                              <p className="text-slate-600 mb-1">Enter <strong>ONLY your EIA number</strong> in the "Reference" field</p>
+                              <div className="bg-red-50 border border-red-200 rounded p-2 mt-1">
+                                <p className="text-xs text-red-700 font-semibold">⚠️ IMPORTANT: Leave all other fields blank!</p>
+                                <p className="text-xs text-red-600 mt-1">Do NOT search by name - this will create the wrong URL</p>
+                              </div>
                             </div>
 
                             <div>
-                              <p className="font-semibold text-brand-600 mb-1">📋 Step 3: Find the Reference Column</p>
-                              <p className="text-slate-600">Look for the "Reference" column in the search results</p>
+                              <p className="font-semibold text-brand-600 mb-1">📋 Step 3: Copy the Complete URL</p>
+                              <p className="text-slate-600">After clicking Search, copy the <strong>entire URL</strong> from your browser's address bar and paste it below</p>
                             </div>
 
                             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                              <p className="font-semibold text-green-800 mb-1">✅ Example Format:</p>
-                              <code className="bg-white px-2 py-1 rounded border border-green-300 text-green-700 font-mono text-xs">
-                                EIA20260083
+                              <p className="font-semibold text-green-800 mb-1">✅ Correct URL Format:</p>
+                              <code className="bg-white px-2 py-1 rounded border border-green-300 text-green-700 font-mono text-xs break-all">
+                                https://www.emccglobal.org/accreditation/eia/eia-awards/?reference=EIA20230480&search=1
                               </code>
                               <p className="text-xs text-green-700 mt-2">
-                                Your EIA number always starts with "EIA" followed by numbers
+                                ✓ The URL must contain "reference=EIA" followed by your number
                               </p>
+                            </div>
+
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                              <p className="text-xs text-amber-800 font-semibold mb-1">❌ Incorrect URLs:</p>
+                              <ul className="text-xs text-amber-700 space-y-1 ml-4 list-disc">
+                                <li>URLs with "first_name=" or "last_name=" (name search)</li>
+                                <li>The main directory page (without search results)</li>
+                                <li>URLs missing your EIA number</li>
+                              </ul>
                             </div>
                           </div>
                         )}
@@ -723,12 +736,12 @@ export const CoachSignup: React.FC = () => {
 
                     <input
                       name="regNumber"
-                      type="text"
+                      type={formData.body === 'EMCC' ? 'url' : 'text'}
                       value={formData.regNumber}
                       onChange={handleChange}
                       className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
                       placeholder={
-                        formData.body === 'EMCC' ? 'e.g. EIA20260083' :
+                        formData.body === 'EMCC' ? 'Paste your EMCC profile URL here' :
                         formData.body === 'ICF' ? 'e.g. PCC' :
                         'e.g. 12345-AB'
                       }
