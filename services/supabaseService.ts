@@ -288,7 +288,8 @@ export const verifyCoachLicense = async (
   coachId: string,
   fullName: string,
   accreditationLevel?: string,
-  country?: string
+  country?: string,
+  location?: string // NEW: For ICF location (City, Country)
 ): Promise<{ verified: boolean; reason?: string; pendingManualReview?: boolean }> => {
   console.log('[verifyCoachLicense] Starting verification:', { body, regNumber, coachId, fullName });
 
@@ -328,13 +329,14 @@ export const verifyCoachLicense = async (
       };
 
     } else if (body === 'ICF') {
-      // Call ICF verification edge function
-      const { data, error } = await supabase.functions.invoke('verify-icf-accreditation', {
+      // Call ICF URL verification edge function (new method)
+      const { data, error } = await supabase.functions.invoke('verify-icf-url', {
         body: {
           coachId,
           fullName,
-          credentialLevel: regNumber, // For ICF, regNumber is the credential level (ACC/PCC/MCC)
-          country
+          profileUrl: regNumber, // regNumber now contains the ICF directory URL
+          location: location || '', // Location is required for ICF
+          accreditationLevel: accreditationLevel || ''
         }
       });
 
@@ -349,7 +351,8 @@ export const verifyCoachLicense = async (
       console.log('[verifyCoachLicense] ICF verification result:', data);
       return {
         verified: data.verified || false,
-        reason: data.reason
+        reason: data.reason,
+        pendingManualReview: data.pendingManualReview || false
       };
 
     } else {

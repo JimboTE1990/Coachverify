@@ -62,6 +62,8 @@ export const CoachSignup: React.FC = () => {
     dobYear: '2000',
     body: 'EMCC',
     regNumber: '',
+    location: '', // NEW: For ICF verification (City, Country)
+    accreditationLevel: '', // NEW: For ICF credential level
   });
 
   const passwordStrength = validatePassword(formData.password);
@@ -190,8 +192,9 @@ export const CoachSignup: React.FC = () => {
         formData.regNumber,
         tempCoachId,
         fullName,
-        undefined, // accreditationLevel - optional
-        undefined  // country - optional
+        formData.accreditationLevel, // accreditationLevel (for ICF)
+        undefined, // country - optional
+        formData.location // location (for ICF: City, Country)
       );
 
       setLoading(false);
@@ -584,7 +587,7 @@ export const CoachSignup: React.FC = () => {
                  <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
                       {formData.body === 'EMCC' ? 'EMCC Profile URL' :
-                       formData.body === 'ICF' ? 'ICF Credential Level' :
+                       formData.body === 'ICF' ? 'ICF Directory Search URL' :
                        'Registration / Member Number'}
                       <button
                         ref={infoButtonRef}
@@ -679,32 +682,41 @@ export const CoachSignup: React.FC = () => {
                             <div>
                               <p className="font-semibold text-brand-600 mb-1">📍 Step 1: Visit ICF Directory</p>
                               <a
-                                href="https://apps.coachingfederation.org/eweb/DynamicPage.aspx?WebCode=ICFDirectory&Site=ICFAppsR"
+                                href="https://apps.coachingfederation.org/eweb/DynamicPage.aspx?webcode=ICFDirectory"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-brand-500 hover:text-brand-600 underline flex items-center gap-1"
                               >
-                                Open ICF Directory <ExternalLink className="h-3 w-3" />
+                                Open ICF Member Directory <ExternalLink className="h-3 w-3" />
                               </a>
                             </div>
 
                             <div>
-                              <p className="font-semibold text-brand-600 mb-1">🔍 Step 2: Search for Your Name</p>
-                              <p className="text-slate-600">Enter your first and last name</p>
+                              <p className="font-semibold text-brand-600 mb-1">🔍 Step 2: Search by Your Full Name</p>
+                              <p className="text-slate-600 mb-1">Enter your <strong>first name</strong> and <strong>last name</strong>, then click Search</p>
                             </div>
 
                             <div>
-                              <p className="font-semibold text-brand-600 mb-1">📋 Step 3: Note Your Credential Level</p>
-                              <p className="text-slate-600">You'll see ACC, PCC, or MCC listed next to your name</p>
+                              <p className="font-semibold text-brand-600 mb-1">📋 Step 3: Copy the URL</p>
+                              <p className="text-slate-600">Copy the <strong>complete URL</strong> from your browser's address bar and paste it below</p>
+                            </div>
+
+                            <div>
+                              <p className="font-semibold text-brand-600 mb-1">📍 Step 4: Enter Your Location</p>
+                              <p className="text-slate-600">Enter your city and country <strong>exactly as shown</strong> in your ICF profile (e.g., "London, UK")</p>
+                            </div>
+
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                              <p className="font-semibold text-green-800 mb-1">✅ Correct URL Format:</p>
+                              <code className="bg-white px-2 py-1 rounded border border-green-300 text-green-700 font-mono text-xs break-all">
+                                https://apps.coachingfederation.org/eweb/DynamicPage.aspx?webcode=ICFDirectory&firstname=carole&lastname=adams&sort=1
+                              </code>
                             </div>
 
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                              <p className="font-semibold text-blue-800 mb-1">✅ Credential Levels:</p>
-                              <div className="space-y-1 text-xs text-blue-700">
-                                <div><code className="bg-white px-2 py-1 rounded border border-blue-300 font-mono">ACC</code> - Associate Certified Coach</div>
-                                <div><code className="bg-white px-2 py-1 rounded border border-blue-300 font-mono">PCC</code> - Professional Certified Coach</div>
-                                <div><code className="bg-white px-2 py-1 rounded border border-blue-300 font-mono">MCC</code> - Master Certified Coach</div>
-                              </div>
+                              <p className="text-xs text-blue-800">
+                                💡 <strong>Why location?</strong> If multiple coaches share your name, your location helps us identify the correct profile.
+                              </p>
                             </div>
                           </div>
                         )}
@@ -736,17 +748,60 @@ export const CoachSignup: React.FC = () => {
 
                     <input
                       name="regNumber"
-                      type={formData.body === 'EMCC' ? 'url' : 'text'}
+                      type={formData.body === 'EMCC' || formData.body === 'ICF' ? 'url' : 'text'}
                       value={formData.regNumber}
                       onChange={handleChange}
                       className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
                       placeholder={
                         formData.body === 'EMCC' ? 'Paste your EMCC profile URL here' :
-                        formData.body === 'ICF' ? 'e.g. PCC' :
+                        formData.body === 'ICF' ? 'Paste your ICF directory search URL here' :
                         'e.g. 12345-AB'
                       }
                     />
                  </div>
+
+                 {/* ICF: Location Field */}
+                 {formData.body === 'ICF' && (
+                   <div>
+                     <label className="block text-sm font-medium text-slate-700 mb-1">
+                       City, Country
+                     </label>
+                     <input
+                       name="location"
+                       type="text"
+                       value={formData.location}
+                       onChange={handleChange}
+                       className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
+                       placeholder="e.g., London, UK"
+                       required
+                     />
+                     <p className="text-xs text-slate-600 mt-1">
+                       This helps us verify the correct profile if multiple coaches share your name
+                     </p>
+                   </div>
+                 )}
+
+                 {/* ICF: Credential Level Dropdown */}
+                 {formData.body === 'ICF' && (
+                   <div>
+                     <label className="block text-sm font-medium text-slate-700 mb-1">
+                       ICF Credential Level
+                     </label>
+                     <select
+                       name="accreditationLevel"
+                       value={formData.accreditationLevel || ''}
+                       onChange={handleChange}
+                       className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
+                       required
+                     >
+                       <option value="">Select your credential level</option>
+                       <option value="ACC">ACC - Associate Certified Coach</option>
+                       <option value="PCC">PCC - Professional Certified Coach</option>
+                       <option value="MCC">MCC - Master Certified Coach</option>
+                       <option value="ACTC">ACTC - Approved Coach Training Course</option>
+                     </select>
+                   </div>
+                 )}
 
                  {!verified ? (
                    <div className="space-y-2">
