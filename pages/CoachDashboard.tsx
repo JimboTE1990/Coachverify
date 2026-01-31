@@ -1400,6 +1400,7 @@ export const CoachDashboard: React.FC = () => {
                             </div>
                           </div>
                       </div>
+                      </div>
                   </CollapsibleSection>
 
                   {/* Professional Credentials Section - CONSOLIDATED */}
@@ -1694,7 +1695,7 @@ export const CoachDashboard: React.FC = () => {
                         </button>
                     </div>
                   </CollapsibleSection>
-              </div>
+                </div>
               </div>
             )}
 
