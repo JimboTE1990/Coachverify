@@ -1106,16 +1106,28 @@ export const CoachDashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Profile Photo Upload */}
-                  <ImageUpload
-                    currentImageUrl={localProfile?.photoUrl}
-                    onImageUpdate={(newUrl) => updateLocalProfile({ photoUrl: newUrl })}
-                    coachId={currentCoach.id}
-                  />
+                  {/* Coach Bio Section - CONSOLIDATED */}
+                  <CollapsibleSection
+                    title="Coach Bio"
+                    subtitle="Your profile photo, name, bio, languages, and location"
+                    icon={<User className="h-4 w-4" />}
+                    defaultOpen={true}
+                    gradient="from-slate-50 to-gray-50"
+                    borderColor="border-slate-200"
+                    iconBgColor="bg-slate-100"
+                    iconTextColor="text-slate-600"
+                  >
+                      {/* Profile Photo Upload */}
+                      <div className="mb-6">
+                        <ImageUpload
+                          currentImageUrl={localProfile?.photoUrl}
+                          onImageUpdate={(newUrl) => updateLocalProfile({ photoUrl: newUrl })}
+                          coachId={currentCoach.id}
+                        />
+                      </div>
 
-                  {/* Basic Info */}
-                  <div className="grid grid-cols-1 gap-6">
-                    <div>
+                      {/* Full Name */}
+                      <div className="mb-6">
                         <label className="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
                         <input
                           type="text"
@@ -1123,15 +1135,156 @@ export const CoachDashboard: React.FC = () => {
                           onChange={(e) => updateLocalProfile({name: e.target.value})}
                           className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
                         />
-                    </div>
-                  </div>
+                      </div>
 
-                  {/* Matching Criteria Section */}
-                  <div className="bg-gradient-to-br from-brand-50 to-indigo-50 rounded-2xl p-6 border border-brand-100 space-y-6">
-                      <h3 className="text-sm font-extrabold text-brand-900 flex items-center uppercase tracking-widest">
-                        <Sparkles className="h-4 w-4 mr-2" /> Matching Criteria
-                      </h3>
-                      
+                      {/* Bio */}
+                      <div className="mb-6">
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Bio</label>
+                        <textarea
+                          rows={4}
+                          value={localProfile?.bio || ''}
+                          onChange={(e) => updateLocalProfile({bio: e.target.value})}
+                          className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
+                        />
+                      </div>
+
+                      {/* Languages */}
+                      <div className="mb-6">
+                        <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                          <svg className="h-4 w-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                          </svg>
+                          Coaching Languages
+                        </label>
+                        <MultiSelect
+                          options={COACHING_LANGUAGES}
+                          selected={localProfile?.coachingLanguages || []}
+                          onChange={(selected) => updateLocalProfile({coachingLanguages: selected})}
+                          placeholder="Select languages you offer coaching in..."
+                          searchPlaceholder="Search languages..."
+                          maxHeight="400px"
+                        />
+                      </div>
+
+                      {/* Location Radius */}
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-3">Location Radius (for in-person coaching)</label>
+                        <input
+                          type="text"
+                          value={localProfile?.locationRadius || ''}
+                          onChange={(e) => updateLocalProfile({locationRadius: e.target.value})}
+                          placeholder="e.g., within 5 miles of London"
+                          className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
+                        />
+                      </div>
+                  </CollapsibleSection>
+
+                  {/* Social Links */}
+                  <CollapsibleSection
+                    title="Social & Web Links"
+                    subtitle="Your professional online presence and contact methods"
+                    icon={<LinkIcon className="h-4 w-4" />}
+                    defaultOpen={false}
+                    gradient="from-slate-50 to-gray-50"
+                    borderColor="border-slate-200"
+                    iconBgColor="bg-slate-100"
+                    iconTextColor="text-slate-600"
+                  >
+                    {/* Booking Calendar Tip */}
+                    <div className="bg-cyan-50 border border-cyan-200 rounded-xl p-4 mb-4">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-cyan-100 rounded-lg p-2 flex-shrink-0">
+                          <Calendar className="h-5 w-5 text-cyan-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-bold text-cyan-900 text-sm mb-1">💡 Add Your Booking Calendar</p>
+                          <p className="text-xs text-cyan-800 leading-relaxed">
+                            Add your Calendly, Cal.com, or Google Calendar booking link here! Use label "Booking" or "Schedule" and it will appear as a <strong>"Schedule a Call"</strong> button on your profile.
+                          </p>
+                          <p className="text-xs text-cyan-700 mt-2 italic">
+                            Example: Label = "Calendly Booking", URL = "https://calendly.com/yourname"
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 mb-4">
+                        {localProfile?.socialLinks?.map((link, idx) => (
+                            <div key={idx} className="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                <div className="flex-grow">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">{link.platform}</p>
+                                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                                        link.type === 'email' ? 'bg-blue-100 text-blue-700' :
+                                        link.type === 'tel' ? 'bg-green-100 text-green-700' :
+                                        'bg-slate-100 text-slate-600'
+                                      }`}>
+                                        {link.type === 'email' ? 'EMAIL' : link.type === 'tel' ? 'PHONE' : 'URL'}
+                                      </span>
+                                    </div>
+                                    <p className="text-sm text-brand-700 font-medium truncate">{stripProtocol(link.url)}</p>
+                                </div>
+                                <button onClick={() => removeLink(idx)} className="text-slate-400 hover:text-red-500 p-2 transition-colors">
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex flex-col gap-3">
+                        <div className="flex gap-3">
+                          <select
+                            value={newLink.type}
+                            onChange={(e) => setNewLink({...newLink, type: e.target.value as 'url' | 'email' | 'tel'})}
+                            className="border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none bg-white font-bold text-slate-700"
+                          >
+                            <option value="url">Website/Social</option>
+                            <option value="email">Email</option>
+                            <option value="tel">Telephone</option>
+                          </select>
+                          <input
+                              type="text"
+                              placeholder="Label (e.g. LinkedIn, Contact Email, Mobile)"
+                              className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
+                              value={newLink.platform}
+                              onChange={(e) => setNewLink({...newLink, platform: e.target.value})}
+                          />
+                        </div>
+                        <div className="flex gap-3">
+                          <input
+                              type="text"
+                              placeholder={
+                                newLink.type === 'email' ? 'Email address (e.g., coach@example.com)' :
+                                newLink.type === 'tel' ? 'Phone number (e.g., +44 7700 900000)' :
+                                'URL (https://...)'
+                              }
+                              className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
+                              value={newLink.url}
+                              onChange={(e) => setNewLink({...newLink, url: e.target.value})}
+                          />
+                          <button
+                              onClick={addLink}
+                              disabled={!newLink.platform || !newLink.url}
+                              className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center shadow-md"
+                          >
+                              <Plus className="h-4 w-4 mr-1" /> Add
+                          </button>
+                        </div>
+                    </div>
+                  </CollapsibleSection>
+
+                  {/* Matching Criteria Section - NOW COLLAPSIBLE & MANDATORY */}
+                  <CollapsibleSection
+                    title="Matching Criteria"
+                    subtitle="Essential information to match you with clients (REQUIRED)"
+                    icon={<Sparkles className="h-4 w-4" />}
+                    defaultOpen={true}
+                    gradient="from-brand-50 to-indigo-50"
+                    borderColor="border-brand-100"
+                    iconBgColor="bg-brand-100"
+                    iconTextColor="text-brand-600"
+                  >
+                      <div className="space-y-6">
                       {/* Specialties Tags */}
                       <div>
                         <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center">
@@ -1247,13 +1400,7 @@ export const CoachDashboard: React.FC = () => {
                             </div>
                           </div>
                       </div>
-                  </div>
-
-                  {/* Bio */}
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Bio</label>
-                    <textarea rows={4} value={localProfile?.bio || ''} onChange={(e) => updateLocalProfile({bio: e.target.value})} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors" />
-                  </div>
+                  </CollapsibleSection>
 
                   {/* Professional Credentials Section - CONSOLIDATED */}
                   <CollapsibleSection
@@ -1416,18 +1563,6 @@ export const CoachDashboard: React.FC = () => {
                             </button>
                         </div>
                       </div>
-
-                      {/* Location Radius */}
-                      <div className="mt-6 pt-6 border-t border-slate-200">
-                        <label className="block text-sm font-bold text-slate-700 mb-3">Location Radius (for in-person coaching)</label>
-                        <input
-                          type="text"
-                          value={localProfile?.locationRadius || ''}
-                          onChange={(e) => updateLocalProfile({locationRadius: e.target.value})}
-                          placeholder="e.g., within 5 miles of London"
-                          className="w-full border border-slate-200 bg-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-slate-800"
-                        />
-                      </div>
                   </CollapsibleSection>
 
                   {/* Coaching Expertise Section */}
@@ -1459,31 +1594,6 @@ export const CoachDashboard: React.FC = () => {
                         />
                       </div>
                     ))}
-                  </CollapsibleSection>
-
-                  {/* Languages Section (Enhanced) */}
-                  <CollapsibleSection
-                    title="Coaching Languages"
-                    subtitle="Languages in which you offer coaching sessions"
-                    icon={
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-                      </svg>
-                    }
-                    defaultOpen={false}
-                    gradient="from-blue-50 to-indigo-50"
-                    borderColor="border-blue-100"
-                    iconBgColor="bg-blue-100"
-                    iconTextColor="text-blue-600"
-                  >
-                    <MultiSelect
-                      options={COACHING_LANGUAGES}
-                      selected={localProfile?.coachingLanguages || []}
-                      onChange={(selected) => updateLocalProfile({coachingLanguages: selected})}
-                      placeholder="Select languages..."
-                      searchPlaceholder="Search languages..."
-                      maxHeight="400px"
-                    />
                   </CollapsibleSection>
 
                   {/* Acknowledgements Section */}
@@ -1582,100 +1692,6 @@ export const CoachDashboard: React.FC = () => {
                         >
                             <Plus className="h-4 w-4 mr-1" /> Add Acknowledgement
                         </button>
-                    </div>
-                  </CollapsibleSection>
-
-                  {/* Social Links */}
-                  <CollapsibleSection
-                    title="Social & Web Links"
-                    subtitle="Your professional online presence and contact methods"
-                    icon={<LinkIcon className="h-4 w-4" />}
-                    defaultOpen={false}
-                    gradient="from-slate-50 to-gray-50"
-                    borderColor="border-slate-200"
-                    iconBgColor="bg-slate-100"
-                    iconTextColor="text-slate-600"
-                  >
-                    {/* Booking Calendar Tip */}
-                    <div className="bg-cyan-50 border border-cyan-200 rounded-xl p-4 mb-4">
-                      <div className="flex items-start gap-3">
-                        <div className="bg-cyan-100 rounded-lg p-2 flex-shrink-0">
-                          <Calendar className="h-5 w-5 text-cyan-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-bold text-cyan-900 text-sm mb-1">💡 Add Your Booking Calendar</p>
-                          <p className="text-xs text-cyan-800 leading-relaxed">
-                            Add your Calendly, Cal.com, or Google Calendar booking link here! Use label "Booking" or "Schedule" and it will appear as a <strong>"Schedule a Call"</strong> button on your profile.
-                          </p>
-                          <p className="text-xs text-cyan-700 mt-2 italic">
-                            Example: Label = "Calendly Booking", URL = "https://calendly.com/yourname"
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 mb-4">
-                        {localProfile?.socialLinks?.map((link, idx) => (
-                            <div key={idx} className="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
-                                <div className="flex-grow">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">{link.platform}</p>
-                                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                                        link.type === 'email' ? 'bg-blue-100 text-blue-700' :
-                                        link.type === 'tel' ? 'bg-green-100 text-green-700' :
-                                        'bg-slate-100 text-slate-600'
-                                      }`}>
-                                        {link.type === 'email' ? 'EMAIL' : link.type === 'tel' ? 'PHONE' : 'URL'}
-                                      </span>
-                                    </div>
-                                    <p className="text-sm text-brand-700 font-medium truncate">{stripProtocol(link.url)}</p>
-                                </div>
-                                <button onClick={() => removeLink(idx)} className="text-slate-400 hover:text-red-500 p-2 transition-colors">
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="flex flex-col gap-3">
-                        <div className="flex gap-3">
-                          <select
-                            value={newLink.type}
-                            onChange={(e) => setNewLink({...newLink, type: e.target.value as 'url' | 'email' | 'tel'})}
-                            className="border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none bg-white font-bold text-slate-700"
-                          >
-                            <option value="url">Website/Social</option>
-                            <option value="email">Email</option>
-                            <option value="tel">Telephone</option>
-                          </select>
-                          <input
-                              type="text"
-                              placeholder="Label (e.g. LinkedIn, Contact Email, Mobile)"
-                              className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
-                              value={newLink.platform}
-                              onChange={(e) => setNewLink({...newLink, platform: e.target.value})}
-                          />
-                        </div>
-                        <div className="flex gap-3">
-                          <input
-                              type="text"
-                              placeholder={
-                                newLink.type === 'email' ? 'Email address (e.g., coach@example.com)' :
-                                newLink.type === 'tel' ? 'Phone number (e.g., +44 7700 900000)' :
-                                'URL (https://...)'
-                              }
-                              className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
-                              value={newLink.url}
-                              onChange={(e) => setNewLink({...newLink, url: e.target.value})}
-                          />
-                          <button
-                              onClick={addLink}
-                              disabled={!newLink.platform || !newLink.url}
-                              className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center shadow-md"
-                          >
-                              <Plus className="h-4 w-4 mr-1" /> Add
-                          </button>
-                        </div>
                     </div>
                   </CollapsibleSection>
               </div>
