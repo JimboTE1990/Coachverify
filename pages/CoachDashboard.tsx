@@ -1280,30 +1280,12 @@ export const CoachDashboard: React.FC = () => {
                               <option value="ICF">ICF (International Coaching Federation)</option>
                               <option value="Other">Other</option>
                             </select>
-                            {localProfile?.accreditationBody === 'EMCC' && (
+                            {localProfile?.accreditationBody === 'EMCC' && localProfile?.emccVerified && (
                               <div className="mt-3">
-                                {localProfile?.emccVerified ? (
-                                  <div className="flex items-center gap-2 text-green-700 text-sm font-bold">
-                                    <CheckCircle className="h-4 w-4" />
-                                    EMCC Verified
-                                  </div>
-                                ) : (
-                                  <button
-                                    onClick={() => {
-                                      setShowVerificationModal(true);
-                                      setVerificationData({
-                                        eiaNumber: '',
-                                        fullName: currentCoach?.name || '',
-                                        profileUrl: '',
-                                        membershipNumber: ''
-                                      });
-                                    }}
-                                    className="flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-lg text-sm font-bold hover:bg-amber-200 transition-all"
-                                  >
-                                    <Shield className="h-4 w-4" />
-                                    Verify EMCC Accreditation
-                                  </button>
-                                )}
+                                <div className="flex items-center gap-2 text-green-700 text-sm font-bold">
+                                  <CheckCircle className="h-4 w-4" />
+                                  EMCC Verified
+                                </div>
                               </div>
                             )}
                           </div>
@@ -1625,6 +1607,24 @@ export const CoachDashboard: React.FC = () => {
                     iconBgColor="bg-slate-100"
                     iconTextColor="text-slate-600"
                   >
+                    {/* Booking Calendar Tip */}
+                    <div className="bg-cyan-50 border border-cyan-200 rounded-xl p-4 mb-4">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-cyan-100 rounded-lg p-2 flex-shrink-0">
+                          <Calendar className="h-5 w-5 text-cyan-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-bold text-cyan-900 text-sm mb-1">💡 Add Your Booking Calendar</p>
+                          <p className="text-xs text-cyan-800 leading-relaxed">
+                            Add your Calendly, Cal.com, or Google Calendar booking link here! Use label "Booking" or "Schedule" and it will appear as a <strong>"Schedule a Call"</strong> button on your profile.
+                          </p>
+                          <p className="text-xs text-cyan-700 mt-2 italic">
+                            Example: Label = "Calendly Booking", URL = "https://calendly.com/yourname"
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="space-y-3 mb-4">
                         {localProfile?.socialLinks?.map((link, idx) => (
                             <div key={idx} className="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
