@@ -1255,10 +1255,10 @@ export const CoachDashboard: React.FC = () => {
                     <textarea rows={4} value={localProfile?.bio || ''} onChange={(e) => updateLocalProfile({bio: e.target.value})} className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors" />
                   </div>
 
-                  {/* Professional Credentials Section */}
+                  {/* Professional Credentials Section - CONSOLIDATED */}
                   <CollapsibleSection
                     title="Professional Credentials"
-                    subtitle="Your coaching accreditation and experience"
+                    subtitle="Your coaching accreditation, certifications, and qualifications"
                     icon={<Award className="h-4 w-4" />}
                     defaultOpen={false}
                     gradient="from-indigo-50 to-purple-50"
@@ -1266,74 +1266,159 @@ export const CoachDashboard: React.FC = () => {
                     iconBgColor="bg-indigo-100"
                     iconTextColor="text-indigo-600"
                   >
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {/* Accreditation Body */}
+                      {/* Accreditation Information (from signup) */}
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+                        <h3 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                          <Shield className="h-4 w-4 text-indigo-600" />
+                          Coaching Accreditation (from signup)
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {/* Accreditation Body - Read Only */}
                           <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-3">Accreditation Body</label>
-                            <select
-                              value={localProfile?.accreditationBody || ''}
-                              onChange={(e) => updateLocalProfile({accreditationBody: e.target.value as any})}
-                              className="w-full border border-slate-200 bg-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-slate-800"
-                            >
-                              <option value="">Select body...</option>
-                              <option value="EMCC">EMCC (European Mentoring & Coaching Council)</option>
-                              <option value="ICF">ICF (International Coaching Federation)</option>
-                              <option value="Other">Other</option>
-                            </select>
-                            {localProfile?.accreditationBody === 'EMCC' && localProfile?.emccVerified && (
-                              <div className="mt-3">
-                                <div className="flex items-center gap-2 text-green-700 text-sm font-bold">
-                                  <CheckCircle className="h-4 w-4" />
-                                  EMCC Verified
-                                </div>
-                              </div>
-                            )}
+                            <label className="block text-xs font-bold text-slate-600 mb-2">Accreditation Body</label>
+                            <div className="bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-700 font-medium">
+                              {localProfile?.accreditationBody || 'Not specified'}
+                              {localProfile?.accreditationBody === 'EMCC' && localProfile?.emccVerified && (
+                                <span className="ml-2 text-green-600 text-xs font-bold">
+                                  <CheckCircle className="h-3 w-3 inline" /> Verified
+                                </span>
+                              )}
+                              {localProfile?.accreditationBody === 'ICF' && localProfile?.icfVerified && (
+                                <span className="ml-2 text-green-600 text-xs font-bold">
+                                  <CheckCircle className="h-3 w-3 inline" /> Verified
+                                </span>
+                              )}
+                            </div>
                           </div>
 
-                          {/* Accreditation Level */}
+                          {/* Accreditation Level - Read Only */}
                           <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-3">Accreditation Level</label>
-                            <select
-                              value={localProfile?.accreditationLevel || ''}
-                              onChange={(e) => updateLocalProfile({accreditationLevel: e.target.value as any})}
-                              className="w-full border border-slate-200 bg-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-slate-800"
-                            >
-                              <option value="">Select accreditation...</option>
-                              <option value="Foundation">Foundation</option>
-                              <option value="Practitioner">Practitioner</option>
-                              <option value="Senior Practitioner">Senior Practitioner</option>
-                              <option value="Master Practitioner">Master Practitioner</option>
-                            </select>
+                            <label className="block text-xs font-bold text-slate-600 mb-2">Accreditation Level</label>
+                            <div className="bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-700 font-medium">
+                              {localProfile?.accreditationLevel || 'Not specified'}
+                            </div>
                           </div>
 
                           {/* Coaching Hours */}
                           <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-3">Coaching Hours</label>
+                            <label className="block text-xs font-bold text-slate-600 mb-2">Coaching Hours</label>
                             <input
                               type="number"
                               value={localProfile?.coachingHours || ''}
                               onChange={(e) => updateLocalProfile({coachingHours: parseInt(e.target.value) || 0})}
                               placeholder="e.g., 500"
-                              className="w-full border border-slate-200 bg-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none text-slate-800"
+                              className="w-full border border-slate-200 bg-white rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none text-slate-800"
                             />
-                            <p className="text-xs text-slate-500 mt-2">Total hours of coaching experience</p>
                           </div>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-3 italic">
+                          💡 Accreditation details are from your signup verification and cannot be changed here.
+                        </p>
                       </div>
 
-                      {/* Additional Certifications - Now MultiSelect */}
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-3">Additional Certifications</label>
+                      {/* Additional Coaching Certifications */}
+                      <div className="mb-6">
+                        <h3 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-indigo-600" />
+                          Additional Coaching Certifications
+                        </h3>
                         <MultiSelect
                           options={['Mental Health First Aid Trained', 'Trauma Informed', 'Diversity & Inclusion Certified', 'Child & Adolescent Specialist', 'Corporate Coaching Certified', 'NLP Practitioner', 'CBT Trained']}
                           selected={localProfile?.additionalCertifications || []}
                           onChange={(selected) => updateLocalProfile({additionalCertifications: selected as any})}
-                          placeholder="Select certifications..."
+                          placeholder="Select additional certifications..."
                           searchPlaceholder="Search certifications..."
                         />
                       </div>
 
-                      {/* Location Radius */}
+                      {/* CPD Qualifications */}
+                      <div className="mb-6">
+                        <h3 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                          <Award className="h-4 w-4 text-indigo-600" />
+                          CPD Qualifications & Professional Certifications
+                        </h3>
+                        <MultiSelect
+                          options={CPD_QUALIFICATIONS}
+                          selected={localProfile?.cpdQualifications || []}
+                          onChange={(selected) => updateLocalProfile({cpdQualifications: selected})}
+                          placeholder="Select CPD qualifications..."
+                          searchPlaceholder="Search qualifications (e.g., ICF, EMCC, ILM)..."
+                          maxHeight="300px"
+                        />
+                      </div>
+
+                      {/* Academic & Professional Qualifications */}
                       <div>
+                        <h3 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                          <GraduationCap className="h-4 w-4 text-indigo-600" />
+                          Academic & Professional Qualifications
+                        </h3>
+                        <div className="space-y-3 mb-4">
+                            {localProfile?.qualifications?.map((qual, idx) => (
+                                <div key={idx} className="flex items-start space-x-3 p-4 bg-white rounded-xl border border-slate-200">
+                                    <div className="flex-grow">
+                                        <p className="text-sm font-bold text-slate-900">{qual.degree}</p>
+                                        {qual.institution && <p className="text-xs text-slate-600 mt-1">{qual.institution}</p>}
+                                        {qual.year && <p className="text-xs text-slate-500 mt-1">{qual.year}</p>}
+                                    </div>
+                                    <button
+                                      onClick={() => {
+                                        const updated = (localProfile?.qualifications || []).filter((_, i) => i !== idx);
+                                        updateLocalProfile({qualifications: updated});
+                                      }}
+                                      className="text-slate-400 hover:text-red-500 p-2 transition-colors"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex flex-col gap-3 bg-white p-4 rounded-xl border border-slate-200">
+                            <input
+                                type="text"
+                                placeholder="Degree/Qualification (e.g., Masters in Psychology, MBA)"
+                                className="border border-slate-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
+                                value={newQualification.degree}
+                                onChange={(e) => setNewQualification({...newQualification, degree: e.target.value})}
+                            />
+                            <input
+                                type="text"
+                                placeholder="Institution (optional, e.g., University of Oxford)"
+                                className="border border-slate-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
+                                value={newQualification.institution}
+                                onChange={(e) => setNewQualification({...newQualification, institution: e.target.value})}
+                            />
+                            <input
+                                type="number"
+                                placeholder="Year (optional, e.g., 2020)"
+                                className="border border-slate-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
+                                value={newQualification.year || ''}
+                                onChange={(e) => setNewQualification({...newQualification, year: parseInt(e.target.value) || undefined})}
+                            />
+                            <button
+                                onClick={() => {
+                                  if (newQualification.degree) {
+                                    const updated = [...(localProfile?.qualifications || []), {
+                                      id: `qual_${Date.now()}`,
+                                      degree: newQualification.degree,
+                                      institution: newQualification.institution,
+                                      year: newQualification.year
+                                    }];
+                                    updateLocalProfile({qualifications: updated});
+                                    setNewQualification({degree: '', institution: '', year: undefined});
+                                  }
+                                }}
+                                disabled={!newQualification.degree}
+                                className="bg-slate-900 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center shadow-md"
+                            >
+                                <Plus className="h-4 w-4 mr-1" /> Add Qualification
+                            </button>
+                        </div>
+                      </div>
+
+                      {/* Location Radius */}
+                      <div className="mt-6 pt-6 border-t border-slate-200">
                         <label className="block text-sm font-bold text-slate-700 mb-3">Location Radius (for in-person coaching)</label>
                         <input
                           type="text"
@@ -1376,27 +1461,6 @@ export const CoachDashboard: React.FC = () => {
                     ))}
                   </CollapsibleSection>
 
-                  {/* CPD Qualifications Section */}
-                  <CollapsibleSection
-                    title="CPD Qualifications & Certifications"
-                    subtitle="Additional professional development certifications you hold"
-                    icon={<Award className="h-4 w-4" />}
-                    defaultOpen={false}
-                    gradient="from-teal-50 to-cyan-50"
-                    borderColor="border-teal-100"
-                    iconBgColor="bg-teal-100"
-                    iconTextColor="text-teal-600"
-                  >
-                    <MultiSelect
-                      options={CPD_QUALIFICATIONS}
-                      selected={localProfile?.cpdQualifications || []}
-                      onChange={(selected) => updateLocalProfile({cpdQualifications: selected})}
-                      placeholder="Select CPD qualifications..."
-                      searchPlaceholder="Search qualifications (e.g., ICF, EMCC, ILM)..."
-                      maxHeight="400px"
-                    />
-                  </CollapsibleSection>
-
                   {/* Languages Section (Enhanced) */}
                   <CollapsibleSection
                     title="Coaching Languages"
@@ -1420,81 +1484,6 @@ export const CoachDashboard: React.FC = () => {
                       searchPlaceholder="Search languages..."
                       maxHeight="400px"
                     />
-                  </CollapsibleSection>
-
-                  {/* Qualifications Section */}
-                  <CollapsibleSection
-                    title="Qualifications"
-                    subtitle="Your academic and professional qualifications"
-                    icon={<GraduationCap className="h-4 w-4" />}
-                    defaultOpen={false}
-                    gradient="from-green-50 to-emerald-50"
-                    borderColor="border-green-100"
-                    iconBgColor="bg-green-100"
-                    iconTextColor="text-green-600"
-                  >
-                    <div className="space-y-3 mb-4">
-                        {localProfile?.qualifications?.map((qual, idx) => (
-                            <div key={idx} className="flex items-start space-x-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                                <div className="flex-grow">
-                                    <p className="text-sm font-bold text-slate-900">{qual.degree}</p>
-                                    {qual.institution && <p className="text-xs text-slate-600 mt-1">{qual.institution}</p>}
-                                    {qual.year && <p className="text-xs text-slate-500 mt-1">{qual.year}</p>}
-                                </div>
-                                <button
-                                  onClick={() => {
-                                    const updated = (localProfile?.qualifications || []).filter((_, i) => i !== idx);
-                                    updateLocalProfile({qualifications: updated});
-                                  }}
-                                  className="text-slate-400 hover:text-red-500 p-2 transition-colors"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="flex flex-col gap-3 bg-white p-4 rounded-xl border border-slate-200">
-                        <input
-                            type="text"
-                            placeholder="Degree (e.g., Masters in Law)"
-                            className="border border-slate-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
-                            value={newQualification.degree}
-                            onChange={(e) => setNewQualification({...newQualification, degree: e.target.value})}
-                        />
-                        <input
-                            type="text"
-                            placeholder="Institution (optional)"
-                            className="border border-slate-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
-                            value={newQualification.institution}
-                            onChange={(e) => setNewQualification({...newQualification, institution: e.target.value})}
-                        />
-                        <input
-                            type="number"
-                            placeholder="Year (optional)"
-                            className="border border-slate-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
-                            value={newQualification.year || ''}
-                            onChange={(e) => setNewQualification({...newQualification, year: parseInt(e.target.value) || undefined})}
-                        />
-                        <button
-                            onClick={() => {
-                              if (newQualification.degree) {
-                                const updated = [...(localProfile?.qualifications || []), {
-                                  id: `qual_${Date.now()}`,
-                                  degree: newQualification.degree,
-                                  institution: newQualification.institution,
-                                  year: newQualification.year
-                                }];
-                                updateLocalProfile({qualifications: updated});
-                                setNewQualification({degree: '', institution: '', year: undefined});
-                              }
-                            }}
-                            disabled={!newQualification.degree}
-                            className="bg-slate-900 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center shadow-md"
-                        >
-                            <Plus className="h-4 w-4 mr-1" /> Add Qualification
-                        </button>
-                    </div>
                   </CollapsibleSection>
 
                   {/* Acknowledgements Section */}
