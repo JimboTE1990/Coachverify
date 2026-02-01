@@ -110,13 +110,26 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                         label="Search Directory" 
                         desc="Browse all verified coaches" 
                       />
-                      <NavMenuItem 
-                        to="/client-benefits" 
-                        icon={HelpCircle} 
-                        label="Why Use Us?" 
-                        desc="Learn about our verification process"
-                        colorClass="bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white"
-                      />
+                      <a
+                        href="/#why-use-coachdog"
+                        className="group flex items-start p-4 rounded-2xl hover:bg-slate-50 transition-all duration-200 border border-transparent hover:border-slate-100 hover:shadow-sm"
+                        onClick={(e) => {
+                          setOpenDropdown(null);
+                          // If already on home page, smooth scroll
+                          if (window.location.pathname === '/') {
+                            e.preventDefault();
+                            document.getElementById('why-use-coachdog')?.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
+                      >
+                        <div className="flex-shrink-0 p-3 rounded-xl bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white group-hover:scale-110 transition-transform duration-200 shadow-sm">
+                          <HelpCircle className="h-6 w-6" />
+                        </div>
+                        <div className="ml-4">
+                          <p className="text-base font-display font-bold text-slate-800 group-hover:text-brand-700 transition-colors">Why Use Us?</p>
+                          <p className="text-sm text-slate-500 mt-1 font-medium">Learn about our verification process</p>
+                        </div>
+                      </a>
                       <NavMenuItem 
                         to="/contact" 
                         icon={Mail} 
