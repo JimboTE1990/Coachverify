@@ -1,54 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, HeartHandshake, Star, ArrowRight, ShieldCheck, Play, X } from 'lucide-react';
+import { Search, HeartHandshake, Star, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export const Home: React.FC = () => {
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleVideoClick = () => {
+    if (videoRef.current) {
+      if (isVideoPlaying) {
+        videoRef.current.pause();
+        setIsVideoPlaying(false);
+      } else {
+        videoRef.current.play();
+        setIsVideoPlaying(true);
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col">
-      {/* Hero Section with Video */}
-      <div className="relative bg-gradient-to-br from-brand-50 via-indigo-50 to-purple-50 pt-12 pb-16 lg:pt-16 lg:pb-20 overflow-hidden">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-br from-brand-50 via-indigo-50 to-purple-50 pt-16 pb-20 lg:pt-24 lg:pb-28 overflow-hidden">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
 
-          {/* Video Section - Front and Center */}
-          <div className="text-center mb-8">
-            <div className="relative max-w-4xl mx-auto">
-              {/* Video Thumbnail with Play Button */}
-              <button
-                onClick={() => setIsVideoModalOpen(true)}
-                className="group relative w-full rounded-3xl overflow-hidden shadow-2xl border-4 border-white hover:border-brand-300 transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-brand-500"
-              >
-                {/* Video Preview */}
-                <video
-                  src="/coachdog-intro.mp4"
-                  className="w-full aspect-video object-cover"
-                  muted
-                  playsInline
-                />
+          {/* Title & Subtitle */}
+          <h1 className="text-4xl tracking-tight font-display font-extrabold text-slate-900 sm:text-5xl md:text-6xl">
+            <span className="block xl:inline">Unlock your potential with</span>{' '}
+            <span className="block text-brand-600 xl:inline">CoachDog.</span>
+          </h1>
+          <p className="mt-3 max-w-md mx-auto text-base text-slate-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+            Find the perfect life coach to help you achieve your goals. Verified experts, tailored matches, and real results.
+          </p>
 
-                {/* Dark Overlay */}
-                <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300"></div>
-
-                {/* Play Button */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="bg-white rounded-full p-6 shadow-2xl transform group-hover:scale-110 transition-transform duration-300">
-                    <Play className="h-12 w-12 text-brand-600 fill-current" style={{ marginLeft: '4px' }} />
-                  </div>
-                </div>
-
-                {/* Watch Text */}
-                <div className="absolute bottom-6 left-0 right-0 text-center">
-                  <span className="inline-block bg-white bg-opacity-90 text-slate-900 font-bold px-6 py-3 rounded-full shadow-lg">
-                    ▶️ Watch Introduction Video
-                  </span>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* CTAs - Below Video */}
-          <div className="max-w-lg mx-auto grid gap-5 sm:grid-cols-2 mb-10">
+          {/* CTAs */}
+          <div className="mt-10 max-w-lg mx-auto grid gap-5 sm:grid-cols-2">
             <Link to="/questionnaire" className="group flex flex-col items-center justify-center p-6 bg-white rounded-2xl shadow-xl border-2 border-transparent hover:border-brand-500 transition-all duration-300 transform hover:-translate-y-1">
               <div className="h-12 w-12 bg-brand-100 text-brand-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-brand-600 group-hover:text-white transition-colors">
                 <HeartHandshake className="h-6 w-6" />
@@ -71,28 +57,54 @@ export const Home: React.FC = () => {
               </div>
             </Link>
           </div>
-
-          {/* Title & Subtitle - Below CTAs */}
-          <div className="text-center">
-            <h1 className="text-4xl tracking-tight font-display font-extrabold text-slate-900 sm:text-5xl md:text-6xl">
-              <span className="block xl:inline">Unlock your potential with</span>{' '}
-              <span className="block text-brand-600 xl:inline">CoachDog.</span>
-            </h1>
-            <p className="mt-3 max-w-md mx-auto text-base text-slate-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-              Find the perfect life coach to help you achieve your goals. Verified experts, tailored matches, and real results.
-            </p>
-          </div>
         </div>
 
         {/* Background blobs */}
-        <div className="absolute top-0 left-1/2 w-full -translate-x-1/2 h-full z-0 opacity-20 pointer-events-none">
+        <div className="absolute top-0 left-1/2 w-full -translate-x-1/2 h-full z-0 opacity-30 pointer-events-none">
              <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-brand-200 blur-3xl animate-blob"></div>
              <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-indigo-200 blur-3xl animate-blob" style={{ animationDelay: '2s' }}></div>
         </div>
       </div>
 
+      {/* What is CoachDog Section with Video */}
+      <div className="bg-white py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-display font-extrabold text-slate-900 sm:text-4xl mb-4">
+              What is CoachDog?
+            </h2>
+            <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+              CoachDog is the UK's premier verified coaching platform, connecting you with accredited professionals who can help you achieve your personal and professional goals. Watch our introduction to learn how we make finding the right coach simple and trustworthy.
+            </p>
+          </div>
+
+          {/* Embedded Video Player */}
+          <div className="max-w-5xl mx-auto">
+            <div
+              onClick={handleVideoClick}
+              className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-200 hover:border-brand-300 transition-all duration-300 cursor-pointer group"
+            >
+              <video
+                ref={videoRef}
+                src="/coachdog-intro.mp4"
+                className="w-full aspect-video"
+                controls
+                playsInline
+                onPlay={() => setIsVideoPlaying(true)}
+                onPause={() => setIsVideoPlaying(false)}
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <p className="text-center text-sm text-slate-500 mt-4">
+              Click to play our introduction video
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Why Use CoachDog Section (Anchor-able) */}
-      <div id="why-use-coachdog" className="bg-white py-16 lg:py-24">
+      <div id="why-use-coachdog" className="bg-slate-50 py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-display font-extrabold text-slate-900 sm:text-4xl">
@@ -136,36 +148,6 @@ export const Home: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Video Modal */}
-      {isVideoModalOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
-          onClick={() => setIsVideoModalOpen(false)}
-        >
-          <div className="relative w-full max-w-6xl" onClick={(e) => e.stopPropagation()}>
-            {/* Close Button */}
-            <button
-              onClick={() => setIsVideoModalOpen(false)}
-              className="absolute -top-12 right-0 text-white hover:text-brand-300 transition-colors"
-            >
-              <X className="h-8 w-8" />
-            </button>
-
-            {/* Video Player */}
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-              <video
-                src="/coachdog-intro.mp4"
-                controls
-                autoPlay
-                className="w-full"
-              >
-                Your browser does not support the video tag.
-              </video>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
