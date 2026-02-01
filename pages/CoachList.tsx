@@ -200,18 +200,61 @@ export const CoachList: React.FC = () => {
   // Calculate counts for perfect and partial matches
   const perfectMatchCount = useMemo(() => {
     if (!coaches) return 0;
+    // Use questionnaire match score if available, otherwise use filter match
+    if (matchData) {
+      return coaches.filter(coach => calculateMatchScore(coach, matchData) === 100).length;
+    }
     return coaches.filter(coach => calculateFilterMatchPercentage(coach).percentage === 100).length;
   }, [coaches, searchTerm, specialtyFilter, formatFilter, maxPrice, minExperience,
-      languageFilter, expertiseFilter, cpdFilter, genderFilter]);
+      languageFilter, expertiseFilter, cpdFilter, genderFilter, matchData]);
 
   const partialMatchCount = useMemo(() => {
     if (!coaches) return 0;
+    // Use questionnaire match score if available, otherwise use filter match
+    if (matchData) {
+      return coaches.filter(coach => {
+        const score = calculateMatchScore(coach, matchData);
+        return score >= minMatchPercentage && score < 100;
+      }).length;
+    }
     return coaches.filter(coach => {
       const match = calculateFilterMatchPercentage(coach);
       return match.percentage >= minMatchPercentage && match.percentage < 100;
     }).length;
   }, [coaches, searchTerm, specialtyFilter, formatFilter, maxPrice, minExperience,
-      languageFilter, expertiseFilter, cpdFilter, genderFilter, minMatchPercentage]);
+      languageFilter, expertiseFilter, cpdFilter, genderFilter, minMatchPercentage, matchData]);
+
+  // Calculate very close match count (75%+)
+  const veryCloseMatchCount = useMemo(() => {
+    if (!coaches) return 0;
+    if (matchData) {
+      return coaches.filter(coach => {
+        const score = calculateMatchScore(coach, matchData);
+        return score >= 75 && score < 100;
+      }).length;
+    }
+    return coaches.filter(coach => {
+      const match = calculateFilterMatchPercentage(coach);
+      return match.percentage >= 75 && match.percentage < 100;
+    }).length;
+  }, [coaches, searchTerm, specialtyFilter, formatFilter, maxPrice, minExperience,
+      languageFilter, expertiseFilter, cpdFilter, genderFilter, matchData]);
+
+  // Calculate close match count (51-74%)
+  const closeMatchCount = useMemo(() => {
+    if (!coaches) return 0;
+    if (matchData) {
+      return coaches.filter(coach => {
+        const score = calculateMatchScore(coach, matchData);
+        return score >= 51 && score < 75;
+      }).length;
+    }
+    return coaches.filter(coach => {
+      const match = calculateFilterMatchPercentage(coach);
+      return match.percentage >= 51 && match.percentage < 75;
+    }).length;
+  }, [coaches, searchTerm, specialtyFilter, formatFilter, maxPrice, minExperience,
+      languageFilter, expertiseFilter, cpdFilter, genderFilter, matchData]);
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -362,22 +405,63 @@ export const CoachList: React.FC = () => {
                 </>
               ) : filteredCoaches.length > 0 ? (
                 <>
-                  {/* Perfect Matches Section Header */}
-                  {!showPartialMatches && perfectMatchCount > 0 && (
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-4 flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="bg-green-100 p-2 rounded-full mr-3">
-                          <Bone className="h-5 w-5 text-green-600" />
+                  {/* Match Quality Banner */}
+                  {!showPartialMatches && (
+                    <>
+                      {/* Perfect Matches (100%) */}
+                      {perfectMatchCount > 0 && (
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-4 flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="bg-green-100 p-2 rounded-full mr-3">
+                              <Bone className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-green-900">🎯 Perfect Matches!</p>
+                              <p className="text-sm text-green-700">These coaches match 100% of your criteria</p>
+                            </div>
+                          </div>
+                          <span className="bg-green-600 text-white px-4 py-2 rounded-full font-bold text-sm">
+                            {perfectMatchCount} {perfectMatchCount === 1 ? 'Coach' : 'Coaches'}
+                          </span>
                         </div>
-                        <div>
-                          <p className="font-bold text-green-900">🎯 Perfect Matches!</p>
-                          <p className="text-sm text-green-700">These coaches match 100% of your criteria</p>
+                      )}
+
+                      {/* Very Close Matches (75-99%) */}
+                      {perfectMatchCount === 0 && veryCloseMatchCount > 0 && (
+                        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-4 flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="bg-blue-100 p-2 rounded-full mr-3">
+                              <Bone className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-blue-900">⭐ Very Close Matches!</p>
+                              <p className="text-sm text-blue-700">These coaches match 75%+ of your criteria</p>
+                            </div>
+                          </div>
+                          <span className="bg-blue-600 text-white px-4 py-2 rounded-full font-bold text-sm">
+                            {veryCloseMatchCount} {veryCloseMatchCount === 1 ? 'Coach' : 'Coaches'}
+                          </span>
                         </div>
-                      </div>
-                      <span className="bg-green-600 text-white px-4 py-2 rounded-full font-bold text-sm">
-                        {perfectMatchCount} {perfectMatchCount === 1 ? 'Coach' : 'Coaches'}
-                      </span>
-                    </div>
+                      )}
+
+                      {/* Close Matches (51-74%) */}
+                      {perfectMatchCount === 0 && veryCloseMatchCount === 0 && closeMatchCount > 0 && (
+                        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-2xl p-4 flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="bg-amber-100 p-2 rounded-full mr-3">
+                              <Bone className="h-5 w-5 text-amber-600" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-amber-900">👍 Close Matches!</p>
+                              <p className="text-sm text-amber-700">These coaches match 51-74% of your criteria</p>
+                            </div>
+                          </div>
+                          <span className="bg-amber-600 text-white px-4 py-2 rounded-full font-bold text-sm">
+                            {closeMatchCount} {closeMatchCount === 1 ? 'Coach' : 'Coaches'}
+                          </span>
+                        </div>
+                      )}
+                    </>
                   )}
 
                   {filteredCoaches.map((coach, index) => (
@@ -391,8 +475,8 @@ export const CoachList: React.FC = () => {
                     </div>
                   ))}
 
-                  {/* Partial Match Toggle - Show after perfect matches */}
-                  {!showPartialMatches && perfectMatchCount > 0 && partialMatchCount > 0 && (
+                  {/* Partial Match Toggle - Show after top matches */}
+                  {!showPartialMatches && (perfectMatchCount > 0 || veryCloseMatchCount > 0) && partialMatchCount > 0 && (
                     <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-2xl p-6 text-center">
                       <Bone className="h-12 w-12 text-amber-500 mx-auto mb-4" />
                       <h3 className="text-xl font-bold text-amber-900 mb-2">
