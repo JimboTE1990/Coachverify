@@ -9,7 +9,7 @@ import { majorCities } from '../data/cities';
 import {
   ArrowLeft, Star, Mail, Instagram, MessageCircle, Linkedin,
   MapPin, CheckCircle, Share2, ChevronLeft, ChevronRight, Clock, X,
-  Facebook, Globe, Youtube, Phone, Copy, Flag, Reply, Edit, Trash2, Send, AlertTriangle
+  Facebook, Globe, Youtube, Phone, Copy, Flag, Reply, Edit, Trash2, Send, AlertTriangle, ExternalLink
 } from 'lucide-react';
 
 export const CoachDetails: React.FC = () => {
@@ -686,7 +686,31 @@ export const CoachDetails: React.FC = () => {
                     <span className="text-xs font-bold">EMCC Verified</span>
                   </div>
                 )}
+
+                {/* ICF Verified Badge */}
+                {coach.accreditationBody === 'ICF' && coach.icfVerified && (
+                  <div className="flex items-center gap-1.5 bg-green-100 text-green-800 px-3 py-1 rounded-full border border-green-300">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span className="text-xs font-bold">ICF Verified</span>
+                  </div>
+                )}
               </div>
+
+              {/* Accreditation Profile Link - For Transparency */}
+              {((coach.accreditationBody === 'EMCC' && coach.emccVerified && coach.emccProfileUrl) ||
+                (coach.accreditationBody === 'ICF' && coach.icfVerified && coach.icfProfileUrl)) && (
+                <div className="mt-3 flex items-center justify-center">
+                  <a
+                    href={coach.accreditationBody === 'EMCC' ? coach.emccProfileUrl : coach.icfProfileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm text-brand-600 hover:text-brand-700 font-semibold transition-colors underline decoration-dotted"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    View my {coach.accreditationBody} accreditation profile
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Big Bold Share Button */}
