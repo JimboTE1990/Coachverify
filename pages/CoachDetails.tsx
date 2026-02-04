@@ -681,6 +681,19 @@ export const CoachDetails: React.FC = () => {
 
               </div>
 
+              {/* Debug: Log accreditation data (TEMPORARY - remove after debugging) */}
+              {console.log('🔍 Coach Accreditation Debug:', {
+                id: coach.id,
+                name: coach.name,
+                accreditationBody: coach.accreditationBody,
+                emccVerified: coach.emccVerified,
+                emccProfileUrl: coach.emccProfileUrl,
+                icfVerified: coach.icfVerified,
+                icfProfileUrl: coach.icfProfileUrl,
+                willShowEMCCBadge: coach.accreditationBody === 'EMCC' && coach.emccVerified && coach.emccProfileUrl,
+                willShowICFBadge: coach.accreditationBody === 'ICF' && coach.icfVerified && coach.icfProfileUrl
+              })}
+
               {/* Prominent Accreditation Badge with Official Branding */}
               {coach.accreditationBody === 'EMCC' && coach.emccVerified && (
                 <div className="mt-6 mb-4 bg-gradient-to-br from-[#2B4170]/5 to-[#C9A961]/10 border-2 border-[#2B4170]/30 rounded-2xl p-6 shadow-md">
