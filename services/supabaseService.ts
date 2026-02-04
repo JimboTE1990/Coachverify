@@ -140,6 +140,10 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   if (coach.emccVerified !== undefined) updateData.emcc_verified = coach.emccVerified;
   if (coach.emccVerifiedAt !== undefined) updateData.emcc_verified_at = coach.emccVerifiedAt;
   if (coach.emccProfileUrl !== undefined) updateData.emcc_profile_url = coach.emccProfileUrl;
+  if (coach.icfVerified !== undefined) updateData.icf_verified = coach.icfVerified;
+  if (coach.icfVerifiedAt !== undefined) updateData.icf_verified_at = coach.icfVerifiedAt;
+  if (coach.icfAccreditationLevel !== undefined) updateData.icf_accreditation_level = coach.icfAccreditationLevel;
+  if (coach.icfProfileUrl !== undefined) updateData.icf_profile_url = coach.icfProfileUrl;
   if (coach.additionalCertifications !== undefined) updateData.additional_certifications = coach.additionalCertifications;
   if (coach.coachingHours !== undefined) updateData.coaching_hours = coach.coachingHours;
   if (coach.locationRadius !== undefined) updateData.location_radius = coach.locationRadius;
@@ -957,6 +961,10 @@ const mapCoachProfile = (data: any): Coach => {
     emccVerified: data.emcc_verified,
     emccVerifiedAt: data.emcc_verified_at,
     emccProfileUrl: data.emcc_profile_url,
+    icfVerified: data.icf_verified,
+    icfVerifiedAt: data.icf_verified_at,
+    icfAccreditationLevel: data.icf_accreditation_level,
+    icfProfileUrl: data.icf_profile_url,
     additionalCertifications: data.additional_certifications,
     coachingHours: data.coaching_hours,
     locationRadius: data.location_radius,
