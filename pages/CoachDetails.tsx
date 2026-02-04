@@ -679,36 +679,64 @@ export const CoachDetails: React.FC = () => {
                   {coach.accreditationBody || coach.verificationBody || 'EMCC'} Accredited
                 </p>
 
-                {/* EMCC Verified Badge */}
-                {coach.accreditationBody === 'EMCC' && coach.emccVerified && (
-                  <div className="flex items-center gap-1.5 bg-green-100 text-green-800 px-3 py-1 rounded-full border border-green-300">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-xs font-bold">EMCC Verified</span>
-                  </div>
-                )}
-
-                {/* ICF Verified Badge */}
-                {coach.accreditationBody === 'ICF' && coach.icfVerified && (
-                  <div className="flex items-center gap-1.5 bg-green-100 text-green-800 px-3 py-1 rounded-full border border-green-300">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-xs font-bold">ICF Verified</span>
-                  </div>
-                )}
               </div>
 
-              {/* Accreditation Profile Link - For Transparency */}
-              {((coach.accreditationBody === 'EMCC' && coach.emccVerified && coach.emccProfileUrl) ||
-                (coach.accreditationBody === 'ICF' && coach.icfVerified && coach.icfProfileUrl)) && (
-                <div className="mt-3 flex items-center justify-center">
-                  <a
-                    href={coach.accreditationBody === 'EMCC' ? coach.emccProfileUrl : coach.icfProfileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm text-brand-600 hover:text-brand-700 font-semibold transition-colors underline decoration-dotted"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    View my {coach.accreditationBody} accreditation profile
-                  </a>
+              {/* Prominent Accreditation Badge with Official Branding */}
+              {coach.accreditationBody === 'EMCC' && coach.emccVerified && (
+                <div className="mt-6 mb-4 bg-white border-4 border-[#2B4170] rounded-2xl p-6 shadow-lg">
+                  <div className="flex items-center justify-center gap-3 mb-3">
+                    {/* EMCC-style branding: Navy blue with gold accent */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 bg-[#C9A961] rounded-sm rotate-45"></div>
+                        <div className="w-2 h-2 bg-[#C9A961] rounded-sm rotate-45"></div>
+                        <div className="w-2 h-2 bg-[#C9A961] rounded-sm rotate-45"></div>
+                      </div>
+                      <span className="text-2xl font-black text-[#2B4170] tracking-wide">EMCC</span>
+                    </div>
+                    <CheckCircle className="h-6 w-6 text-green-600" />
+                  </div>
+                  <p className="text-center text-sm font-bold text-[#2B4170] mb-1">VERIFIED ACCREDITATION</p>
+                  {coach.accreditationLevel && (
+                    <p className="text-center text-xs text-slate-600 mb-4">{coach.accreditationLevel}</p>
+                  )}
+                  {coach.emccProfileUrl && (
+                    <a
+                      href={coach.emccProfileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 text-sm text-[#2B4170] hover:text-[#C9A961] font-bold transition-colors border-t-2 border-slate-200 pt-4"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Verify on EMCC Directory
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {coach.accreditationBody === 'ICF' && coach.icfVerified && (
+                <div className="mt-6 mb-4 bg-white border-4 border-[#1E3A5F] rounded-2xl p-6 shadow-lg">
+                  <div className="flex items-center justify-center gap-3 mb-3">
+                    {/* ICF-style branding: Navy blue */}
+                    <span className="text-3xl font-black text-[#1E3A5F] tracking-wider">icf</span>
+                    <CheckCircle className="h-6 w-6 text-green-600" />
+                  </div>
+                  <p className="text-center text-sm font-bold text-[#1E3A5F] mb-1">VERIFIED ACCREDITATION</p>
+                  <p className="text-center text-xs text-slate-600 mb-1">International Coaching Federation</p>
+                  {coach.icfAccreditationLevel && (
+                    <p className="text-center text-xs text-slate-600 mb-4">{coach.icfAccreditationLevel}</p>
+                  )}
+                  {coach.icfProfileUrl && (
+                    <a
+                      href={coach.icfProfileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 text-sm text-[#1E3A5F] hover:text-brand-600 font-bold transition-colors border-t-2 border-slate-200 pt-4"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Verify on ICF Directory
+                    </a>
+                  )}
                 </div>
               )}
             </div>
