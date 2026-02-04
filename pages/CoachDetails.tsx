@@ -683,7 +683,7 @@ export const CoachDetails: React.FC = () => {
 
               {/* Prominent Accreditation Badge with Official Branding */}
               {coach.accreditationBody === 'EMCC' && coach.emccVerified && (
-                <div className="mt-6 mb-4 bg-white border-4 border-[#2B4170] rounded-2xl p-6 shadow-lg">
+                <div className="mt-6 mb-4 bg-gradient-to-br from-[#2B4170]/5 to-[#C9A961]/10 border-2 border-[#2B4170]/30 rounded-2xl p-6 shadow-md">
                   <div className="flex items-center justify-center gap-3 mb-3">
                     {/* EMCC-style branding: Navy blue with gold accent */}
                     <div className="flex items-center gap-2">
@@ -705,23 +705,23 @@ export const CoachDetails: React.FC = () => {
                       href={coach.emccProfileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 text-sm text-[#2B4170] hover:text-[#C9A961] font-bold transition-colors border-t-2 border-slate-200 pt-4"
+                      className="flex items-center justify-center gap-2 text-sm text-[#2B4170] hover:text-[#C9A961] font-semibold transition-colors border-t-2 border-[#2B4170]/20 pt-4"
                     >
                       <ExternalLink className="h-4 w-4" />
-                      Verify on EMCC Directory
+                      Check out my EMCC accreditation here
                     </a>
                   )}
                 </div>
               )}
 
               {coach.accreditationBody === 'ICF' && coach.icfVerified && (
-                <div className="mt-6 mb-4 bg-white border-4 border-[#1E3A5F] rounded-2xl p-6 shadow-lg">
+                <div className="mt-6 mb-4 bg-gradient-to-br from-[#2E5C8A]/5 to-[#4A90E2]/10 border-2 border-[#2E5C8A]/30 rounded-2xl p-6 shadow-md">
                   <div className="flex items-center justify-center gap-3 mb-3">
                     {/* ICF-style branding: Navy blue */}
-                    <span className="text-3xl font-black text-[#1E3A5F] tracking-wider">icf</span>
+                    <span className="text-3xl font-black text-[#2E5C8A] tracking-wider">ICF</span>
                     <CheckCircle className="h-6 w-6 text-green-600" />
                   </div>
-                  <p className="text-center text-sm font-bold text-[#1E3A5F] mb-1">VERIFIED ACCREDITATION</p>
+                  <p className="text-center text-sm font-bold text-[#2E5C8A] mb-1">VERIFIED ACCREDITATION</p>
                   <p className="text-center text-xs text-slate-600 mb-1">International Coaching Federation</p>
                   {coach.icfAccreditationLevel && (
                     <p className="text-center text-xs text-slate-600 mb-4">{coach.icfAccreditationLevel}</p>
@@ -731,10 +731,10 @@ export const CoachDetails: React.FC = () => {
                       href={coach.icfProfileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 text-sm text-[#1E3A5F] hover:text-brand-600 font-bold transition-colors border-t-2 border-slate-200 pt-4"
+                      className="flex items-center justify-center gap-2 text-sm text-[#2E5C8A] hover:text-brand-600 font-semibold transition-colors border-t-2 border-[#2E5C8A]/20 pt-4"
                     >
                       <ExternalLink className="h-4 w-4" />
-                      Verify on ICF Directory
+                      Check out my ICF accreditation here
                     </a>
                   )}
                 </div>
