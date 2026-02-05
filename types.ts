@@ -339,7 +339,12 @@ export interface Coach {
 
   additionalCertifications?: AdditionalCertification[]; // e.g. ["Mental Health First Aid Trained", "Trauma Informed"]
   coachingHours?: number; // Total hours of coaching experience (e.g. 500)
-  locationRadius?: string; // e.g. "within 5 miles of London"
+
+  // Structured Location Fields
+  locationCity?: string; // Selected city from dropdown or custom entry
+  locationRadius?: string; // Travel radius: "5", "10", "25", "50", "nationwide", "international"
+  locationIsCustom?: boolean; // True if location_city is custom entry (not from predefined UK cities list)
+
   qualifications?: Qualification[]; // Formal qualifications with degree details
   acknowledgements?: Acknowledgement[]; // Awards, recognitions, achievements
   languages?: string[]; // Legacy - now superseded by coachingLanguages

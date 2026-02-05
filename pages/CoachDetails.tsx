@@ -600,61 +600,11 @@ export const CoachDetails: React.FC = () => {
       <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="bg-white rounded-3xl shadow-xl">
 
-          {/* Top Section: Match, Photo, Recently Viewed */}
+          {/* Top Section: Recently Viewed (Left), Match & Photo (Center), Share (Right) */}
           <div className="px-6 pt-8 pb-6">
             <div className="flex items-start justify-between mb-6">
-              {/* Match Percentage Circle - ONLY if questionnaire data exists */}
-              {matchPercentage !== null ? (
-                <div className="flex flex-col items-center">
-                  <div className="relative w-20 h-20">
-                    <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="42"
-                        fill="none"
-                        stroke="#e0f2fe"
-                        strokeWidth="8"
-                      />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="42"
-                        fill="none"
-                        stroke="#06b6d4"
-                        strokeWidth="8"
-                        strokeDasharray={`${matchPercentage * 2.64} 264`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-2xl font-black text-slate-900">{matchPercentage}%</span>
-                    </div>
-                  </div>
-                  <span className="text-xs font-bold text-slate-600 mt-2">Match</span>
-                </div>
-              ) : (
-                <div className="w-20"></div> /* Spacer if no match data */
-              )}
-
-              {/* Profile Photo */}
-              <div className="relative">
-                <div className="w-36 h-36 rounded-3xl overflow-hidden border-4 border-white shadow-2xl ring-4 ring-slate-100">
-                  <img
-                    src={coach.photoUrl || '/default-avatar.png'}
-                    alt={coach.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                {coach.isVerified && (
-                  <div className="absolute -bottom-2 -right-2 bg-blue-600 text-white p-2 rounded-full shadow-lg ring-4 ring-white">
-                    <CheckCircle className="h-6 w-6" />
-                  </div>
-                )}
-              </div>
-
-              {/* Recently Viewed Button */}
-              {recentlyViewedCoaches.length > 0 && (
+              {/* Recently Viewed Button - TOP LEFT */}
+              {recentlyViewedCoaches.length > 0 ? (
                 <button
                   onClick={() => setShowRecentlyViewed(true)}
                   className="flex flex-col items-center group"
@@ -666,19 +616,137 @@ export const CoachDetails: React.FC = () => {
                     {recentlyViewedCoaches.length} recent
                   </span>
                 </button>
+              ) : (
+                <div className="w-20"></div> /* Spacer if no recently viewed */
               )}
+
+              {/* Center: Match Percentage + Profile Photo */}
+              <div className="flex flex-col items-center">
+                {/* Match Percentage Circle - ONLY if questionnaire data exists */}
+                {matchPercentage !== null && (
+                  <div className="flex flex-col items-center mb-4">
+                    <div className="relative w-20 h-20">
+                      <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="42"
+                          fill="none"
+                          stroke="#e0f2fe"
+                          strokeWidth="8"
+                        />
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="42"
+                          fill="none"
+                          stroke="#06b6d4"
+                          strokeWidth="8"
+                          strokeDasharray={`${matchPercentage * 2.64} 264`}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-2xl font-black text-slate-900">{matchPercentage}%</span>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-slate-600 mt-2">Match</span>
+                  </div>
+                )}
+
+                {/* Profile Photo */}
+                <div className="relative">
+                  <div className="w-36 h-36 rounded-3xl overflow-hidden border-4 border-white shadow-2xl ring-4 ring-slate-100">
+                    <img
+                      src={coach.photoUrl || '/default-avatar.png'}
+                      alt={coach.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  {coach.isVerified && (
+                    <div className="absolute -bottom-2 -right-2 bg-blue-600 text-white p-2 rounded-full shadow-lg ring-4 ring-white">
+                      <CheckCircle className="h-6 w-6" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Share Button - TOP RIGHT */}
+              <button
+                onClick={handleShare}
+                className="flex flex-col items-center group"
+              >
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-100 to-brand-200 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all">
+                  <Share2 className="h-7 w-7 text-brand-600" />
+                </div>
+                <span className="text-xs font-bold text-slate-600 mt-2">
+                  Share
+                </span>
+              </button>
             </div>
 
-            {/* Name and Accreditation */}
+            {/* Name */}
             <div className="text-center mb-4">
-              <h2 className="text-4xl font-black text-slate-900 mb-2 tracking-tight">{coach.name}</h2>
+              <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">{coach.name}</h2>
 
-              {/* Accreditation Badge with Verification Status */}
-              <div className="flex items-center justify-center gap-2 flex-wrap">
-                <p className="text-brand-600 font-bold text-base uppercase tracking-wide">
-                  {coach.accreditationBody || coach.verificationBody || 'EMCC'} Accredited
-                </p>
+              {/* Star Rating - Directly below name */}
+              <button
+                onClick={scrollToReviews}
+                className="flex items-center justify-center gap-2 mb-4 hover:opacity-80 transition-opacity cursor-pointer mx-auto"
+                aria-label="View reviews"
+              >
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`h-7 w-7 ${star <= Math.floor(avgRating) ? 'fill-yellow-400 text-yellow-400' : 'fill-slate-200 text-slate-200'}`}
+                    />
+                  ))}
+                </div>
+                <span className="text-lg font-bold text-slate-700 hover:text-cyan-600 transition-colors">
+                  {avgRating.toFixed(1)} ({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})
+                </span>
+              </button>
 
+              {/* Social Links - Directly below star rating */}
+              <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+                {/* Contact Button */}
+                {(emailContacts.length > 0 || phoneContacts.length > 0) && (
+                  <button
+                    onClick={() => setShowContactOptions(true)}
+                    className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
+                    title="Contact"
+                  >
+                    <Mail className="h-6 w-6 text-slate-700" />
+                  </button>
+                )}
+
+                {/* WhatsApp Button - Direct link (for UK coaches with numbers) */}
+                {phoneContacts.length > 0 && phoneContacts[0].url && (
+                  <a
+                    href={`https://wa.me/${phoneContacts[0].url.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
+                    title="WhatsApp"
+                  >
+                    <MessageCircle className="h-6 w-6 text-slate-700" />
+                  </a>
+                )}
+
+                {/* Dynamically render ALL social links from coach profile */}
+                {coach.socialLinks?.map((socialLink) => (
+                  <a
+                    key={socialLink.id || socialLink.platform}
+                    href={socialLink.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
+                    title={socialLink.platform}
+                  >
+                    {getSocialIcon(socialLink.platform)}
+                  </a>
+                ))}
               </div>
 
               {/* Prominent Accreditation Badge with Official Branding */}
@@ -741,74 +809,6 @@ export const CoachDetails: React.FC = () => {
               )}
             </div>
 
-            {/* Big Bold Share Button */}
-            <div className="flex justify-center mb-6">
-              <button
-                onClick={handleShare}
-                className="bg-gradient-to-r from-cyan-500 to-brand-600 text-white px-8 py-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center gap-3 font-black text-lg"
-              >
-                <Share2 className="h-6 w-6" />
-                SHARE PROFILE
-              </button>
-            </div>
-
-            {/* Star Rating - Clickable to scroll to reviews */}
-            <button
-              onClick={scrollToReviews}
-              className="flex items-center justify-center gap-2 mb-6 hover:opacity-80 transition-opacity cursor-pointer"
-              aria-label="View reviews"
-            >
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`h-7 w-7 ${star <= Math.floor(avgRating) ? 'fill-yellow-400 text-yellow-400' : 'fill-slate-200 text-slate-200'}`}
-                  />
-                ))}
-              </div>
-              <span className="text-lg font-bold text-slate-700 hover:text-cyan-600 transition-colors">
-                ({totalReviews})
-              </span>
-            </button>
-
-            {/* Contact Icons - Email, WhatsApp, and ALL social links */}
-            <div className="flex items-center justify-center gap-4 mb-8 flex-wrap">
-              {/* Email - Always show */}
-              <a
-                href={`mailto:${coach.email}`}
-                className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
-                title="Email"
-              >
-                <Mail className="h-6 w-6 text-slate-700" />
-              </a>
-
-              {/* WhatsApp - Show if phone number exists */}
-              {coach.phoneNumber && (
-                <a
-                  href={`https://wa.me/${coach.phoneNumber.replace(/\D/g, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
-                  title="WhatsApp"
-                >
-                  <MessageCircle className="h-6 w-6 text-slate-700" />
-                </a>
-              )}
-
-              {/* Dynamically render ALL social links from coach profile */}
-              {coach.socialLinks?.map((socialLink) => (
-                <a
-                  key={socialLink.id || socialLink.platform}
-                  href={socialLink.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
-                  title={socialLink.platform}
-                >
-                  {getSocialIcon(socialLink.platform)}
-                </a>
-              ))}
-            </div>
 
             {/* Location */}
             <div className="flex items-center justify-center gap-2 mb-4">

@@ -40,6 +40,7 @@ import { useTrialStatus } from '../hooks/useTrialStatus';
 import { ImageUpload } from '../components/ImageUpload';
 import { MultiSelect } from '../components/forms/MultiSelect';
 import { CollapsibleSection } from '../components/forms/CollapsibleSection';
+import { UK_CITIES, LOCATION_RADIUS_OPTIONS, type UKCity, type LocationRadius } from '../constants/locations';
 
 const AVAILABLE_SPECIALTIES: Specialty[] = [
   'Career Growth',
@@ -174,7 +175,9 @@ export const CoachDashboard: React.FC = () => {
         acknowledgements: currentCoach.acknowledgements || [],
         additionalCertifications: currentCoach.additionalCertifications || [],
         coachingHours: currentCoach.coachingHours,
-        locationRadius: currentCoach.locationRadius
+        locationCity: currentCoach.locationCity,
+        locationRadius: currentCoach.locationRadius,
+        locationIsCustom: currentCoach.locationIsCustom
       });
     }
   }, [currentCoach, localProfile]);
@@ -1166,16 +1169,77 @@ export const CoachDashboard: React.FC = () => {
                         />
                       </div>
 
-                      {/* Location Radius */}
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-3">Location Radius (for in-person coaching)</label>
-                        <input
-                          type="text"
-                          value={localProfile?.locationRadius || ''}
-                          onChange={(e) => updateLocalProfile({locationRadius: e.target.value})}
-                          placeholder="e.g., within 5 miles of London"
-                          className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
-                        />
+                      {/* Location Selection */}
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-3">City/Town (for in-person coaching)</label>
+                          {!localProfile?.locationIsCustom ? (
+                            <select
+                              value={localProfile?.locationCity || ''}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (value === 'Other') {
+                                  updateLocalProfile({
+                                    locationCity: '',
+                                    locationIsCustom: true
+                                  });
+                                } else {
+                                  updateLocalProfile({
+                                    locationCity: value,
+                                    locationIsCustom: false
+                                  });
+                                }
+                              }}
+                              className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
+                            >
+                              <option value="">Select a city...</option>
+                              <option value="Remote">Remote (Online Only)</option>
+                              <optgroup label="UK Cities">
+                                {UK_CITIES.filter(city => city !== 'Other').map(city => (
+                                  <option key={city} value={city}>{city}</option>
+                                ))}
+                              </optgroup>
+                              <option value="Other">Other (Custom Location)</option>
+                            </select>
+                          ) : (
+                            <div className="space-y-2">
+                              <input
+                                type="text"
+                                value={localProfile?.locationCity || ''}
+                                onChange={(e) => updateLocalProfile({locationCity: e.target.value})}
+                                placeholder="Enter your city/town"
+                                className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => updateLocalProfile({locationCity: '', locationIsCustom: false})}
+                                className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+                              >
+                                ← Back to city dropdown
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Travel Radius (hidden if Remote is selected) */}
+                        {localProfile?.locationCity && localProfile?.locationCity !== 'Remote' && (
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-3">Travel Radius (optional)</label>
+                            <select
+                              value={localProfile?.locationRadius || ''}
+                              onChange={(e) => updateLocalProfile({locationRadius: e.target.value})}
+                              className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
+                            >
+                              <option value="">Not specified</option>
+                              {LOCATION_RADIUS_OPTIONS.map(option => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                            <p className="text-xs text-slate-500 mt-2">How far you're willing to travel for in-person coaching</p>
+                          </div>
+                        )}
                       </div>
                   </CollapsibleSection>
 

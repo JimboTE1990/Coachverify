@@ -146,7 +146,9 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   if (coach.icfProfileUrl !== undefined) updateData.icf_profile_url = coach.icfProfileUrl;
   if (coach.additionalCertifications !== undefined) updateData.additional_certifications = coach.additionalCertifications;
   if (coach.coachingHours !== undefined) updateData.coaching_hours = coach.coachingHours;
+  if (coach.locationCity !== undefined) updateData.location_city = coach.locationCity;
   if (coach.locationRadius !== undefined) updateData.location_radius = coach.locationRadius;
+  if (coach.locationIsCustom !== undefined) updateData.location_is_custom = coach.locationIsCustom;
   if (coach.qualifications !== undefined) updateData.qualifications = coach.qualifications;
   if (coach.acknowledgements !== undefined) updateData.acknowledgements = coach.acknowledgements;
   if (coach.coachingExpertise !== undefined) updateData.coaching_expertise = coach.coachingExpertise;
@@ -967,7 +969,9 @@ const mapCoachProfile = (data: any): Coach => {
     icfProfileUrl: data.icf_profile_url,
     additionalCertifications: data.additional_certifications,
     coachingHours: data.coaching_hours,
+    locationCity: data.location_city,
     locationRadius: data.location_radius,
+    locationIsCustom: data.location_is_custom,
     qualifications: data.qualifications,
     acknowledgements: data.acknowledgements,
     averageRating: data.average_rating,

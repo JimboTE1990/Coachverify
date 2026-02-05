@@ -4,6 +4,7 @@ import { MultiSelectDropdown } from './MultiSelectDropdown';
 import { ExpandableCategory, CheckboxGrid } from './ExpandableCategory';
 import { COACHING_LANGUAGES, CPD_QUALIFICATIONS, EXPERTISE_CATEGORIES } from '../../constants/filterOptions';
 import { CoachingExpertise, CoachingLanguage, CPDQualification, Specialty, Format } from '../../types';
+import { UK_CITIES, LOCATION_RADIUS_OPTIONS } from '../../constants/locations';
 
 interface FilterSidebarProps {
   // Basic filters
@@ -19,6 +20,13 @@ interface FilterSidebarProps {
 
   minExperience: number;
   onMinExperienceChange: (value: number) => void;
+
+  // Location filters
+  locationCityFilter: string;
+  onLocationCityChange: (value: string) => void;
+
+  locationRadiusFilter: string;
+  onLocationRadiusChange: (value: string) => void;
 
   // Advanced filters
   languageFilter: string[];
@@ -50,6 +58,10 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   onMaxPriceChange,
   minExperience,
   onMinExperienceChange,
+  locationCityFilter,
+  onLocationCityChange,
+  locationRadiusFilter,
+  onLocationRadiusChange,
   languageFilter,
   onLanguageFilterChange,
   expertiseFilter,
@@ -69,7 +81,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
     specialty: true,
     format: false,
     price: false,
-    experience: false
+    experience: false,
+    location: false
   });
 
   // Toggle section expansion
@@ -86,6 +99,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
     formatFilter.length +
     (maxPrice < 500 ? 1 : 0) +
     (minExperience > 0 ? 1 : 0) +
+    (locationCityFilter ? 1 : 0) +
+    (locationRadiusFilter ? 1 : 0) +
     languageFilter.length +
     expertiseFilter.length +
     cpdFilter.length;
@@ -261,6 +276,62 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 <span>10 yrs</span>
                 <span>20+ yrs</span>
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* Location Filter */}
+        <div className="border border-slate-200 rounded-xl overflow-hidden">
+          <button
+            type="button"
+            onClick={() => toggleSection('location')}
+            className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
+          >
+            <span className="text-sm font-bold text-slate-700">Location</span>
+            {expandedSections.location ? (
+              <Minus className="h-4 w-4 text-slate-600" />
+            ) : (
+              <Plus className="h-4 w-4 text-slate-600" />
+            )}
+          </button>
+          {expandedSections.location && (
+            <div className="px-4 pb-4 space-y-3">
+              {/* City/Town Filter */}
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-2">City/Town</label>
+                <select
+                  value={locationCityFilter}
+                  onChange={(e) => onLocationCityChange(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-white text-sm"
+                >
+                  <option value="">All locations</option>
+                  <option value="Remote">Remote Only</option>
+                  <optgroup label="UK Cities">
+                    {UK_CITIES.filter(city => city !== 'Other' && city !== 'Remote').map(city => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
+                  </optgroup>
+                </select>
+              </div>
+
+              {/* Travel Radius Filter */}
+              {locationCityFilter && locationCityFilter !== 'Remote' && (
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-2">Travel Radius</label>
+                  <select
+                    value={locationRadiusFilter}
+                    onChange={(e) => onLocationRadiusChange(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-white text-sm"
+                  >
+                    <option value="">Any distance</option>
+                    {LOCATION_RADIUS_OPTIONS.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           )}
         </div>
