@@ -734,8 +734,16 @@ export const CoachDetails: React.FC = () => {
                   </a>
                 )}
 
-                {/* Dynamically render ALL social links from coach profile */}
-                {coach.socialLinks?.map((socialLink) => (
+                {/* Dynamically render social links (filter out email, phone, booking) */}
+                {coach.socialLinks?.filter(link => {
+                  const url = link.url?.toLowerCase() || '';
+                  const platform = link.platform?.toLowerCase() || '';
+                  // Filter out email, phone, and booking links
+                  const isEmail = url.startsWith('mailto:') || url.includes('@') || platform.includes('email');
+                  const isPhone = url.startsWith('tel:') || url.startsWith('+') || platform.includes('phone') || platform.includes('tel') || platform.includes('mobile');
+                  const isBooking = platform.includes('booking') || platform.includes('appointment') || platform.includes('schedule') || platform.includes('calendly') || platform.includes('cal.com') || url.includes('calendly.com') || url.includes('cal.com');
+                  return !isEmail && !isPhone && !isBooking;
+                }).map((socialLink) => (
                   <a
                     key={socialLink.id || socialLink.platform}
                     href={socialLink.url}
