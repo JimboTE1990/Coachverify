@@ -43,6 +43,7 @@ interface FilterSidebarProps {
 
   // Actions
   onClearAll: () => void;
+  onApply?: () => void; // NEW: Callback when Apply Filters is clicked
 
   // Mobile support
   isMobileOpen?: boolean;
@@ -71,10 +72,12 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   genderFilter,
   onGenderFilterChange,
   onClearAll,
+  onApply,
   isMobileOpen = false,
   onMobileClose
 }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
 
   // State to track which sections are expanded
   const [expandedSections, setExpandedSections] = useState({
@@ -452,10 +455,38 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       {/* Footer Actions */}
       <div className="p-6 border-t border-slate-200 bg-slate-50 space-y-3">
         <button
-          onClick={onMobileClose}
-          className="w-full bg-brand-600 text-white py-3 rounded-xl font-bold hover:bg-brand-700 transition-colors shadow-md hover:shadow-lg"
+          onClick={() => {
+            setIsApplying(true);
+            // Call onApply callback if provided
+            if (onApply) {
+              onApply();
+            }
+            // Close mobile drawer if on mobile
+            if (onMobileClose) {
+              onMobileClose();
+            }
+            // Reset animation state
+            setTimeout(() => setIsApplying(false), 600);
+          }}
+          disabled={isApplying}
+          className={`
+            w-full bg-brand-600 text-white py-3 rounded-xl font-bold
+            hover:bg-brand-700 transition-all shadow-md hover:shadow-lg
+            disabled:opacity-75
+            ${isApplying ? 'scale-95' : 'scale-100'}
+          `}
         >
-          Apply Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
+          {isApplying ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Applying...
+            </span>
+          ) : (
+            <>Apply Filters {activeFilterCount > 0 && `(${activeFilterCount})`}</>
+          )}
         </button>
         <button
           onClick={onClearAll}

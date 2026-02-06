@@ -36,6 +36,9 @@ export const CoachList: React.FC = () => {
   const [showPartialMatches, setShowPartialMatches] = useState(false);
   const [minMatchPercentage] = useState(50); // Minimum 50% match to show
 
+  // Filter feedback state
+  const [showFilterAppliedToast, setShowFilterAppliedToast] = useState(false);
+
   // Questionnaire results passed from Onboarding
   const [matchData, setMatchData] = useState<QuestionnaireAnswers | null>(null);
 
@@ -76,6 +79,18 @@ export const CoachList: React.FC = () => {
     setExpertiseFilter([]);
     setCpdFilter([]);
     setGenderFilter([]);
+  };
+
+  const handleApplyFilters = () => {
+    // Show success toast
+    setShowFilterAppliedToast(true);
+    setTimeout(() => setShowFilterAppliedToast(false), 3000);
+
+    // Scroll to results section smoothly
+    const resultsSection = document.getElementById('coach-results');
+    if (resultsSection) {
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   // Calculate match percentage for each coach
@@ -280,6 +295,34 @@ export const CoachList: React.FC = () => {
 
   return (
     <div className="bg-slate-50 min-h-screen">
+      {/* Filter Applied Toast Notification */}
+      {showFilterAppliedToast && (
+        <div
+          className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ease-out"
+          style={{ animation: 'slideDown 0.3s ease-out' }}
+        >
+          <div className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span className="font-bold">Filters applied successfully!</span>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -20px);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+          }
+        }
+      `}</style>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
         {/* Search Header */}
@@ -346,6 +389,7 @@ export const CoachList: React.FC = () => {
               genderFilter={genderFilter}
               onGenderFilterChange={setGenderFilter}
               onClearAll={clearAllFilters}
+              onApply={handleApplyFilters}
             />
           </aside>
 
@@ -372,12 +416,13 @@ export const CoachList: React.FC = () => {
             genderFilter={genderFilter}
             onGenderFilterChange={setGenderFilter}
             onClearAll={clearAllFilters}
+            onApply={handleApplyFilters}
             isMobileOpen={isMobileFiltersOpen}
             onMobileClose={() => setIsMobileFiltersOpen(false)}
           />
 
           {/* Main Results Column */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0" id="coach-results">
 
             {/* Search Bar + Mobile Filter Button */}
             <div className="sticky top-24 z-30 mb-8">
