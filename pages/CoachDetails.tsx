@@ -758,7 +758,7 @@ export const CoachDetails: React.FC = () => {
               </div>
 
               {/* Prominent Accreditation Badge with Official Branding */}
-              {coach.accreditationBody === 'EMCC' && coach.emccVerified && (
+              {coach.accreditationBody === 'EMCC' && coach.emccVerified && coach.emccProfileUrl && (
                 <div className="mt-6 mb-4 bg-gradient-to-br from-[#2B4170]/5 to-[#C9A961]/10 border-2 border-[#2B4170]/30 rounded-2xl p-6 shadow-md">
                   <div className="flex items-center justify-center gap-3 mb-3">
                     {/* EMCC-style branding: Navy blue with gold accent */}
@@ -790,7 +790,7 @@ export const CoachDetails: React.FC = () => {
                 </div>
               )}
 
-              {coach.accreditationBody === 'ICF' && coach.icfVerified && (
+              {coach.accreditationBody === 'ICF' && coach.icfVerified && coach.icfProfileUrl && (
                 <div className="mt-6 mb-4 bg-gradient-to-br from-[#2E5C8A]/5 to-[#4A90E2]/10 border-2 border-[#2E5C8A]/30 rounded-2xl p-6 shadow-md">
                   <div className="flex items-center justify-center gap-3 mb-3">
                     {/* ICF-style branding: Navy blue */}
