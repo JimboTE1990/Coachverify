@@ -119,6 +119,7 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
     email: coach.email,
     phone_number: coach.phoneNumber || null,
     photo_url: coach.photoUrl,
+    banner_image_url: coach.bannerImageUrl || null,
     bio: coach.bio || '',
     location: coach.location,
     hourly_rate: coach.hourlyRate,
@@ -151,6 +152,7 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   if (coach.locationIsCustom !== undefined) updateData.location_is_custom = coach.locationIsCustom;
   if (coach.qualifications !== undefined) updateData.qualifications = coach.qualifications;
   if (coach.acknowledgements !== undefined) updateData.acknowledgements = coach.acknowledgements;
+  if (coach.mainCoachingCategories !== undefined) updateData.main_coaching_categories = coach.mainCoachingCategories;
   if (coach.coachingExpertise !== undefined) updateData.coaching_expertise = coach.coachingExpertise;
   if (coach.cpdQualifications !== undefined) updateData.cpd_qualifications = coach.cpdQualifications;
   if (coach.coachingLanguages !== undefined) updateData.coaching_languages = coach.coachingLanguages;
@@ -170,9 +172,9 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   if (coach.dataRetentionPreference !== undefined) updateData.data_retention_preference = coach.dataRetentionPreference;
   if (coach.scheduledDeletionAt !== undefined) updateData.scheduled_deletion_at = coach.scheduledDeletionAt;
 
-  // Update main coach record
+  // Update main coach record (use 'coaches' table directly, not 'coach_profiles' view)
   const { error: coachError } = await supabase
-    .from('coach_profiles')
+    .from('coaches')
     .update(updateData)
     .eq('id', coach.id)
     .eq('user_id', user.id);
@@ -939,6 +941,7 @@ const mapCoachProfile = (data: any): Coach => {
     email: data.email,
     phoneNumber: data.phone_number,
     photoUrl: data.photo_url || 'https://picsum.photos/200/200',
+    bannerImageUrl: data.banner_image_url,
     specialties: data.specialties || [],
     bio: data.bio || '',
     socialLinks: [],
@@ -976,6 +979,7 @@ const mapCoachProfile = (data: any): Coach => {
     acknowledgements: data.acknowledgements,
     averageRating: data.average_rating,
     totalReviews: data.total_reviews,
+    mainCoachingCategories: data.main_coaching_categories,
     coachingExpertise: data.coaching_expertise,
     cpdQualifications: data.cpd_qualifications,
     coachingLanguages: data.coaching_languages,
@@ -1178,5 +1182,137 @@ export const getCoachAnalytics = async (coachId: string): Promise<CoachAnalytics
       viewsByDay: [],
       topReferrers: []
     };
+  }
+};
+
+// ============================================================================
+// DELETE ACCOUNT SERVICES
+// ============================================================================
+
+/**
+ * Request account deletion
+ * - Schedules deletion for end of billing period
+ * - Permanent deletion occurs 30 days after effective date
+ * - Requires subscription to be cancelled first
+ */
+export const requestAccountDeletion = async (
+  coachId: string,
+  reason?: string
+): Promise<boolean> => {
+  try {
+    // Get current subscription info
+    const { data: coach, error: fetchError } = await supabase
+      .from('coaches')
+      .select('subscription_ends_at, subscription_status, trial_ends_at, cancelled_at')
+      .eq('id', coachId)
+      .single();
+
+    if (fetchError || !coach) {
+      console.error('[DeleteAccount] Error fetching coach:', fetchError);
+      return false;
+    }
+
+    // Deletion only allowed if subscription is cancelled or expired
+    if (coach.subscription_status === 'active' && !coach.cancelled_at) {
+      throw new Error('Please cancel your subscription before deleting account');
+    }
+
+    // Calculate deletion dates
+    const now = new Date();
+    let effectiveDate: Date;
+
+    // Effective date is end of subscription (or tomorrow if no active subscription)
+    if (coach.subscription_ends_at) {
+      effectiveDate = new Date(coach.subscription_ends_at);
+    } else if (coach.subscription_status === 'trial' && coach.trial_ends_at) {
+      effectiveDate = new Date(coach.trial_ends_at);
+    } else {
+      // No active subscription - effective tomorrow
+      effectiveDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    // Permanent deletion is 30 days after effective date
+    const permanentDate = new Date(effectiveDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    // Schedule deletion
+    const { error: updateError } = await supabase
+      .from('coaches')
+      .update({
+        deletion_requested_at: now.toISOString(),
+        deletion_effective_date: effectiveDate.toISOString(),
+        deletion_permanent_date: permanentDate.toISOString(),
+        deletion_reason: reason || null,
+        can_restore: true,
+      })
+      .eq('id', coachId);
+
+    if (updateError) {
+      console.error('[DeleteAccount] Error scheduling deletion:', updateError);
+      return false;
+    }
+
+    console.log('[DeleteAccount] Deletion scheduled successfully');
+    return true;
+  } catch (error) {
+    console.error('[DeleteAccount] Error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Restore a deleted account (within 30-day window)
+ * - Clears all deletion fields
+ * - Reactivates subscription (if within valid period)
+ * - Makes profile visible again
+ */
+export const restoreAccount = async (coachId: string): Promise<boolean> => {
+  try {
+    // Get current deletion status
+    const { data: coach, error: fetchError } = await supabase
+      .from('coaches')
+      .select('deletion_permanent_date, can_restore, subscription_status')
+      .eq('id', coachId)
+      .single();
+
+    if (fetchError || !coach) {
+      console.error('[RestoreAccount] Error fetching coach:', fetchError);
+      return false;
+    }
+
+    // Check if still within restoration window
+    const now = new Date();
+    const permanentDate = coach.deletion_permanent_date
+      ? new Date(coach.deletion_permanent_date)
+      : null;
+
+    if (!permanentDate || now > permanentDate || !coach.can_restore) {
+      throw new Error('Restoration window has expired');
+    }
+
+    // Restore account
+    const { error: updateError } = await supabase
+      .from('coaches')
+      .update({
+        subscription_status: 'active', // Or could be calculated based on previous status
+        profile_visible: true,
+        deletion_requested_at: null,
+        deletion_effective_date: null,
+        deletion_permanent_date: null,
+        deletion_reason: null,
+        restored_at: now.toISOString(),
+        restored_by: coachId, // Self-restoration (could be admin email for manual restore)
+      })
+      .eq('id', coachId);
+
+    if (updateError) {
+      console.error('[RestoreAccount] Error restoring account:', updateError);
+      return false;
+    }
+
+    console.log('[RestoreAccount] Account restored successfully');
+    return true;
+  } catch (error) {
+    console.error('[RestoreAccount] Error:', error);
+    throw error;
   }
 };

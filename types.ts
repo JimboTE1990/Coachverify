@@ -1,7 +1,7 @@
 
-export type Specialty = 'Career Growth' | 'Stress Relief' | 'Relationships' | 'Health & Wellness' | 'Executive Coaching' | 'General';
+export type Specialty = 'Career & Professional Development' | 'Business & Entrepreneurship' | 'Health & Wellness' | 'Personal & Life' | 'Financial' | 'Niche & Demographic' | 'Methodology & Modality' | 'General';
 
-export type Format = 'In-Person' | 'Online' | 'Hybrid';
+export type Format = 'In-Person' | 'Online';
 
 export type SubscriptionStatus = 'active' | 'trial' | 'expired' | 'onboarding';
 
@@ -309,6 +309,7 @@ export interface Coach {
   email: string;
   phoneNumber?: string;
   photoUrl: string;
+  bannerImageUrl?: string; // Profile banner/cover image (like LinkedIn/X/Facebook)
   specialties: Specialty[];
   bio: string;
   socialLinks: SocialLink[];
@@ -353,7 +354,8 @@ export interface Coach {
   customUrl?: string; // Custom vanity URL slug (e.g., "jonnysmith" for /coach/jonnysmith)
 
   // New: Enhanced Expertise & Qualifications
-  coachingExpertise?: CoachingExpertise[]; // Areas of coaching expertise (from 7 categories)
+  mainCoachingCategories?: CoachingExpertiseCategory[]; // Primary broad categories (7 main areas) - REQUIRED for matching
+  coachingExpertise?: CoachingExpertise[]; // Specific areas of expertise (optional detail within categories)
   cpdQualifications?: CPDQualification[]; // Additional professional development certifications
   coachingLanguages?: CoachingLanguage[]; // Languages offered for coaching sessions
   gender?: Gender; // Coach's gender identity
@@ -383,13 +385,23 @@ export interface Coach {
 
   // Security
   twoFactorEnabled: boolean;
+
+  // Deletion Tracking (New Delete Account System)
+  deletionRequestedAt?: string; // When user requested deletion
+  deletionEffectiveDate?: string; // When account will be hidden/locked (end of billing period)
+  deletionPermanentDate?: string; // When data will be permanently deleted (effective_date + 30 days)
+  deletionReason?: string; // Optional reason for leaving
+  canRestore?: boolean; // Whether account can still be restored (false after permanent deletion)
+  restoredAt?: string; // When account was restored (if applicable)
+  restoredBy?: string; // Who restored the account (user_id or admin email)
 }
 
 export interface QuestionnaireAnswers {
   goal: Specialty | '';
-  sessionsPerMonth: 'one' | 'two' | 'unlimited' | '';
   preferredFormat: Format[];
-  budgetRange: number;
+  preferredLocation?: string; // Preferred city/location for in-person coaching
+  budgetMin: number; // Minimum hourly rate
+  budgetMax: number; // Maximum hourly rate
   genderPreference?: Gender[]; // Preferred coach gender(s) - multiple selection
   preferredCertifications?: AdditionalCertification[]; // Legacy: Preferred coach certifications
   languagePreferences?: string[]; // Multiple languages (e.g., ["English", "Spanish"])

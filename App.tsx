@@ -8,6 +8,7 @@ import { CoachDetails } from './pages/CoachDetails';
 import { CoachDashboard } from './pages/CoachDashboard';
 import { CoachLogin } from './pages/CoachLogin';
 import { CoachSignup } from './pages/CoachSignup';
+import { DeleteAccount } from './pages/DeleteAccount';
 import { Questionnaire } from './pages/Questionnaire';
 import { AdminDashboard } from './pages/Admin';
 import { Pricing } from './pages/Pricing';
@@ -104,6 +105,8 @@ const App: React.FC = () => {
               <Route path="/questionnaire" element={<Questionnaire />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/for-coaches" element={<CoachDashboard />} />
+              <Route path="/dashboard" element={<CoachDashboard />} />
+              <Route path="/dashboard/delete-account" element={<DeleteAccount />} />
               <Route path="/coach-login" element={<CoachLogin />} />
               <Route path="/coach-signup" element={<CoachSignup />} />
               <Route path="/verify-email" element={<VerifyEmail />} />

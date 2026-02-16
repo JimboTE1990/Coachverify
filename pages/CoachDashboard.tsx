@@ -38,6 +38,7 @@ import { TrialExpiredModal } from '../components/subscription/TrialExpiredModal'
 import { ProfileViewsChart } from '../components/analytics/ProfileViewsChart';
 import { useTrialStatus } from '../hooks/useTrialStatus';
 import { ImageUpload } from '../components/ImageUpload';
+import { BannerImageUpload } from '../components/BannerImageUpload';
 import { MultiSelect } from '../components/forms/MultiSelect';
 import { CollapsibleSection } from '../components/forms/CollapsibleSection';
 import { UK_CITIES, LOCATION_RADIUS_OPTIONS, type UKCity, type LocationRadius } from '../constants/locations';
@@ -50,7 +51,18 @@ const AVAILABLE_SPECIALTIES: Specialty[] = [
   'Executive Coaching'
 ];
 
-const AVAILABLE_FORMATS: Format[] = ['Online', 'In-Person', 'Hybrid'];
+// Main coaching categories - matches quiz categories
+const MAIN_COACHING_CATEGORIES: CoachingExpertiseCategory[] = [
+  'Career & Professional Development',
+  'Business & Entrepreneurship',
+  'Health & Wellness',
+  'Personal & Life',
+  'Financial',
+  'Niche & Demographic',
+  'Methodology & Modality'
+];
+
+const AVAILABLE_FORMATS: Format[] = ['Online', 'In-Person'];
 
 // Coaching Expertise by Category
 const COACHING_EXPERTISE_BY_CATEGORY: Record<CoachingExpertiseCategory, CoachingExpertise[]> = {
@@ -163,10 +175,12 @@ export const CoachDashboard: React.FC = () => {
         hourlyRate: currentCoach.hourlyRate,
         currency: currentCoach.currency || 'GBP',
         photoUrl: currentCoach.photoUrl,
+        bannerImageUrl: currentCoach.bannerImageUrl,
         gender: currentCoach.gender,
         specialties: currentCoach.specialties || [],
         availableFormats: currentCoach.availableFormats || [],
         socialLinks: currentCoach.socialLinks || [],
+        mainCoachingCategories: currentCoach.mainCoachingCategories || [],
         coachingExpertise: currentCoach.coachingExpertise || [],
         cpdQualifications: currentCoach.cpdQualifications || [],
         coachingLanguages: currentCoach.coachingLanguages || [],
@@ -771,6 +785,24 @@ export const CoachDashboard: React.FC = () => {
     updateLocalProfile({ availableFormats: updated });
   };
 
+  const toggleMainCategory = (category: CoachingExpertiseCategory) => {
+    if (!localProfile) return;
+    const current = localProfile.mainCoachingCategories || [];
+    const updated = current.includes(category)
+        ? current.filter(item => item !== category)
+        : [...current, category];
+    updateLocalProfile({ mainCoachingCategories: updated });
+  };
+
+  // Helper to check if coach has expertise in a main category
+  const hasExpertiseInCategory = (category: CoachingExpertiseCategory): boolean => {
+    if (!localProfile?.coachingExpertise) return false;
+    const categoryOptions = COACHING_EXPERTISE_BY_CATEGORY[category];
+    return localProfile.coachingExpertise.some(expertise =>
+      categoryOptions.includes(expertise as any)
+    );
+  };
+
   const handleForgotPassword = () => {
       alert(`Password reset link sent to ${currentCoach?.email}`);
   };
@@ -1129,6 +1161,15 @@ export const CoachDashboard: React.FC = () => {
                         />
                       </div>
 
+                      {/* Banner Image Upload */}
+                      <div className="mb-6">
+                        <BannerImageUpload
+                          currentImageUrl={localProfile?.bannerImageUrl}
+                          onImageUpdate={(newUrl) => updateLocalProfile({ bannerImageUrl: newUrl })}
+                          coachId={currentCoach.id}
+                        />
+                      </div>
+
                       {/* Full Name */}
                       <div className="mb-6">
                         <label className="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
@@ -1349,26 +1390,36 @@ export const CoachDashboard: React.FC = () => {
                     iconTextColor="text-brand-600"
                   >
                       <div className="space-y-6">
-                      {/* Specialties Tags */}
+                      {/* Main Coaching Categories - Primary Selectable Fields */}
                       <div>
                         <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center">
-                           <Tag className="h-4 w-4 mr-2 text-slate-400" /> Specializations
+                           <Tag className="h-4 w-4 mr-2 text-slate-400" /> Coaching Categories
                         </label>
+                        <p className="text-xs text-slate-500 mb-3">
+                          Select the broad categories you coach in. These are used for matching you with clients. You can add specific expertise areas within each category below.
+                        </p>
                         <div className="flex flex-wrap gap-2">
-                           {AVAILABLE_SPECIALTIES.map(s => (
-                             <button
-                               key={s}
-                               onClick={() => toggleSpecialty(s)}
-                               className={`px-4 py-2 rounded-lg text-xs font-bold border transition-all duration-200 ${
-                                 localProfile?.specialties?.includes(s)
-                                 ? 'bg-brand-600 text-white border-brand-600 shadow-md transform scale-105'
-                                 : 'bg-white text-slate-600 border-slate-200 hover:border-brand-300 hover:text-brand-600'
-                               }`}
-                             >
-                               {s}
-                             </button>
-                           ))}
+                           {MAIN_COACHING_CATEGORIES.map(category => {
+                             const isSelected = (localProfile?.mainCoachingCategories || []).includes(category);
+                             return (
+                               <button
+                                 key={category}
+                                 type="button"
+                                 onClick={() => toggleMainCategory(category)}
+                                 className={`px-4 py-2 rounded-lg text-xs font-bold border transition-all duration-200 cursor-pointer hover:scale-105 ${
+                                   isSelected
+                                   ? 'bg-brand-600 text-white border-brand-600 shadow-md hover:bg-brand-700'
+                                   : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-brand-300 hover:text-brand-600 hover:bg-white'
+                                 }`}
+                               >
+                                 {category}
+                               </button>
+                             );
+                           })}
                         </div>
+                        <p className="text-xs text-slate-600 mt-2 italic">
+                          Click categories to toggle them on/off. Selected categories will be highlighted.
+                        </p>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1631,6 +1682,7 @@ export const CoachDashboard: React.FC = () => {
                   </CollapsibleSection>
 
                   {/* Coaching Expertise Section */}
+                  <div id="coaching-expertise-section">
                   <CollapsibleSection
                     title="Coaching Areas of Expertise"
                     subtitle="Select specific areas where you specialize (helps clients find you)"
@@ -1660,6 +1712,7 @@ export const CoachDashboard: React.FC = () => {
                       </div>
                     ))}
                   </CollapsibleSection>
+                  </div>
 
                   {/* Acknowledgements Section */}
                   <CollapsibleSection
@@ -2325,43 +2378,8 @@ export const CoachDashboard: React.FC = () => {
                                   </button>
                                 </div>
                               </div>
-                            ) : flaggingReview === review.id ? (
-                              /* Flag as Spam Form */
-                              <div className="bg-red-50 rounded-lg p-4 mb-4 border border-red-200">
-                                <p className="font-bold text-sm text-red-900 mb-3">Flag this review as spam:</p>
-                                <textarea
-                                  value={flagReason}
-                                  onChange={(e) => setFlagReason(e.target.value)}
-                                  placeholder="Optional: Explain why this is spam (e.g., 'This person was never my client')"
-                                  className="w-full border border-red-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
-                                  rows={3}
-                                  disabled={flagSubmitting}
-                                />
-                                <p className="text-xs text-red-700 mt-2 mb-3">
-                                  ℹ️ Our AI will validate your spam flag to ensure it's legitimate
-                                </p>
-                                <div className="flex gap-2">
-                                  <button
-                                    onClick={() => handleFlagAsSpam(review.id)}
-                                    disabled={flagSubmitting}
-                                    className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold"
-                                  >
-                                    <Flag className="h-4 w-4" />
-                                    {flagSubmitting ? 'Flagging...' : 'Flag as Spam'}
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      setFlaggingReview(null);
-                                      setFlagReason('');
-                                    }}
-                                    className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-sm font-bold"
-                                  >
-                                    Cancel
-                                  </button>
-                                </div>
-                              </div>
                             ) : (
-                              /* Action Buttons */
+                              /* Action Button - Comment Only */
                               <div className="flex gap-3">
                                 <button
                                   onClick={() => {
@@ -2371,17 +2389,8 @@ export const CoachDashboard: React.FC = () => {
                                   className="flex items-center gap-2 text-brand-600 hover:text-brand-700 font-bold text-sm"
                                 >
                                   <MessageCircle className="h-4 w-4" />
-                                  Add Comment
+                                  Leave Comment
                                 </button>
-                                {!review.isSpam && (
-                                  <button
-                                    onClick={() => setFlaggingReview(review.id)}
-                                    className="flex items-center gap-2 text-red-600 hover:text-red-700 font-bold text-sm"
-                                  >
-                                    <Flag className="h-4 w-4" />
-                                    Flag as Spam
-                                  </button>
-                                )}
                               </div>
                             )}
 
@@ -2649,6 +2658,21 @@ export const CoachDashboard: React.FC = () => {
                                         </div>
                                     </div>
                                 )}
+                            </div>
+
+                            {/* Delete Account Link */}
+                            <div className="border-t border-slate-100 pt-8">
+                                <div className="text-center">
+                                    <p className="text-sm text-slate-600 mb-3">
+                                        Need to delete your account?
+                                    </p>
+                                    <button
+                                        onClick={() => navigate('/dashboard/delete-account')}
+                                        className="text-red-600 hover:text-red-700 text-sm font-medium underline transition-colors"
+                                    >
+                                        Delete Account →
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

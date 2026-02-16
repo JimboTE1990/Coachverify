@@ -14,9 +14,11 @@ interface FilterSidebarProps {
   formatFilter: Format[];
   onFormatChange: (value: Format[]) => void;
 
+  minPrice: number;
+  onMinPriceChange: (value: number) => void;
+
   maxPrice: number;
   onMaxPriceChange: (value: number) => void;
-
 
   minExperience: number;
   onMinExperienceChange: (value: number) => void;
@@ -55,6 +57,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   onSpecialtyChange,
   formatFilter,
   onFormatChange,
+  minPrice,
+  onMinPriceChange,
   maxPrice,
   onMaxPriceChange,
   minExperience,
@@ -100,6 +104,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   const activeFilterCount =
     (specialtyFilter ? 1 : 0) +
     formatFilter.length +
+    (minPrice > 30 ? 1 : 0) +
     (maxPrice < 500 ? 1 : 0) +
     (minExperience > 0 ? 1 : 0) +
     (locationCityFilter ? 1 : 0) +
@@ -169,11 +174,13 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-white"
               >
                 <option value="">All Specialties</option>
-                <option value="Career Growth">Career Growth</option>
-                <option value="Stress Relief">Stress Relief</option>
-                <option value="Relationships">Relationships</option>
+                <option value="Career & Professional Development">Career & Professional Development</option>
+                <option value="Business & Entrepreneurship">Business & Entrepreneurship</option>
                 <option value="Health & Wellness">Health & Wellness</option>
-                <option value="Executive Coaching">Executive Coaching</option>
+                <option value="Personal & Life">Personal & Life</option>
+                <option value="Financial">Financial</option>
+                <option value="Niche & Demographic">Niche & Demographic</option>
+                <option value="Methodology & Modality">Methodology & Modality</option>
               </select>
             </div>
           )}
@@ -195,7 +202,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </button>
           {expandedSections.format && (
             <div className="px-4 pb-4 space-y-2">
-              {(['In-Person', 'Online', 'Hybrid'] as Format[]).map((format) => (
+              {(['In-Person', 'Online'] as Format[]).map((format) => (
                 <label
                   key={format}
                   className="flex items-center p-3 border border-slate-200 rounded-xl hover:border-brand-300 cursor-pointer transition-colors"
@@ -213,14 +220,14 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           )}
         </div>
 
-        {/* Max Hourly Rate */}
+        {/* Hourly Rate Range */}
         <div className="border border-slate-200 rounded-xl overflow-hidden">
           <button
             type="button"
             onClick={() => toggleSection('price')}
             className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
           >
-            <span className="text-sm font-bold text-slate-700">Max Hourly Rate: £{maxPrice}</span>
+            <span className="text-sm font-bold text-slate-700">Hourly Rate: £{minPrice} - £{maxPrice}</span>
             {expandedSections.price ? (
               <Minus className="h-4 w-4 text-slate-600" />
             ) : (
@@ -228,20 +235,55 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             )}
           </button>
           {expandedSections.price && (
-            <div className="px-4 pb-4">
-              <input
-                type="range"
-                min="50"
-                max="500"
-                step="10"
-                value={maxPrice}
-                onChange={(e) => onMaxPriceChange(Number(e.target.value))}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
-              />
-              <div className="flex justify-between text-xs text-slate-400 mt-2">
-                <span>£50</span>
-                <span>£250</span>
-                <span>£500+</span>
+            <div className="px-4 pb-4 space-y-4">
+              {/* Minimum Price */}
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-2">Minimum: £{minPrice}</label>
+                <input
+                  type="range"
+                  min="30"
+                  max="500"
+                  step="10"
+                  value={minPrice}
+                  onChange={(e) => {
+                    const newMin = Number(e.target.value);
+                    onMinPriceChange(newMin);
+                    if (newMin > maxPrice) {
+                      onMaxPriceChange(newMin);
+                    }
+                  }}
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
+                />
+                <div className="flex justify-between text-xs text-slate-400 mt-1">
+                  <span>£30</span>
+                  <span>£250</span>
+                  <span>£500+</span>
+                </div>
+              </div>
+
+              {/* Maximum Price */}
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-2">Maximum: £{maxPrice}</label>
+                <input
+                  type="range"
+                  min="30"
+                  max="500"
+                  step="10"
+                  value={maxPrice}
+                  onChange={(e) => {
+                    const newMax = Number(e.target.value);
+                    onMaxPriceChange(newMax);
+                    if (newMax < minPrice) {
+                      onMinPriceChange(newMax);
+                    }
+                  }}
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
+                />
+                <div className="flex justify-between text-xs text-slate-400 mt-1">
+                  <span>£30</span>
+                  <span>£250</span>
+                  <span>£500+</span>
+                </div>
               </div>
             </div>
           )}
