@@ -4,16 +4,19 @@ import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import { QuestionnaireAnswers, Specialty, Format, CoachingExpertise, CoachingLanguage, CPDQualification } from '../types';
 import { MultiSelectDropdown } from '../components/filters/MultiSelectDropdown';
 import { ExpandableCategory, CheckboxGrid } from '../components/filters/ExpandableCategory';
+import { DualRangeSlider } from '../components/DualRangeSlider';
 import { COACHING_LANGUAGES, CPD_QUALIFICATIONS, EXPERTISE_CATEGORIES } from '../constants/filterOptions';
+import { UK_CITIES } from '../constants/locations';
 
 export const Questionnaire: React.FC = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState<QuestionnaireAnswers>({
     goal: '',
-    sessionsPerMonth: '',
     preferredFormat: [],
-    budgetRange: 100,
+    preferredLocation: '',
+    budgetMin: 30,
+    budgetMax: 200,
     preferredCertifications: [],
     languagePreferences: ['English'],
     experienceLevel: 'any',
@@ -41,9 +44,38 @@ export const Questionnaire: React.FC = () => {
     });
   };
 
-  // Get selected count for a category
-  const getSelectedCountForCategory = (categoryItems: string[]): number => {
-    return (answers.coachingExpertise || []).filter(item => categoryItems.includes(item)).length;
+  // Toggle category selection (top-level only)
+  const toggleCategory = (categoryName: string) => {
+    setAnswers(prev => {
+      // Find the category items
+      const category = EXPERTISE_CATEGORIES.find(cat => cat.name === categoryName);
+      if (!category) return prev;
+
+      const currentExpertise = prev.coachingExpertise || [];
+
+      // Check if any items from this category are already selected
+      const hasAnySelected = category.items.some(item => currentExpertise.includes(item as CoachingExpertise));
+
+      if (hasAnySelected) {
+        // Remove all items from this category
+        return {
+          ...prev,
+          coachingExpertise: currentExpertise.filter(item => !category.items.includes(item))
+        };
+      } else {
+        // Add all items from this category
+        return {
+          ...prev,
+          coachingExpertise: [...currentExpertise, ...category.items] as CoachingExpertise[]
+        };
+      }
+    });
+  };
+
+  // Check if a category is selected
+  const isCategorySelected = (categoryItems: string[]): boolean => {
+    const currentExpertise = answers.coachingExpertise || [];
+    return categoryItems.some(item => currentExpertise.includes(item as CoachingExpertise));
   };
 
   return (
@@ -51,85 +83,63 @@ export const Questionnaire: React.FC = () => {
       {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex justify-between mb-2">
-          <span className="text-xs font-semibold tracking-wide uppercase text-brand-600">Step {step} of 7</span>
-          <span className="text-xs font-semibold text-slate-400">{Math.round((step / 7) * 100)}% Completed</span>
+          <span className="text-xs font-semibold tracking-wide uppercase text-brand-600">Step {step} of 6</span>
+          <span className="text-xs font-semibold text-slate-400">{Math.round((step / 6) * 100)}% Completed</span>
         </div>
         <div className="h-2 bg-slate-100 rounded-full">
-          <div className="h-2 bg-brand-500 rounded-full transition-all duration-500 ease-out" style={{ width: `${(step / 7) * 100}%` }}></div>
+          <div className="h-2 bg-brand-500 rounded-full transition-all duration-500 ease-out" style={{ width: `${(step / 6) * 100}%` }}></div>
         </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8 min-h-[400px] flex flex-col justify-between">
 
-        {/* Step 1: Coaching Expertise (UPDATED - Moved from Step 5) */}
+        {/* Step 1: Coaching Categories - Top Level Only */}
         {step === 1 && (
           <div className="animate-fade-in">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">What areas of coaching do you need?</h2>
-            <p className="text-slate-500 mb-6 text-sm">Select any that apply (optional). Expand each category to see specific areas.</p>
+            <h2 className="text-2xl font-bold text-slate-900 mb-4">What can we help you with?</h2>
+            <p className="text-slate-500 mb-6 text-sm">Select any broad areas that apply (optional).</p>
 
             <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
               {EXPERTISE_CATEGORIES.map(category => (
-                <ExpandableCategory
+                <div
                   key={category.name}
-                  title={category.name}
-                  icon={category.icon}
-                  description={category.description}
-                  badge={getSelectedCountForCategory(category.items)}
+                  onClick={() => toggleCategory(category.name)}
+                  className={`cursor-pointer p-4 rounded-xl border-2 transition-all ${
+                    isCategorySelected(category.items)
+                      ? 'border-brand-500 bg-brand-50'
+                      : 'border-slate-200 hover:border-brand-300'
+                  }`}
                 >
-                  <CheckboxGrid
-                    options={category.items}
-                    value={answers.coachingExpertise || []}
-                    onChange={(value) => setAnswers({ ...answers, coachingExpertise: value as CoachingExpertise[] })}
-                  />
-                </ExpandableCategory>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">{category.icon}</div>
+                      <div>
+                        <div className="font-bold text-slate-900">{category.name}</div>
+                        <div className="text-xs text-slate-500">{category.description}</div>
+                      </div>
+                    </div>
+                    {isCategorySelected(category.items) && (
+                      <CheckCircle className="h-6 w-6 text-brand-600" />
+                    )}
+                  </div>
+                </div>
               ))}
             </div>
 
             <div className="mt-4 text-xs text-slate-500 text-center">
-              {(answers.coachingExpertise || []).length} area(s) selected
+              {EXPERTISE_CATEGORIES.filter(cat => isCategorySelected(cat.items)).length} area(s) selected
             </div>
           </div>
         )}
 
-        {/* Step 2: Sessions */}
+        {/* Step 2: Format & Location */}
         {step === 2 && (
-          <div className="animate-fade-in">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">How many sessions per month?</h2>
-            <div className="space-y-4">
-              {[
-                { id: 'one', label: 'One Session', desc: 'Good for maintenance' },
-                { id: 'two', label: 'Two Sessions', desc: 'Recommended for steady progress' },
-                { id: 'unlimited', label: 'Unlimited / Weekly', desc: 'Intensive coaching for rapid results' },
-              ].map((opt) => (
-                <label key={opt.id} className={`flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                  answers.sessionsPerMonth === opt.id
-                  ? 'border-brand-500 bg-brand-50'
-                  : 'border-slate-100 hover:border-slate-200'
-                }`}>
-                  <input
-                    type="radio"
-                    name="sessions"
-                    className="mt-1 h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300"
-                    checked={answers.sessionsPerMonth === opt.id}
-                    onChange={() => setAnswers({ ...answers, sessionsPerMonth: opt.id as any })}
-                  />
-                  <div className="ml-3">
-                    <span className="block text-sm font-medium text-slate-900">{opt.label}</span>
-                    <span className="block text-sm text-slate-500">{opt.desc}</span>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Format */}
-        {step === 3 && (
           <div className="animate-fade-in">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Preferred format?</h2>
             <p className="text-slate-500 mb-4 text-sm">Select all that apply.</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {(['In-Person', 'Online', 'Hybrid'] as Format[]).map((fmt) => (
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {(['In-Person', 'Online'] as Format[]).map((fmt) => (
                 <div
                   key={fmt}
                   onClick={() => updateFormat(fmt)}
@@ -143,30 +153,52 @@ export const Questionnaire: React.FC = () => {
                 </div>
               ))}
             </div>
+
+            {/* Optional Location Dropdown - only show if In-Person is selected */}
+            {answers.preferredFormat.includes('In-Person') && (
+              <div className="mt-6 pt-6 border-t border-slate-200">
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  Preferred Location (Optional)
+                </label>
+                <select
+                  value={answers.preferredLocation || ''}
+                  onChange={(e) => setAnswers({ ...answers, preferredLocation: e.target.value })}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-white"
+                >
+                  <option value="">Any location</option>
+                  <optgroup label="UK Cities">
+                    {UK_CITIES.filter(city => city !== 'Other' && city !== 'Remote').map(city => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
+                  </optgroup>
+                </select>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 Coaches near your preferred location will be prioritized in search results
+                </p>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Step 4: Budget */}
-        {step === 4 && (
+        {/* Step 3: Budget Range - Min and Max */}
+        {step === 3 && (
           <div className="animate-fade-in">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">What is your budget range?</h2>
 
-            <p className="text-slate-500 mb-8">Max hourly rate: <span className="font-bold text-slate-900">£{answers.budgetRange}</span></p>
-
-            <input
-              type="range"
-              min="50"
-              max="500"
-              step="10"
-              value={answers.budgetRange}
-              onChange={(e) => setAnswers({...answers, budgetRange: parseInt(e.target.value)})}
-              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
+            <DualRangeSlider
+              min={30}
+              max={500}
+              step={10}
+              minValue={answers.budgetMin}
+              maxValue={answers.budgetMax}
+              onChange={(min, max) => {
+                setAnswers({
+                  ...answers,
+                  budgetMin: min,
+                  budgetMax: max
+                });
+              }}
             />
-            <div className="flex justify-between text-xs text-slate-400 mt-2">
-              <span>£50</span>
-              <span>£250</span>
-              <span>£500+</span>
-            </div>
 
             <div className="mt-8 bg-blue-50 p-4 rounded-lg">
                <p className="text-sm text-blue-800">
@@ -182,8 +214,8 @@ export const Questionnaire: React.FC = () => {
           </div>
         )}
 
-        {/* Step 5: Gender Preference */}
-        {step === 5 && (
+        {/* Step 4: Gender Preference */}
+        {step === 4 && (
           <div className="animate-fade-in">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Do you have a gender preference for your coach?</h2>
             <p className="text-slate-500 mb-6">Select all that apply (optional)</p>
@@ -227,8 +259,8 @@ export const Questionnaire: React.FC = () => {
           </div>
         )}
 
-        {/* Step 6: Languages (UPDATED - Multi-Select Dropdown) */}
-        {step === 6 && (
+        {/* Step 5: Languages (UPDATED - Multi-Select Dropdown) */}
+        {step === 5 && (
           <div className="animate-fade-in">
             <MultiSelectDropdown
               label="Which languages would you like your coach to speak?"
@@ -248,8 +280,8 @@ export const Questionnaire: React.FC = () => {
           </div>
         )}
 
-        {/* Step 7: CPD Qualifications (UPDATED - Multi-Select Dropdown) */}
-        {step === 7 && (
+        {/* Step 6: CPD Qualifications (UPDATED - Multi-Select Dropdown) */}
+        {step === 6 && (
           <div className="animate-fade-in">
             <MultiSelectDropdown
               label="Are there any specific qualifications you prefer?"
@@ -280,14 +312,10 @@ export const Questionnaire: React.FC = () => {
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </button>
 
-          {step < 7 ? (
+          {step < 6 ? (
              <button
              onClick={nextStep}
-             disabled={
-               (step === 2 && !answers.sessionsPerMonth) ||
-               (step === 3 && answers.preferredFormat.length === 0)
-               // Steps 1, 4-7 have no required fields, so no validation needed
-             }
+             disabled={step === 2 && answers.preferredFormat.length === 0}
              className="bg-brand-600 text-white px-6 py-2 rounded-full font-medium hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center shadow-md"
            >
              Next <ArrowRight className="h-4 w-4 ml-2" />

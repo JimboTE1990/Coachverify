@@ -9,7 +9,8 @@ import { majorCities } from '../data/cities';
 import {
   ArrowLeft, Star, Mail, Instagram, MessageCircle, Linkedin,
   MapPin, CheckCircle, Share2, ChevronLeft, ChevronRight, Clock, X,
-  Facebook, Globe, Youtube, Phone, Copy, Flag, Reply, Edit, Trash2, Send, AlertTriangle, ExternalLink
+  Facebook, Globe, Youtube, Phone, Copy, Flag, Reply, Edit, Trash2, Send, AlertTriangle, ExternalLink,
+  Calendar, Award
 } from 'lucide-react';
 
 export const CoachDetails: React.FC = () => {
@@ -598,7 +599,18 @@ export const CoachDetails: React.FC = () => {
 
       {/* Main Content - White Card */}
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-3xl shadow-xl">
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+
+          {/* Banner Image - Full Width at Top (like LinkedIn/X) */}
+          {coach.bannerImageUrl && (
+            <div className="w-full h-48 md:h-64 bg-gradient-to-br from-slate-100 to-slate-200">
+              <img
+                src={coach.bannerImageUrl}
+                alt={`${coach.name} - Profile Banner`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
 
           {/* Top Section: Recently Viewed (Left), Match & Photo (Center), Share (Right) */}
           <div className="px-6 pt-8 pb-6">
@@ -679,8 +691,8 @@ export const CoachDetails: React.FC = () => {
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-100 to-brand-200 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all">
                   <Share2 className="h-7 w-7 text-brand-600" />
                 </div>
-                <span className="text-xs font-bold text-slate-600 mt-2">
-                  Share
+                <span className="text-xs font-bold text-slate-600 mt-2 text-center leading-tight">
+                  Tell the<br />Pack<br />(share)
                 </span>
               </button>
             </div>
@@ -774,7 +786,19 @@ export const CoachDetails: React.FC = () => {
                   </div>
                   <p className="text-center text-sm font-bold text-[#2B4170] mb-1">VERIFIED ACCREDITATION</p>
                   {coach.accreditationLevel && (
-                    <p className="text-center text-xs text-slate-600 mb-4">{coach.accreditationLevel}</p>
+                    <div className="flex flex-col items-center gap-2 mb-4">
+                      <p className="text-center text-xs text-slate-600">{coach.accreditationLevel}</p>
+                      {/* Badge placeholder - Replace with actual EMCC badge image per level */}
+                      {/* TODO: Add actual badge images for each EMCC level:
+                          - Foundation: /badges/emcc-foundation.png
+                          - Practitioner: /badges/emcc-practitioner.png
+                          - Senior Practitioner: /badges/emcc-senior-practitioner.png
+                          - Master Practitioner: /badges/emcc-master-practitioner.png
+                      */}
+                      <div className="w-16 h-16 bg-[#2B4170]/10 rounded-full flex items-center justify-center border-2 border-[#C9A961]">
+                        <Award className="h-8 w-8 text-[#2B4170]" />
+                      </div>
+                    </div>
                   )}
                   {coach.emccProfileUrl && (
                     <a
@@ -800,7 +824,18 @@ export const CoachDetails: React.FC = () => {
                   <p className="text-center text-sm font-bold text-[#2E5C8A] mb-1">VERIFIED ACCREDITATION</p>
                   <p className="text-center text-xs text-slate-600 mb-1">International Coaching Federation</p>
                   {coach.icfAccreditationLevel && (
-                    <p className="text-center text-xs text-slate-600 mb-4">{coach.icfAccreditationLevel}</p>
+                    <div className="flex flex-col items-center gap-2 mb-4">
+                      <p className="text-center text-xs text-slate-600">{coach.icfAccreditationLevel}</p>
+                      {/* Badge placeholder - Replace with actual ICF badge image per level */}
+                      {/* TODO: Add actual badge images for each ICF level:
+                          - ACC: /badges/icf-acc.png
+                          - PCC: /badges/icf-pcc.png
+                          - MCC: /badges/icf-mcc.png
+                      */}
+                      <div className="w-16 h-16 bg-[#2E5C8A]/10 rounded-full flex items-center justify-center border-2 border-[#4A90E2]">
+                        <Award className="h-8 w-8 text-[#2E5C8A]" />
+                      </div>
+                    </div>
                   )}
                   {coach.icfProfileUrl && (
                     <a
@@ -825,7 +860,7 @@ export const CoachDetails: React.FC = () => {
             </div>
 
             {/* Price Badge */}
-            <div className="flex justify-center mb-8">
+            <div className="flex justify-center mb-4">
               <div className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white px-8 py-3 rounded-full shadow-lg">
                 <span className="text-2xl font-black">
                   {CURRENCIES.find(c => c.code === (coach.currency || 'GBP'))?.symbol || '£'}{coach.hourlyRate}
@@ -833,6 +868,49 @@ export const CoachDetails: React.FC = () => {
                 <span className="text-sm font-semibold ml-1">per hour</span>
               </div>
             </div>
+
+            {/* Schedule Call / Contact Button */}
+            {(() => {
+              // Look for booking/calendar link first
+              const bookingLink = coach.socialLinks?.find(link => {
+                const url = link.url?.toLowerCase() || '';
+                const platform = link.platform?.toLowerCase() || '';
+                return platform.includes('booking') || platform.includes('appointment') ||
+                       platform.includes('schedule') || platform.includes('calendly') ||
+                       platform.includes('cal.com') || url.includes('calendly.com') ||
+                       url.includes('cal.com');
+              });
+
+              // If booking link exists, use it
+              if (bookingLink) {
+                return (
+                  <div className="flex justify-center mb-8">
+                    <a
+                      href={bookingLink.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                    >
+                      <Calendar className="h-5 w-5" />
+                      Schedule Call
+                    </a>
+                  </div>
+                );
+              }
+
+              // Fallback: Contact via email
+              return (
+                <div className="flex justify-center mb-8">
+                  <a
+                    href={`mailto:${coach.email}?subject=Coaching Inquiry from CoachDog&body=Hi ${coach.name},%0D%0A%0D%0AI found your profile on CoachDog and would like to inquire about your coaching services.%0D%0A%0D%0APlease let me know your availability for an initial consultation.%0D%0A%0D%0AThank you!`}
+                    className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                  >
+                    <Calendar className="h-5 w-5" />
+                    Contact Coach
+                  </a>
+                </div>
+              );
+            })()}
 
             {/* Currency Disclaimer */}
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 mx-4">
@@ -848,11 +926,28 @@ export const CoachDetails: React.FC = () => {
           {/* Details Section */}
           <div className="px-6 py-6 space-y-6">
 
-            {/* Accreditation Level */}
-            {coach.accreditationLevel && (
+            {/* Bio - MOVED TO TOP */}
+            {coach.bio && (
+              <div className="bg-slate-50 px-5 py-5 rounded-2xl">
+                <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Coach Bio:</h3>
+                <p className="text-slate-900 leading-relaxed font-medium text-base whitespace-pre-line">{coach.bio}</p>
+              </div>
+            )}
+
+            {/* Languages - MOVED BELOW BIO */}
+            {coach.languages && coach.languages.length > 0 && (
               <div>
-                <p className="text-slate-600 text-sm mb-1">Accreditation Level:</p>
-                <p className="text-xl font-black text-slate-900">{coach.accreditationLevel}</p>
+                <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Languages:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {coach.languages.map((lang, idx) => (
+                    <span
+                      key={idx}
+                      className="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-md"
+                    >
+                      {lang}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -960,31 +1055,6 @@ export const CoachDetails: React.FC = () => {
               <div>
                 <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Gender:</h3>
                 <p className="text-slate-900 font-bold text-base">{coach.gender}</p>
-              </div>
-            )}
-
-            {/* Bio */}
-            {coach.bio && (
-              <div className="bg-slate-50 px-5 py-5 rounded-2xl">
-                <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Coach Bio:</h3>
-                <p className="text-slate-900 leading-relaxed font-medium text-base whitespace-pre-line">{coach.bio}</p>
-              </div>
-            )}
-
-            {/* Languages */}
-            {coach.languages && coach.languages.length > 0 && (
-              <div>
-                <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Languages:</h3>
-                <div className="flex flex-wrap gap-2">
-                  {coach.languages.map((lang, idx) => (
-                    <span
-                      key={idx}
-                      className="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-md"
-                    >
-                      {lang}
-                    </span>
-                  ))}
-                </div>
               </div>
             )}
 
@@ -1372,7 +1442,7 @@ export const CoachDetails: React.FC = () => {
               className="flex items-center gap-2 text-slate-700 font-bold hover:text-slate-900 transition-colors group"
             >
               <Share2 className="h-5 w-5 group-hover:scale-110 transition-transform" />
-              <span className="text-lg">share</span>
+              <span className="text-lg">Tell the Pack (share)</span>
             </button>
           </div>
         </div>

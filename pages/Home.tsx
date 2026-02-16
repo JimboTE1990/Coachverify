@@ -30,7 +30,7 @@ export const Home: React.FC = () => {
             <span className="block text-brand-600 xl:inline">CoachDog.</span>
           </h1>
           <p className="mt-3 max-w-md mx-auto text-base text-slate-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            Find the perfect life coach to help you achieve your goals. Verified experts, tailored matches, and real results.
+            Find your perfect coach to help you achieve your goals. Verified experts, tailored matches, and real results.
           </p>
 
           {/* CTAs */}
@@ -39,7 +39,7 @@ export const Home: React.FC = () => {
               <div className="h-12 w-12 bg-brand-100 text-brand-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-brand-600 group-hover:text-white transition-colors">
                 <HeartHandshake className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-display font-bold text-slate-900">Find Your Match</h3>
+              <h3 className="text-lg font-display font-bold text-slate-900">Fetch Your Coach</h3>
               <p className="text-sm text-slate-500 mt-2 text-center">Take a short quiz to get paired with your ideal coach.</p>
               <div className="mt-4 text-brand-600 font-semibold flex items-center text-sm">
                 Start Questionnaire <ArrowRight className="ml-1 h-4 w-4" />
@@ -50,7 +50,7 @@ export const Home: React.FC = () => {
               <div className="h-12 w-12 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-slate-800 group-hover:text-white transition-colors">
                 <Search className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-display font-bold text-slate-900">Quick Search</h3>
+              <h3 className="text-lg font-display font-bold text-slate-900">Do Some Digging</h3>
               <p className="text-sm text-slate-500 mt-2 text-center">Browse our directory by name, specialty, or location.</p>
               <div className="mt-4 text-slate-700 font-semibold flex items-center text-sm">
                 Browse Coaches <ArrowRight className="ml-1 h-4 w-4" />
@@ -74,7 +74,7 @@ export const Home: React.FC = () => {
               What is CoachDog?
             </h2>
             <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
-              CoachDog is the UK's premier verified coaching platform, connecting you with accredited professionals who can help you achieve your personal and professional goals. Watch our introduction to learn how we make finding the right coach simple and trustworthy.
+              CoachDog is the premier verified coaching platform, connecting you with accredited professionals who can help you achieve your personal and professional goals.
             </p>
           </div>
 
