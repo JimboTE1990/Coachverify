@@ -1215,65 +1215,7 @@ export const CoachDetails: React.FC = () => {
                           </button>
                         </div>
                       </div>
-                    ) : flaggingReview === currentReview.id ? (
-                      /* Flag as Spam Form */
-                      <div className="bg-red-50 rounded-xl p-4 mb-4 border border-red-200">
-                        <p className="font-bold text-sm text-red-900 mb-3">Flag this review as spam:</p>
-                        <textarea
-                          value={flagReason}
-                          onChange={(e) => setFlagReason(e.target.value)}
-                          placeholder="Optional: Explain why this is spam (e.g., 'This person was never my client', 'Competitor posting fake review')"
-                          className="w-full border border-red-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
-                          rows={3}
-                          disabled={flagSubmitting}
-                        />
-                        <p className="text-xs text-red-700 mt-2 mb-3">
-                          ℹ️ Our AI will validate your spam flag to ensure it's legitimate
-                        </p>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleFlagAsSpam(currentReview.id)}
-                            disabled={flagSubmitting}
-                            className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold"
-                          >
-                            <Flag className="h-4 w-4" />
-                            {flagSubmitting ? 'Flagging...' : 'Flag as Spam'}
-                          </button>
-                          <button
-                            onClick={() => {
-                              setFlaggingReview(null);
-                              setFlagReason('');
-                            }}
-                            className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-sm font-bold"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      /* Action Buttons */
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => {
-                            setCommentingOnReview(currentReview.id);
-                            loadReviewComments(currentReview.id);
-                          }}
-                          className="flex items-center gap-2 text-brand-600 hover:text-brand-700 font-bold text-sm"
-                        >
-                          <MessageCircle className="h-4 w-4" />
-                          Add Comment
-                        </button>
-                        {!currentReview.isSpam && (
-                          <button
-                            onClick={() => setFlaggingReview(currentReview.id)}
-                            className="flex items-center gap-2 text-red-600 hover:text-red-700 font-bold text-sm"
-                          >
-                            <Flag className="h-4 w-4" />
-                            Flag as Spam
-                          </button>
-                        )}
-                      </div>
-                    )}
+                    ) : null}
 
                     {/* Display Comments */}
                     {reviewComments[currentReview.id] && reviewComments[currentReview.id].length > 0 && (
@@ -1822,65 +1764,7 @@ export const CoachDetails: React.FC = () => {
                             </button>
                           </div>
                         </div>
-                      ) : flaggingReview === review.id ? (
-                        /* Flag as Spam Form */
-                        <div className="bg-red-50 rounded-xl p-4 mb-4 border border-red-200">
-                          <p className="font-bold text-sm text-red-900 mb-3">Flag this review as spam:</p>
-                          <textarea
-                            value={flagReason}
-                            onChange={(e) => setFlagReason(e.target.value)}
-                            placeholder="Optional: Explain why this is spam (e.g., 'This person was never my client', 'Competitor posting fake review')"
-                            className="w-full border border-red-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
-                            rows={3}
-                            disabled={flagSubmitting}
-                          />
-                          <p className="text-xs text-red-700 mt-2 mb-3">
-                            ℹ️ Our AI will validate your spam flag to ensure it's legitimate
-                          </p>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleFlagAsSpam(review.id)}
-                              disabled={flagSubmitting}
-                              className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold"
-                            >
-                              <Flag className="h-4 w-4" />
-                              {flagSubmitting ? 'Flagging...' : 'Flag as Spam'}
-                            </button>
-                            <button
-                              onClick={() => {
-                                setFlaggingReview(null);
-                                setFlagReason('');
-                              }}
-                              className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-sm font-bold"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        /* Action Buttons */
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => {
-                              setCommentingOnReview(review.id);
-                              loadReviewComments(review.id);
-                            }}
-                            className="flex items-center gap-2 text-brand-600 hover:text-brand-700 font-bold text-sm"
-                          >
-                            <MessageCircle className="h-4 w-4" />
-                            Add Comment
-                          </button>
-                          {!review.isSpam && (
-                            <button
-                              onClick={() => setFlaggingReview(review.id)}
-                              className="flex items-center gap-2 text-red-600 hover:text-red-700 font-bold text-sm"
-                            >
-                              <Flag className="h-4 w-4" />
-                              Flag as Spam
-                            </button>
-                          )}
-                        </div>
-                      )}
+                      ) : null}
 
                       {/* Display Comments */}
                       {reviewComments[review.id] && reviewComments[review.id].length > 0 && (
