@@ -14,7 +14,7 @@ const CoachDogFullLogo = ({ className = "h-12 w-auto" }: { className?: string })
   <img
     src="/logo.png"
     alt="CoachDog"
-    className={`${className} mix-blend-multiply`}
+    className={className}
   />
 );
 
@@ -71,13 +71,13 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {coach && <TrialCountdownBanner coach={coach} />}
 
       {/* Sticky Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm transition-all duration-300" ref={navRef}>
+      <header className="sticky top-0 z-50 border-b border-slate-200 shadow-sm transition-all duration-300" style={{ backgroundColor: '#f1f2f4' }} ref={navRef}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-24"> {/* Increased height */}
-            
+          <div className="flex justify-between items-center h-20">
+
             {/* Logo */}
             <Link to="/" className="flex items-center group" onClick={closeMobileMenu}>
-              <CoachDogFullLogo className="h-16 w-auto group-hover:scale-105 transition-transform duration-300" />
+              <CoachDogFullLogo className="h-20 w-auto group-hover:scale-105 transition-transform duration-300" />
             </Link>
 
             {/* Desktop Nav */}
@@ -285,7 +285,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
         {/* Mobile Nav */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-slate-100 h-[calc(100vh-6rem)] overflow-y-auto pb-20 animate-fade-in">
+          <div className="md:hidden border-t border-slate-200 h-[calc(100vh-5rem)] overflow-y-auto pb-20 animate-fade-in" style={{ backgroundColor: '#f1f2f4' }}>
             <div className="px-4 pt-8 space-y-10">
               
               {/* Mobile Section: Clients */}
