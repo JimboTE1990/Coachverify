@@ -77,7 +77,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
             {/* Logo */}
             <Link to="/" className="flex items-center group" onClick={closeMobileMenu}>
-              <CoachDogFullLogo className="h-14 w-auto transition-opacity duration-200 group-hover:opacity-80" />
+              <CoachDogFullLogo className="h-20 w-auto transition-all duration-300 group-hover:brightness-110 group-hover:drop-shadow-md" />
             </Link>
 
             {/* Desktop Nav */}
