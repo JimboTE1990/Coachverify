@@ -12,9 +12,10 @@ export const TrialLoginNotification: React.FC<TrialLoginNotificationProps> = ({ 
   const [isDismissed, setIsDismissed] = useState(false);
   const [hasShown, setHasShown] = useState(false);
 
-  // Only show for trial users (show for all trials, regardless of billing)
+  // Show for active trial users OR expired users who never paid
+  const isExpired = coach.subscriptionStatus === 'expired';
   const shouldShow =
-    coach.subscriptionStatus === 'trial' &&
+    (coach.subscriptionStatus === 'trial' || isExpired) &&
     coach.trialEndsAt;
 
   // Show notification automatically after a short delay on first render
@@ -104,22 +105,25 @@ export const TrialLoginNotification: React.FC<TrialLoginNotificationProps> = ({ 
           </div>
           <div>
             <h3 className="text-lg font-black text-slate-900">
-              "You're on a Free Trial"
+              {isExpired ? 'Your Trial Has Ended' : "You're on a Free Trial"}
             </h3>
             <div className="flex items-center gap-1.5 text-sm font-bold text-orange-700">
               <Clock className="h-4 w-4" />
-              {daysRemaining} {daysRemaining === 1 ? 'day' : 'days'} remaining
+              {isExpired ? 'Trial expired' : `${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} remaining`}
             </div>
           </div>
         </div>
 
         {/* Body */}
         <div className="space-y-3 mb-5">
-          <p className="text-sm text-slate-700 leading-relaxed">
-            Your trial ends on <strong className="text-slate-900">{formattedDate}</strong>.
+          <p className="text-base font-bold text-slate-900 leading-relaxed">
+            Your trial {isExpired ? 'ended on' : 'ends on'} <span className="text-rose-700">{formattedDate}</span>.
           </p>
-          <p className="text-sm text-slate-700 leading-relaxed">
-            After this date, your <strong className="text-rose-700">profile will no longer be visible</strong> to clients in search results.
+          <p className="text-sm font-semibold text-slate-800 leading-relaxed">
+            {isExpired
+              ? <>Your <span className="text-rose-700">profile is no longer visible</span> to clients in search results.</>
+              : <>After this date, your <span className="text-rose-700">profile will no longer be visible</span> to clients in search results.</>
+            }
           </p>
         </div>
 

@@ -70,14 +70,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {/* Trial Countdown Banner - shown globally for active trials */}
       {coach && <TrialCountdownBanner coach={coach} />}
 
-      {/* Sticky Header with Glassmorphism */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all duration-300" ref={navRef}>
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm transition-all duration-300" ref={navRef}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-24"> {/* Increased height */}
             
             {/* Logo */}
             <Link to="/" className="flex items-center group" onClick={closeMobileMenu}>
-              <CoachDogFullLogo className="h-24 w-auto group-hover:scale-105 transition-transform duration-300" />
+              <CoachDogFullLogo className="h-16 w-auto group-hover:scale-105 transition-transform duration-300" />
             </Link>
 
             {/* Desktop Nav */}

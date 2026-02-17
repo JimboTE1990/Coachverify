@@ -1012,6 +1012,9 @@ export const CoachDashboard: React.FC = () => {
                   {currentCoach.subscriptionStatus === 'trial' && (
                     <span className="absolute -bottom-2 -right-2 bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">TRIAL</span>
                   )}
+                  {currentCoach.subscriptionStatus === 'expired' && (
+                    <span className="absolute -bottom-2 -right-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">EXPIRED</span>
+                  )}
                 </div>
                 <h2 className="font-display font-bold text-xl text-slate-900 mt-4">{currentCoach.name}</h2>
                 <p className="text-xs font-bold text-brand-600 uppercase tracking-wide mt-1">Verified Coach</p>
@@ -1076,6 +1079,31 @@ export const CoachDashboard: React.FC = () => {
             {/* ---------------- PROFILE TAB ---------------- */}
             {activeTab === 'profile' && (
               <div className="space-y-6">
+                {/* Hidden Profile Banner for expired users */}
+                {currentCoach.subscriptionStatus === 'expired' && (
+                  <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-6 animate-fade-in">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                      <div className="text-center md:text-left">
+                        <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                          <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                          </svg>
+                          <h3 className="text-xl font-bold text-red-800">Your profile is hidden from clients</h3>
+                        </div>
+                        <p className="text-red-700 text-sm">
+                          Your free trial ended on <strong>{currentCoach.trialEndsAt ? new Date(currentCoach.trialEndsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'recently'}</strong>. Upgrade to make your profile visible again.
+                        </p>
+                      </div>
+                      <Link
+                        to="/pricing"
+                        className="bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 whitespace-nowrap"
+                      >
+                        Upgrade Now
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
                 {/* Upgrade CTA for unpaid trial users */}
                 {currentCoach.subscriptionStatus === 'trial' && !currentCoach.billingCycle && (
                   <div className="bg-gradient-to-br from-brand-600 via-indigo-600 to-purple-600 rounded-2xl shadow-2xl border border-brand-700 p-6 text-white animate-fade-in">
@@ -1832,9 +1860,11 @@ export const CoachDashboard: React.FC = () => {
                             </div>
                             <span className={`px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wide ${
                                 currentCoach.subscriptionStatus === 'lifetime' ? 'bg-purple-100 text-purple-700 border border-purple-200' :
+                                currentCoach.subscriptionStatus === 'expired' ? 'bg-red-100 text-red-700 border border-red-200' :
                                 (currentCoach.subscriptionStatus === 'active' || currentCoach.billingCycle) ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-blue-100 text-blue-700 border border-blue-200'
                             }`}>
                                 {currentCoach.subscriptionStatus === 'lifetime' ? 'Lifetime' :
+                                 currentCoach.subscriptionStatus === 'expired' ? 'No Active Plan' :
                                  (currentCoach.subscriptionStatus === 'active' || currentCoach.billingCycle) ? 'Premium' : 'Free Trial'}
                             </span>
                         </div>

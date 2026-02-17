@@ -953,10 +953,17 @@ const mapCoachProfile = (data: any): Coach => {
     location: data.location || 'Remote',
     reviews: [],
     documentsSubmitted: data.documents_submitted || false,
-    subscriptionStatus: data.subscription_status || 'onboarding',
+    subscriptionStatus: (() => {
+      const status = data.subscription_status || 'onboarding';
+      // Auto-detect expired trials: if status is 'trial' but trial_ends_at is in the past, treat as expired
+      if (status === 'trial' && data.trial_ends_at && new Date(data.trial_ends_at) < new Date()) {
+        return 'expired';
+      }
+      return status;
+    })(),
     trialEndsAt: data.trial_ends_at,
     trialUsed: data.trial_used || false,
-    billingCycle: data.billing_cycle || 'monthly',
+    billingCycle: data.billing_cycle || null,
     lastPaymentDate: data.last_payment_date,
     twoFactorEnabled: data.two_factor_enabled || false,
 
