@@ -15,8 +15,8 @@ export const getCoaches = async (): Promise<Coach[]> => {
   const { data: coaches, error } = await supabase
     .from('coach_profiles')
     .select('*')
-    .in('subscription_status', ['trial', 'active']) // Show all coaches with active subscriptions
-    .or('subscription_status.eq.trial,is_verified.eq.true') // Trial coaches OR verified coaches
+    .in('subscription_status', ['trial', 'active', 'lifetime']) // Show all coaches with active subscriptions
+    .or('subscription_status.eq.trial,subscription_status.eq.lifetime,is_verified.eq.true') // Trial/lifetime coaches OR verified coaches
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -813,8 +813,8 @@ export const searchCoaches = async (filters: {
   let query = supabase
     .from('coach_profiles')
     .select('*')
-    .in('subscription_status', ['trial', 'active']) // Only show coaches with active subscriptions
-    .or('subscription_status.eq.trial,is_verified.eq.true'); // Trial coaches OR verified coaches
+    .in('subscription_status', ['trial', 'active', 'lifetime']) // Only show coaches with active subscriptions
+    .or('subscription_status.eq.trial,subscription_status.eq.lifetime,is_verified.eq.true'); // Trial/lifetime coaches OR verified coaches
 
   if (filters.specialty) {
     query = query.contains('specialties', [filters.specialty]);

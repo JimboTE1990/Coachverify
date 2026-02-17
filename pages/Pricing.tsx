@@ -25,8 +25,8 @@ export const Pricing: React.FC = () => {
     }
   }, []);
 
-  // Check if user already has a paid subscription (not trial)
-  const hasActiveSubscription = coach && coach.subscriptionStatus === 'active';
+  // Check if user already has a paid subscription (not trial) - includes lifetime
+  const hasActiveSubscription = coach && (coach.subscriptionStatus === 'active' || coach.subscriptionStatus === 'lifetime');
 
   // Check if user is on trial
   const isOnTrial = coach && coach.subscriptionStatus === 'trial';

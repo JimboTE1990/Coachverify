@@ -14,7 +14,7 @@ const CoachDogFullLogo = ({ className = "h-12 w-auto" }: { className?: string })
   <img
     src="/logo.png"
     alt="CoachDog"
-    className={className}
+    className={`${className} mix-blend-multiply`}
   />
 );
 
@@ -169,7 +169,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                         colorClass="bg-rose-50 text-rose-600 group-hover:bg-rose-600 group-hover:text-white"
                       />
                       {/* Upgrade CTA for trial users */}
-                      {isAuthenticated && coach && coach.subscriptionStatus === 'trial' && (() => {
+                      {isAuthenticated && coach && coach.subscriptionStatus === 'trial' && coach.subscriptionStatus !== 'lifetime' && (() => {
                         const startingPrice = getStartingPrice();
                         return (
                           <div className="mx-3 my-2">
@@ -222,7 +222,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
               {/* Action Buttons */}
               <div className="flex items-center gap-3">
-                {/* Upgrade to Premium Button - for trial users (show for any trial, regardless of billing) */}
+                {/* Upgrade to Premium Button - for trial users only, not lifetime */}
                 {isAuthenticated && coach && coach.subscriptionStatus === 'trial' && (
                   <Link
                     to="/pricing"

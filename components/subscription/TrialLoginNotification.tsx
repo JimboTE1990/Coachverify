@@ -119,7 +119,7 @@ export const TrialLoginNotification: React.FC<TrialLoginNotificationProps> = ({ 
             Your trial ends on <strong className="text-slate-900">{formattedDate}</strong>.
           </p>
           <p className="text-sm text-slate-700 leading-relaxed">
-            After this date, you'll <strong className="text-rose-700">lose access to your account</strong> and all profile data.
+            After this date, your <strong className="text-rose-700">profile will no longer be visible</strong> to clients in search results.
           </p>
         </div>
 

@@ -63,8 +63,8 @@ export const ProfileDropdown: React.FC = () => {
         <div className="hidden md:flex items-center space-x-2">
           <div className="text-left">
             <p className="text-sm font-bold text-slate-900">{coach.name ? coach.name.split(' ')[0] : 'Coach'}</p>
-            {(coach.subscriptionStatus === 'active' || coach.billingCycle) && (
-              <p className="text-xs text-green-600 font-semibold">Premium</p>
+            {(coach.subscriptionStatus === 'active' || coach.subscriptionStatus === 'lifetime' || coach.billingCycle) && (
+              <p className="text-xs text-green-600 font-semibold">{coach.subscriptionStatus === 'lifetime' ? 'Lifetime Member' : 'Premium'}</p>
             )}
             {coach.subscriptionStatus === 'trial' && !coach.billingCycle && (
               <p className="text-xs text-brand-600 font-semibold">Free Trial</p>
@@ -81,9 +81,9 @@ export const ProfileDropdown: React.FC = () => {
           <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
             <p className="text-sm font-bold text-slate-900">{coach.name || 'Coach'}</p>
             <p className="text-xs text-slate-500 truncate">{coach.email || ''}</p>
-            {(coach.subscriptionStatus === 'active' || coach.billingCycle) && (
+            {(coach.subscriptionStatus === 'active' || coach.subscriptionStatus === 'lifetime' || coach.billingCycle) && (
               <div className="mt-2 inline-flex items-center bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded-full">
-                Premium Member
+                {coach.subscriptionStatus === 'lifetime' ? 'Lifetime Member' : 'Premium Member'}
               </div>
             )}
             {coach.subscriptionStatus === 'trial' && !coach.billingCycle && (

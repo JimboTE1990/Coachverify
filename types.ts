@@ -3,7 +3,7 @@ export type Specialty = 'Career & Professional Development' | 'Business & Entrep
 
 export type Format = 'In-Person' | 'Online';
 
-export type SubscriptionStatus = 'active' | 'trial' | 'expired' | 'onboarding';
+export type SubscriptionStatus = 'active' | 'trial' | 'expired' | 'onboarding' | 'lifetime';
 
 export type BillingCycle = 'monthly' | 'annual';
 
