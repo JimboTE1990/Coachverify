@@ -26,11 +26,11 @@ export const Home: React.FC = () => {
 
           {/* Title & Subtitle */}
           <h1 className="text-4xl tracking-tight font-display font-extrabold text-slate-900 sm:text-5xl md:text-6xl">
-            <span className="block xl:inline">Unlock your potential with</span>{' '}
-            <span className="block text-brand-600 xl:inline">CoachDog.</span>
+            <span className="block xl:inline">Top dog coaches,</span>{' '}
+            <span className="block text-brand-600 xl:inline">no bones about it.</span>
           </h1>
           <p className="mt-3 max-w-md mx-auto text-base text-slate-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            Find your perfect coach to help you achieve your goals. Verified experts, tailored matches, and real results.
+            Sniffing out the best coaches in the business. Verified experts, tailored matches, and real results.
           </p>
 
           {/* CTAs */}
