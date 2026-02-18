@@ -75,6 +75,11 @@ export const CheckoutMonthly: React.FC = () => {
         return;
       }
 
+      // Auto-detect expired trials: if DB says 'trial' but trial_ends_at is in the past, treat as expired
+      if (coach.subscription_status === 'trial' && coach.trial_ends_at && new Date(coach.trial_ends_at) < new Date()) {
+        coach.subscription_status = 'expired';
+      }
+
       console.log('User eligible for checkout:', coach.subscription_status);
 
       setCurrentCoach(coach as Coach);
@@ -130,8 +135,10 @@ export const CheckoutMonthly: React.FC = () => {
     );
   }
 
-  // Check if user has an ACTIVE trial (new auth flow - trial starts on email verification)
-  const hasActiveTrial = currentCoach?.subscriptionStatus === 'trial' && currentCoach?.trialEndsAt;
+  // Check if user has an ACTIVE trial — must be 'trial' status AND trial end date is in the future
+  const hasActiveTrial = currentCoach?.subscriptionStatus === 'trial' &&
+    currentCoach?.trialEndsAt &&
+    new Date(currentCoach.trialEndsAt) > new Date();
   const trialEndDate = hasActiveTrial && currentCoach?.trialEndsAt
     ? new Date(currentCoach.trialEndsAt)
     : null;
