@@ -157,6 +157,9 @@ export const CoachDashboard: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'subscription' | 'analytics'>('profile');
 
+  // Onboarding checklist dismiss state (persisted in localStorage per coach)
+  const [checklistDismissed, setChecklistDismissed] = useState(false);
+
   // Local form state for profile editing (prevents auto-save on every keystroke)
   const [localProfile, setLocalProfile] = useState<Partial<Coach> | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -167,6 +170,13 @@ export const CoachDashboard: React.FC = () => {
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
 
   // Initialize local profile state when coach data loads
+  // Sync checklist dismissed state from localStorage once coach ID is known
+  useEffect(() => {
+    if (currentCoach?.id) {
+      setChecklistDismissed(localStorage.getItem(`checklist_dismissed_${currentCoach.id}`) === 'true');
+    }
+  }, [currentCoach?.id]);
+
   useEffect(() => {
     if (currentCoach && !localProfile) {
       setLocalProfile({
@@ -184,7 +194,10 @@ export const CoachDashboard: React.FC = () => {
         coachingExpertise: currentCoach.coachingExpertise || [],
         cpdQualifications: currentCoach.cpdQualifications || [],
         coachingLanguages: currentCoach.coachingLanguages || [],
+        accreditationBody: currentCoach.accreditationBody,
         accreditationLevel: currentCoach.accreditationLevel,
+        emccVerified: currentCoach.emccVerified,
+        icfVerified: currentCoach.icfVerified,
         qualifications: currentCoach.qualifications || [],
         acknowledgements: currentCoach.acknowledgements || [],
         additionalCertifications: currentCoach.additionalCertifications || [],
@@ -1129,6 +1142,129 @@ export const CoachDashboard: React.FC = () => {
                   </div>
                 )}
 
+                {/* Onboarding Checklist */}
+                {(() => {
+                  const hasPhoto = !!(currentCoach.photoUrl && currentCoach.photoUrl.trim() && !currentCoach.photoUrl.includes('placeholder'));
+                  const hasCompletedProfile = !!(currentCoach.bio && currentCoach.bio.trim().length > 20 && currentCoach.mainCoachingCategories && currentCoach.mainCoachingCategories.length > 0);
+                  const hasSchedulingLink = !!(currentCoach.socialLinks && currentCoach.socialLinks.some(l => {
+                    const label = (l.platform || '').toLowerCase();
+                    return label.includes('booking') || label.includes('schedule') || label.includes('calendly') || label.includes('cal.com');
+                  }));
+                  const hasReviews = (currentCoach.totalReviews ?? currentCoach.reviews?.length ?? 0) >= 1;
+                  const hasSocialLinks = !!(currentCoach.socialLinks && currentCoach.socialLinks.some(l => {
+                    const label = (l.platform || '').toLowerCase();
+                    return label.includes('linkedin') || label.includes('twitter') || label.includes('instagram') || label.includes('facebook') || label.includes('website') || label.includes('x.com');
+                  }));
+
+                  const steps = [
+                    { id: 'photo', done: hasPhoto, emoji: '📸', label: 'Look like a top dog!', detail: 'Upload a professional photo' },
+                    { id: 'profile', done: hasCompletedProfile, emoji: '✍️', label: 'Ensure to be well groomed!', detail: 'Complete your profile with your bio and coaching categories' },
+                    { id: 'scheduling', done: hasSchedulingLink, emoji: '🦮', label: 'Put your lead on!', detail: 'Add a scheduling link (Calendly, Cal.com, etc.) under Social Links' },
+                    { id: 'reviews', done: hasReviews, emoji: '🐾', label: 'Call on your pack!', detail: 'Send your profile to previous and existing clients for reviews' },
+                    { id: 'social', done: hasSocialLinks, emoji: '🐕', label: 'Fetch some clients!', detail: 'Add your social media links so clients can find you' },
+                  ];
+
+                  const completedCount = steps.filter(s => s.done).length;
+                  const percent = Math.round((completedCount / steps.length) * 100);
+                  const isComplete = completedCount === steps.length;
+
+                  // Hide checklist once fully complete and user has dismissed it
+                  if (isComplete && checklistDismissed) return null;
+
+                  return (
+                    <div className={`rounded-2xl border-2 p-6 animate-fade-in ${isComplete ? 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-300' : 'bg-gradient-to-br from-brand-50 to-indigo-50 border-brand-200'}`}>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          {isComplete ? (
+                            <div className="bg-amber-400 p-2 rounded-full">
+                              <Trophy className="h-6 w-6 text-white" />
+                            </div>
+                          ) : (
+                            <div className="bg-brand-100 p-2 rounded-full">
+                              <Sparkles className="h-6 w-6 text-brand-600" />
+                            </div>
+                          )}
+                          <div>
+                            <h3 className="font-display font-bold text-slate-900 text-lg">
+                              {isComplete ? 'Top Dog Status Achieved!' : 'Getting Started'}
+                            </h3>
+                            <p className="text-sm text-slate-500">
+                              {isComplete
+                                ? 'Your profile is fully set up. You\'re ready to fetch clients!'
+                                : `${completedCount} of ${steps.length} steps complete`}
+                            </p>
+                          </div>
+                        </div>
+                        {isComplete && (
+                          <button
+                            onClick={() => {
+                              localStorage.setItem(`checklist_dismissed_${currentCoach.id}`, 'true');
+                              setChecklistDismissed(true);
+                            }}
+                            className="text-amber-600 hover:text-amber-800 text-xs font-medium"
+                          >
+                            Dismiss
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="mb-5">
+                        <div className="flex justify-between items-center mb-1.5">
+                          <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Profile Strength</span>
+                          <span className={`text-sm font-black ${isComplete ? 'text-amber-600' : 'text-brand-600'}`}>{percent}%</span>
+                        </div>
+                        <div className="h-3 bg-white rounded-full border border-slate-200 overflow-hidden shadow-inner">
+                          <div
+                            className={`h-full rounded-full transition-all duration-700 ${isComplete ? 'bg-gradient-to-r from-amber-400 to-yellow-400' : 'bg-gradient-to-r from-brand-500 to-indigo-500'}`}
+                            style={{ width: `${percent}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Steps */}
+                      <div className="space-y-2.5">
+                        {steps.map((step) => (
+                          <div
+                            key={step.id}
+                            className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                              step.done
+                                ? 'bg-green-50 border-green-200'
+                                : 'bg-white border-slate-200 hover:border-brand-300'
+                            }`}
+                          >
+                            <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${step.done ? 'bg-green-500' : 'bg-slate-200'}`}>
+                              {step.done ? (
+                                <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              ) : (
+                                <span className="text-xs text-slate-400 font-bold">{steps.indexOf(step) + 1}</span>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className={`text-sm font-bold ${step.done ? 'text-green-800 line-through opacity-70' : 'text-slate-800'}`}>
+                                {step.emoji} {step.label}
+                              </span>
+                              {!step.done && (
+                                <p className="text-xs text-slate-500 mt-0.5">{step.detail}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {isComplete && (
+                        <div className="mt-4 flex items-center justify-center gap-2 bg-amber-100 border border-amber-300 rounded-xl py-3">
+                          <Trophy className="h-5 w-5 text-amber-600" />
+                          <span className="font-bold text-amber-800 text-sm">Top Dog Badge Earned</span>
+                          <span className="text-amber-600 text-lg">🏆</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-8 space-y-8 animate-fade-in-up">
                   <div className="flex justify-between items-center border-b border-slate-100 pb-6">
                     <div className="flex items-center">
@@ -1557,40 +1693,58 @@ export const CoachDashboard: React.FC = () => {
                     iconBgColor="bg-indigo-100"
                     iconTextColor="text-indigo-600"
                   >
-                      {/* Accreditation Information (from signup) */}
+                      {/* Accreditation Information */}
                       <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
                         <h3 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
                           <Shield className="h-4 w-4 text-indigo-600" />
-                          Coaching Accreditation (from signup)
+                          Coaching Accreditation
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          {/* Accreditation Body - Read Only */}
+                          {/* Accreditation Body - Editable */}
                           <div>
                             <label className="block text-xs font-bold text-slate-600 mb-2">Accreditation Body</label>
-                            <div className="bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-700 font-medium">
-                              {localProfile?.accreditationBody || 'Not specified'}
+                            <div className="relative">
+                              <select
+                                value={localProfile?.accreditationBody || ''}
+                                onChange={(e) => updateLocalProfile({ accreditationBody: e.target.value as any })}
+                                className="w-full border border-slate-200 bg-white rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none text-slate-800 appearance-none"
+                              >
+                                <option value="">Not specified</option>
+                                <option value="EMCC">EMCC</option>
+                                <option value="ICF">ICF</option>
+                                <option value="AC">AC</option>
+                                <option value="Other">Other</option>
+                              </select>
                               {localProfile?.accreditationBody === 'EMCC' && localProfile?.emccVerified && (
-                                <span className="ml-2 text-green-600 text-xs font-bold">
-                                  <CheckCircle className="h-3 w-3 inline" /> Verified
+                                <span className="mt-1 flex items-center gap-1 text-green-600 text-xs font-bold">
+                                  <CheckCircle className="h-3 w-3" /> Verified
                                 </span>
                               )}
                               {localProfile?.accreditationBody === 'ICF' && localProfile?.icfVerified && (
-                                <span className="ml-2 text-green-600 text-xs font-bold">
-                                  <CheckCircle className="h-3 w-3 inline" /> Verified
+                                <span className="mt-1 flex items-center gap-1 text-green-600 text-xs font-bold">
+                                  <CheckCircle className="h-3 w-3" /> Verified
                                 </span>
                               )}
                             </div>
                           </div>
 
-                          {/* Accreditation Level - Read Only */}
+                          {/* Accreditation Level - Editable */}
                           <div>
                             <label className="block text-xs font-bold text-slate-600 mb-2">Accreditation Level</label>
-                            <div className="bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-700 font-medium">
-                              {localProfile?.accreditationLevel || 'Not specified'}
-                            </div>
+                            <select
+                              value={localProfile?.accreditationLevel || ''}
+                              onChange={(e) => updateLocalProfile({ accreditationLevel: e.target.value as any })}
+                              className="w-full border border-slate-200 bg-white rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none text-slate-800 appearance-none"
+                            >
+                              <option value="">Not specified</option>
+                              <option value="Foundation">Foundation</option>
+                              <option value="Practitioner">Practitioner</option>
+                              <option value="Senior Practitioner">Senior Practitioner</option>
+                              <option value="Master Practitioner">Master Practitioner</option>
+                            </select>
                           </div>
 
-                          {/* Coaching Hours */}
+                          {/* Coaching Hours - Editable */}
                           <div>
                             <label className="block text-xs font-bold text-slate-600 mb-2">Coaching Hours</label>
                             <input
@@ -1603,7 +1757,7 @@ export const CoachDashboard: React.FC = () => {
                           </div>
                         </div>
                         <p className="text-xs text-slate-500 mt-3 italic">
-                          💡 Accreditation details are from your signup verification and cannot be changed here.
+                          Your accreditation details appear on your public profile. Verification status is set during signup and updated by the CoachDog team.
                         </p>
                       </div>
 
