@@ -145,20 +145,6 @@ export type CoachingExpertise =
 
 // New: CPD Qualifications (Additional Professional Development Certifications)
 export type CPDQualification =
-  | 'ICF Associate Certified Coach (ACC)'
-  | 'ICF Professional Certified Coach (PCC)'
-  | 'ICF Master Certified Coach (MCC)'
-  | 'EMCC Foundation Level'
-  | 'EMCC Practitioner Level'
-  | 'EMCC Senior Practitioner Level'
-  | 'EMCC Master Practitioner Level'
-  | 'AC Accredited Coach'
-  | 'ILM Level 5 Coaching'
-  | 'ILM Level 7 Executive Coaching'
-  | 'CMI Level 5 Coaching'
-  | 'CMI Level 7 Executive Coaching'
-  | 'Certificate in Coaching Supervision'
-  | 'Diploma in Coaching Supervision'
   | 'Mental Health First Aid (MHFA)'
   | 'Trauma-Informed Coaching Certificate'
   | 'Diversity & Inclusion Coaching Certificate'
@@ -166,28 +152,17 @@ export type CPDQualification =
   | 'Team Coaching Certification'
   | 'Career Coaching Certification'
   | 'Executive Coaching Certification'
-  | 'Life Coaching Certification'
   | 'Health & Wellness Coaching Certification'
-  | 'Financial Coaching Certification'
   | 'Relationship Coaching Certification'
   | 'NLP Practitioner Certification'
-  | 'NLP Master Practitioner Certification'
-  | 'CBT (Cognitive Behavioral Therapy) Training'
-  | 'Solution-Focused Brief Therapy (SFBT) Training'
-  | 'Positive Psychology Practitioner'
-  | 'Mindfulness Teacher Training'
-  | 'Somatic Experiencing Practitioner'
-  | 'Gestalt Coaching Certification'
-  | 'Systemic Team Coaching'
-  | 'Ontological Coaching Certification'
-  | 'Transactional Analysis (TA) 101'
   | 'Leadership Coaching Certification'
   | 'Performance Coaching Certification'
   | 'Business Coaching Certification'
   | 'Parenting Coach Certification'
-  | 'Retirement Coaching Certification'
   | 'ADHD Coaching Certification'
-  | 'Nutrition Coaching Certification';
+  | 'Nutrition Coaching Certification'
+  | 'Neuro-affirmed Coaching Certification'
+  | 'Certified in Ethical Application of AI';
 
 // New: Coaching Languages
 export type CoachingLanguage =

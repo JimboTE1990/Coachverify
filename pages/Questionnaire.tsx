@@ -6,7 +6,7 @@ import { MultiSelectDropdown } from '../components/filters/MultiSelectDropdown';
 import { ExpandableCategory, CheckboxGrid } from '../components/filters/ExpandableCategory';
 import { DualRangeSlider } from '../components/DualRangeSlider';
 import { COACHING_LANGUAGES, CPD_QUALIFICATIONS, EXPERTISE_CATEGORIES } from '../constants/filterOptions';
-import { UK_CITIES } from '../constants/locations';
+import { SearchableLocationSelect } from '../components/forms/SearchableLocationSelect';
 
 export const Questionnaire: React.FC = () => {
   const navigate = useNavigate();
@@ -160,18 +160,11 @@ export const Questionnaire: React.FC = () => {
                 <label className="block text-sm font-bold text-slate-700 mb-2">
                   Preferred Location (Optional)
                 </label>
-                <select
+                <SearchableLocationSelect
                   value={answers.preferredLocation || ''}
-                  onChange={(e) => setAnswers({ ...answers, preferredLocation: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-white"
-                >
-                  <option value="">Any location</option>
-                  <optgroup label="UK Cities">
-                    {UK_CITIES.filter(city => city !== 'Other' && city !== 'Remote').map(city => (
-                      <option key={city} value={city}>{city}</option>
-                    ))}
-                  </optgroup>
-                </select>
+                  onChange={(value) => setAnswers({ ...answers, preferredLocation: value })}
+                  emptyOption="Any location"
+                />
                 <p className="text-xs text-slate-500 mt-2">
                   💡 Coaches near your preferred location will be prioritized in search results
                 </p>

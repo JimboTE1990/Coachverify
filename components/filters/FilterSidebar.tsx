@@ -4,7 +4,8 @@ import { MultiSelectDropdown } from './MultiSelectDropdown';
 import { ExpandableCategory, CheckboxGrid } from './ExpandableCategory';
 import { COACHING_LANGUAGES, CPD_QUALIFICATIONS, EXPERTISE_CATEGORIES } from '../../constants/filterOptions';
 import { CoachingExpertise, CoachingLanguage, CPDQualification, Specialty, Format } from '../../types';
-import { UK_CITIES, LOCATION_RADIUS_OPTIONS } from '../../constants/locations';
+import { LOCATION_RADIUS_OPTIONS } from '../../constants/locations';
+import { SearchableLocationSelect } from '../forms/SearchableLocationSelect';
 
 interface FilterSidebarProps {
   // Basic filters
@@ -344,19 +345,13 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
               {/* City/Town Filter */}
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-2">City/Town</label>
-                <select
+                <SearchableLocationSelect
                   value={locationCityFilter}
-                  onChange={(e) => onLocationCityChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-white text-sm"
-                >
-                  <option value="">All locations</option>
-                  <option value="Remote">Remote Only</option>
-                  <optgroup label="UK Cities">
-                    {UK_CITIES.filter(city => city !== 'Other' && city !== 'Remote').map(city => (
-                      <option key={city} value={city}>{city}</option>
-                    ))}
-                  </optgroup>
-                </select>
+                  onChange={onLocationCityChange}
+                  emptyOption="All locations"
+                  topOptions={[{ value: 'Remote', label: 'Remote Only' }]}
+                  compact
+                />
               </div>
 
               {/* Travel Radius Filter */}

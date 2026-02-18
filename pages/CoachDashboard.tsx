@@ -41,7 +41,8 @@ import { ImageUpload } from '../components/ImageUpload';
 import { BannerImageUpload } from '../components/BannerImageUpload';
 import { MultiSelect } from '../components/forms/MultiSelect';
 import { CollapsibleSection } from '../components/forms/CollapsibleSection';
-import { UK_CITIES, LOCATION_RADIUS_OPTIONS, type UKCity, type LocationRadius } from '../constants/locations';
+import { LOCATION_RADIUS_OPTIONS } from '../constants/locations';
+import { SearchableLocationSelect } from '../components/forms/SearchableLocationSelect';
 
 const AVAILABLE_SPECIALTIES: Specialty[] = [
   'Career Growth',
@@ -112,28 +113,15 @@ const COACHING_EXPERTISE_BY_CATEGORY: Record<CoachingExpertiseCategory, Coaching
 
 // CPD Qualifications
 const CPD_QUALIFICATIONS: CPDQualification[] = [
-  'ICF Associate Certified Coach (ACC)', 'ICF Professional Certified Coach (PCC)',
-  'ICF Master Certified Coach (MCC)', 'EMCC Foundation Level',
-  'EMCC Practitioner Level', 'EMCC Senior Practitioner Level',
-  'EMCC Master Practitioner Level', 'AC Accredited Coach',
-  'ILM Level 5 Coaching', 'ILM Level 7 Executive Coaching',
-  'CMI Level 5 Coaching', 'CMI Level 7 Executive Coaching',
-  'Certificate in Coaching Supervision', 'Diploma in Coaching Supervision',
   'Mental Health First Aid (MHFA)', 'Trauma-Informed Coaching Certificate',
   'Diversity & Inclusion Coaching Certificate', 'Corporate Coaching Certification',
   'Team Coaching Certification', 'Career Coaching Certification',
-  'Executive Coaching Certification', 'Life Coaching Certification',
-  'Health & Wellness Coaching Certification', 'Financial Coaching Certification',
+  'Executive Coaching Certification', 'Health & Wellness Coaching Certification',
   'Relationship Coaching Certification', 'NLP Practitioner Certification',
-  'NLP Master Practitioner Certification', 'CBT (Cognitive Behavioral Therapy) Training',
-  'Solution-Focused Brief Therapy (SFBT) Training', 'Positive Psychology Practitioner',
-  'Mindfulness Teacher Training', 'Somatic Experiencing Practitioner',
-  'Gestalt Coaching Certification', 'Systemic Team Coaching',
-  'Ontological Coaching Certification', 'Transactional Analysis (TA) 101',
   'Leadership Coaching Certification', 'Performance Coaching Certification',
   'Business Coaching Certification', 'Parenting Coach Certification',
-  'Retirement Coaching Certification', 'ADHD Coaching Certification',
-  'Nutrition Coaching Certification'
+  'ADHD Coaching Certification', 'Nutrition Coaching Certification',
+  'Neuro-affirmed Coaching Certification', 'Certified in Ethical Application of AI',
 ];
 
 // Coaching Languages
@@ -1379,33 +1367,19 @@ export const CoachDashboard: React.FC = () => {
                         <div>
                           <label className="block text-sm font-bold text-slate-700 mb-3">City/Town (for in-person coaching)</label>
                           {!localProfile?.locationIsCustom ? (
-                            <select
+                            <SearchableLocationSelect
                               value={localProfile?.locationCity || ''}
-                              onChange={(e) => {
-                                const value = e.target.value;
+                              onChange={(value) => {
                                 if (value === 'Other') {
-                                  updateLocalProfile({
-                                    locationCity: '',
-                                    locationIsCustom: true
-                                  });
+                                  updateLocalProfile({ locationCity: '', locationIsCustom: true });
                                 } else {
-                                  updateLocalProfile({
-                                    locationCity: value,
-                                    locationIsCustom: false
-                                  });
+                                  updateLocalProfile({ locationCity: value, locationIsCustom: false });
                                 }
                               }}
-                              className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
-                            >
-                              <option value="">Select a city...</option>
-                              <option value="Remote">Remote (Online Only)</option>
-                              <optgroup label="UK Cities">
-                                {UK_CITIES.filter(city => city !== 'Other').map(city => (
-                                  <option key={city} value={city}>{city}</option>
-                                ))}
-                              </optgroup>
-                              <option value="Other">Other (Custom Location)</option>
-                            </select>
+                              placeholder="Select a city..."
+                              topOptions={[{ value: 'Remote', label: 'Remote (Online Only)' }]}
+                              showOtherOption
+                            />
                           ) : (
                             <div className="space-y-2">
                               <input
