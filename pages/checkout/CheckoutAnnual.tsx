@@ -99,14 +99,18 @@ export const CheckoutAnnual: React.FC = () => {
         throw new Error('Unable to retrieve your email. Please try logging in again.');
       }
 
+      // Only pass trialEndsAt if user has an active trial (not expired)
+      const trialEndsAtForStripe = hasActiveTrial ? currentCoach?.trialEndsAt : undefined;
+
       // Create Stripe Checkout Session
       await createCheckoutSession({
         priceId: getPriceId('annual'),
         coachId: currentCoach!.id,
         coachEmail: session.user.email,
         billingCycle: 'annual',
-        trialEndsAt: currentCoach?.trialEndsAt,
-        discountCode: appliedDiscount?.code // Pass discount code to Stripe
+        trialEndsAt: trialEndsAtForStripe,
+        discountCode: appliedDiscount?.code,
+        stripePromotionCodeId: appliedDiscount?.stripePromotionCodeId,
       });
 
       // Note: Stripe will redirect to checkout page
@@ -137,9 +141,11 @@ export const CheckoutAnnual: React.FC = () => {
     year: 'numeric'
   });
 
-  // Legacy: Check if trial was already used (for users before new auth flow)
-  const hasUsedTrial = currentCoach?.trialUsed || false;
-  const isTrialIncluded = hasActiveTrial || !hasUsedTrial;
+  // Only offer a trial to users who have never had one (onboarding status, no trial_ends_at)
+  // Expired users and users who have already had a trial must pay immediately
+  const isExpiredUser = currentCoach?.subscriptionStatus === 'expired';
+  const hasHadTrialBefore = !!currentCoach?.trialEndsAt || currentCoach?.trialUsed;
+  const isTrialIncluded = hasActiveTrial || (!hasHadTrialBefore && !isExpiredUser);
   const monthlySavings = (SUBSCRIPTION_CONSTANTS.MONTHLY_PRICE_GBP * 12) - SUBSCRIPTION_CONSTANTS.ANNUAL_PRICE_GBP;
 
   return (

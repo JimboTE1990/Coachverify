@@ -51,7 +51,7 @@ export default async function handler(req) {
 
     // Parse request body
     const body = await req.json();
-    const { priceId, coachId, coachEmail, billingCycle, trialEndsAt } = body;
+    const { priceId, coachId, coachEmail, billingCycle, trialEndsAt, stripePromotionCodeId } = body;
 
     // Validate required fields
     if (!priceId || !coachId || !coachEmail || !billingCycle) {
@@ -67,7 +67,8 @@ export default async function handler(req) {
       priceId,
       coachId,
       billingCycle,
-      hasTrialEndsAt: !!trialEndsAt
+      hasTrialEndsAt: !!trialEndsAt,
+      hasPromoCode: !!stripePromotionCodeId,
     });
 
     const appUrl = process.env.VITE_APP_URL || 'https://coachverify.vercel.app';
@@ -135,6 +136,10 @@ export default async function handler(req) {
         ...(sessionParams.subscription_data.billing_cycle_anchor && {
           'subscription_data[billing_cycle_anchor]': sessionParams.subscription_data.billing_cycle_anchor,
           'subscription_data[trial_end]': sessionParams.subscription_data.trial_end,
+        }),
+        // Apply Stripe promotion code if provided (e.g. EMCC15)
+        ...(stripePromotionCodeId && {
+          'discounts[0][promotion_code]': stripePromotionCodeId,
         }),
       }),
     });

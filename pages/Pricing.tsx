@@ -2,28 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CheckCircle, Zap, Clock } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { DiscountCodeInput } from '../components/subscription/DiscountCodeInput';
-import { DiscountCode, autoApplyPromoFromUrl } from '../config/discountCodes';
 import { PRICING_CONFIG } from '../config/pricing';
 
 export const Pricing: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, coach } = useAuth();
-
-  // Discount state
-  const [appliedDiscount, setAppliedDiscount] = useState<DiscountCode | null>(null);
-  const [discountAmountMonthly, setDiscountAmountMonthly] = useState(0);
-  const [discountAmountAnnual, setDiscountAmountAnnual] = useState(0);
-  const [showDiscountInput, setShowDiscountInput] = useState(false);
-
-  // Auto-apply promo code from URL on mount
-  useEffect(() => {
-    const autoDiscount = autoApplyPromoFromUrl();
-    if (autoDiscount) {
-      setAppliedDiscount(autoDiscount);
-      setShowDiscountInput(true);
-    }
-  }, []);
 
   // Check if user already has a paid subscription (not trial) - includes lifetime
   const hasActiveSubscription = coach && (coach.subscriptionStatus === 'active' || coach.subscriptionStatus === 'lifetime');
@@ -63,20 +46,9 @@ export const Pricing: React.FC = () => {
     navigate(`/checkout/${plan}`);
   };
 
-  const handleDiscountApplied = (discount: DiscountCode | null, discountAmount: number, planId: 'monthly' | 'annual') => {
-    setAppliedDiscount(discount);
-    if (planId === 'monthly') {
-      setDiscountAmountMonthly(discountAmount);
-    } else {
-      setDiscountAmountAnnual(discountAmount);
-    }
-  };
-
   // Calculate final prices
   const monthlyPrice = PRICING_CONFIG.plans.monthly.price;
   const annualPrice = PRICING_CONFIG.plans.annual.price;
-  const finalMonthlyPrice = monthlyPrice - discountAmountMonthly;
-  const finalAnnualPrice = annualPrice - discountAmountAnnual;
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
@@ -106,125 +78,168 @@ export const Pricing: React.FC = () => {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* STEP 1: Free Trial Block (Hero Card) */}
-          <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden mb-16 transform hover:-translate-y-1 transition-transform duration-300">
-             <div className="md:flex">
-                <div className="p-10 md:w-2/3">
-                   <div className="flex items-center mb-6">
+          {(() => {
+            // Calculate trial end date for display
+            const trialEndDate = coach?.trialEndsAt ? new Date(coach.trialEndsAt) : null;
+            const formattedTrialEnd = trialEndDate?.toLocaleDateString('en-GB', {
+              day: 'numeric', month: 'long', year: 'numeric'
+            });
+            const today = new Date();
+            const daysRemaining = trialEndDate
+              ? Math.max(0, Math.ceil((trialEndDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
+              : 0;
+
+            // Logged-in trial user: show status, not CTA
+            if (isAuthenticated && coach?.subscriptionStatus === 'trial') {
+              return (
+                <div className="bg-white rounded-3xl shadow-xl border-2 border-green-300 overflow-hidden mb-16">
+                  <div className="md:flex">
+                    <div className="p-10 md:w-2/3">
+                      <div className="flex items-center mb-6">
+                        <span className="bg-green-100 text-green-700 font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wide mr-3 border border-green-200">Active</span>
+                        <h2 className="text-3xl font-display font-bold text-slate-900">Free Trial Active</h2>
+                      </div>
+                      <p className="text-slate-600 mb-6 text-lg leading-relaxed">
+                        Your free trial is running. Enjoy full platform access — your profile is visible to clients and you're receiving matches.
+                      </p>
+                      <ul className="space-y-3">
+                        <li className="flex items-center text-slate-700 font-medium">
+                          <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
+                          Verified Profile
+                        </li>
+                        <li className="flex items-center text-slate-700 font-medium">
+                          <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
+                          Unlimited Matches
+                        </li>
+                        <li className="flex items-center text-slate-700 font-medium">
+                          <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
+                          Full Platform Access
+                        </li>
+                      </ul>
+                    </div>
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-10 md:w-1/3 flex flex-col justify-center items-center border-t md:border-t-0 md:border-l border-green-100">
+                      <div className="text-center w-full">
+                        <div className="w-full bg-green-100 border-2 border-green-300 text-green-800 text-center py-4 rounded-xl font-bold shadow-lg mb-4">
+                          ✓ Trial Active
+                        </div>
+                        {formattedTrialEnd && (
+                          <p className="text-sm font-semibold text-slate-700">
+                            Ends <span className="text-rose-600">{formattedTrialEnd}</span>
+                          </p>
+                        )}
+                        {daysRemaining > 0 && (
+                          <p className="text-xs text-slate-500 mt-1">{daysRemaining} {daysRemaining === 1 ? 'day' : 'days'} remaining</p>
+                        )}
+                        <p className="text-xs text-slate-400 mt-4">Select a plan below to upgrade before your trial ends.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            // Logged-in expired user: show expired status
+            if (isAuthenticated && coach?.subscriptionStatus === 'expired') {
+              return (
+                <div className="bg-white rounded-3xl shadow-xl border-2 border-red-200 overflow-hidden mb-16">
+                  <div className="md:flex">
+                    <div className="p-10 md:w-2/3">
+                      <div className="flex items-center mb-6">
+                        <span className="bg-red-100 text-red-700 font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wide mr-3 border border-red-200">Expired</span>
+                        <h2 className="text-3xl font-display font-bold text-slate-900">Free Trial Ended</h2>
+                      </div>
+                      <p className="text-slate-600 mb-6 text-lg leading-relaxed">
+                        Your free trial has ended and your profile is currently hidden from clients. Upgrade to a paid plan to become visible again.
+                      </p>
+                      <ul className="space-y-3">
+                        <li className="flex items-center text-slate-700 font-medium">
+                          <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
+                          Profile visible to clients
+                        </li>
+                        <li className="flex items-center text-slate-700 font-medium">
+                          <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
+                          Unlimited Matches
+                        </li>
+                        <li className="flex items-center text-slate-700 font-medium">
+                          <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
+                          Full Platform Access
+                        </li>
+                      </ul>
+                    </div>
+                    <div className="bg-gradient-to-br from-red-50 to-orange-50 p-10 md:w-1/3 flex flex-col justify-center items-center border-t md:border-t-0 md:border-l border-red-100">
+                      <div className="text-center w-full">
+                        <div className="w-full bg-red-100 border-2 border-red-300 text-red-800 text-center py-4 rounded-xl font-bold shadow-lg mb-4">
+                          Trial Ended
+                        </div>
+                        {formattedTrialEnd && (
+                          <p className="text-sm font-semibold text-slate-700">
+                            Ended <span className="text-rose-600">{formattedTrialEnd}</span>
+                          </p>
+                        )}
+                        <p className="text-xs text-slate-400 mt-4">Select a plan below to reactivate your profile.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            // Logged-in active subscriber or lifetime: hide the trial section entirely
+            if (isAuthenticated && (coach?.subscriptionStatus === 'active' || coach?.subscriptionStatus === 'lifetime')) {
+              return null;
+            }
+
+            // Not logged in (or onboarding): show the standard "Start Free Trial" card
+            return (
+              <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden mb-16 transform hover:-translate-y-1 transition-transform duration-300">
+                <div className="md:flex">
+                  <div className="p-10 md:w-2/3">
+                    <div className="flex items-center mb-6">
                       <span className="bg-brand-100 text-brand-700 font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wide mr-3 border border-brand-200">All plans include</span>
                       <h2 className="text-3xl font-display font-bold text-slate-900">30-Day Free Trial</h2>
-                   </div>
-                   <p className="text-slate-600 mb-8 text-lg leading-relaxed">
+                    </div>
+                    <p className="text-slate-600 mb-8 text-lg leading-relaxed">
                       Sign up now - no payment required. Your trial activates automatically when you verify your email. Build your profile, get verified, and receive matches with zero risk.
-                   </p>
-                   <ul className="space-y-3">
+                    </p>
+                    <ul className="space-y-3">
                       <li className="flex items-center text-slate-700 font-medium">
-                        <div className="bg-green-100 p-1 rounded-full mr-3">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                        </div>
+                        <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
                         Verified Profile
                       </li>
                       <li className="flex items-center text-slate-700 font-medium">
-                        <div className="bg-green-100 p-1 rounded-full mr-3">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                        </div>
+                        <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
                         Unlimited Matches
                       </li>
                       <li className="flex items-center text-slate-700 font-medium">
-                        <div className="bg-green-100 p-1 rounded-full mr-3">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                        </div>
+                        <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
                         Full Platform Access
                       </li>
-                   </ul>
-                </div>
-                <div className="bg-gradient-to-br from-brand-50 to-indigo-50 p-10 md:w-1/3 flex flex-col justify-center items-center border-t md:border-t-0 md:border-l border-slate-100">
-                   <div className="text-center w-full">
+                    </ul>
+                  </div>
+                  <div className="bg-gradient-to-br from-brand-50 to-indigo-50 p-10 md:w-1/3 flex flex-col justify-center items-center border-t md:border-t-0 md:border-l border-slate-100">
+                    <div className="text-center w-full">
                       <p className="text-slate-400 text-sm line-through mb-1">Standard: £30</p>
                       <p className="text-5xl font-display font-black text-slate-900 mb-2">£0</p>
                       <p className="text-sm text-slate-500 font-bold uppercase tracking-wide mb-8">for 30 days</p>
-
-                      {/* Dynamic CTA based on auth and trial status */}
-                      {isAuthenticated && coach ? (
-                        coach.subscriptionStatus === 'trial' ? (
-                          <div className="w-full bg-green-100 border-2 border-green-300 text-green-800 text-center py-4 rounded-xl font-bold shadow-lg">
-                            ✓ Free Trial Active
-                          </div>
-                        ) : coach.trialUsed ? (
-                          <div className="w-full bg-slate-100 border-2 border-slate-300 text-slate-600 text-center py-4 rounded-xl font-bold shadow-lg">
-                            Trial Used
-                          </div>
-                        ) : (
-                          <Link
-                            to="/coach-signup"
-                            className="block w-full bg-slate-900 text-white text-center py-4 rounded-xl font-bold hover:bg-slate-800 shadow-lg hover:shadow-xl transition-all"
-                          >
-                            Start Free Trial
-                          </Link>
-                        )
-                      ) : (
-                        <Link
-                          to="/coach-signup"
-                          className="block w-full bg-slate-900 text-white text-center py-4 rounded-xl font-bold hover:bg-slate-800 shadow-lg hover:shadow-xl transition-all"
-                        >
-                          Start Free Trial
-                        </Link>
-                      )}
-
+                      <Link
+                        to="/coach-signup"
+                        className="block w-full bg-slate-900 text-white text-center py-4 rounded-xl font-bold hover:bg-slate-800 shadow-lg hover:shadow-xl transition-all"
+                      >
+                        Start Free Trial
+                      </Link>
                       <p className="text-xs text-slate-400 mt-4">No credit card required</p>
-                   </div>
+                    </div>
+                  </div>
                 </div>
-             </div>
-          </div>
+              </div>
+            );
+          })()}
 
           {/* STEP 2: Paid Plans Section */}
           <div className="text-center mb-12">
              <span className="text-brand-600 font-bold text-sm uppercase tracking-widest">Choose Your Plan</span>
              <h3 className="text-3xl font-display font-bold text-slate-900 mt-2">Lock in your price anytime</h3>
              <p className="text-slate-500 mt-2">Add payment during your trial - billing starts after your 30 days end. Lock in the Early Bird 50% discount for life.</p>
-          </div>
-
-          {/* Discount Code Section */}
-          <div className="max-w-2xl mx-auto mb-8">
-            {!showDiscountInput && !appliedDiscount && (
-              <div className="text-center">
-                <button
-                  onClick={() => setShowDiscountInput(true)}
-                  className="text-brand-600 hover:text-brand-700 font-bold text-sm underline"
-                >
-                  Have a discount code?
-                </button>
-              </div>
-            )}
-
-            {(showDiscountInput || appliedDiscount) && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h4 className="text-lg font-bold text-slate-900 mb-4">Discount Code</h4>
-                <p className="text-sm text-slate-600 mb-4">
-                  Enter your discount code to see your savings on each plan below.
-                </p>
-                {/* Show discount input for both plans side by side */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase mb-2">Monthly Plan</p>
-                    <DiscountCodeInput
-                      planId="monthly"
-                      planPrice={monthlyPrice}
-                      onDiscountApplied={(discount, amount) => handleDiscountApplied(discount, amount, 'monthly')}
-                      autoApply={true}
-                    />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase mb-2">Annual Plan</p>
-                    <DiscountCodeInput
-                      planId="annual"
-                      planPrice={annualPrice}
-                      onDiscountApplied={(discount, amount) => handleDiscountApplied(discount, amount, 'annual')}
-                      autoApply={true}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Paid Plans Grid */}
@@ -238,19 +253,11 @@ export const Pricing: React.FC = () => {
               <div className="mt-8 flex flex-col items-center justify-center">
                 <span className="text-sm text-slate-400 font-medium line-through">Standard: £30/mo</span>
                 <div className="flex items-baseline mt-2">
-                  {discountAmountMonthly > 0 && (
-                    <span className="text-2xl font-display font-bold text-slate-400 line-through mr-2">£{monthlyPrice}</span>
-                  )}
-                  <span className={`text-5xl font-display font-black ${discountAmountMonthly > 0 ? 'text-green-600' : 'text-slate-900'}`}>
-                    £{finalMonthlyPrice}
+                  <span className="text-5xl font-display font-black text-slate-900">
+                    £{monthlyPrice}
                   </span>
                   <span className="ml-1 text-base font-medium text-slate-500">/mo</span>
                 </div>
-                {discountAmountMonthly > 0 && (
-                  <div className="mt-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">
-                    Save £{discountAmountMonthly.toFixed(2)}/mo
-                  </div>
-                )}
               </div>
 
               <div className="mt-8 border-t border-slate-100 w-full pt-8">
@@ -297,21 +304,12 @@ export const Pricing: React.FC = () => {
               <div className="mt-8 flex flex-col items-center justify-center">
                 <span className="text-sm text-slate-400 font-medium line-through">Standard: £300/yr</span>
                 <div className="flex items-baseline mt-2">
-                  {discountAmountAnnual > 0 && (
-                    <span className="text-2xl font-display font-bold text-slate-400 line-through mr-2">£{annualPrice}</span>
-                  )}
-                  <span className={`text-5xl font-display font-black ${discountAmountAnnual > 0 ? 'text-green-600' : 'text-slate-900'}`}>
-                    £{finalAnnualPrice}
+                  <span className="text-5xl font-display font-black text-slate-900">
+                    £{annualPrice}
                   </span>
                   <span className="ml-1 text-base font-medium text-slate-500">/yr</span>
                 </div>
-                {discountAmountAnnual > 0 ? (
-                  <div className="mt-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">
-                    Save £{(discountAmountAnnual + 30).toFixed(2)} total
-                  </div>
-                ) : (
-                  <span className="text-xs text-green-600 font-bold mt-2 bg-green-50 px-2 py-1 rounded-md">Save £30/year</span>
-                )}
+                <span className="text-xs text-green-600 font-bold mt-2 bg-green-50 px-2 py-1 rounded-md">Save £30/year</span>
               </div>
 
               <div className="mt-8 border-t border-slate-100 w-full pt-8">
@@ -359,8 +357,8 @@ export const Pricing: React.FC = () => {
                    <p className="text-sm text-slate-600">
                      {isAuthenticated && coach?.subscriptionStatus === 'trial' ? (
                        <>Upgrade now and continue using your trial. Payment will be charged after your trial ends. Lock in the 50% Early Bird discount for life.</>
-                     ) : isAuthenticated && coach?.trialUsed ? (
-                       <>You've already used your trial. Payment starts today when you select a plan. Lock in the 50% Early Bird discount for life.</>
+                     ) : isAuthenticated && coach?.subscriptionStatus === 'expired' ? (
+                       <>Your trial has ended. Payment starts today when you select a plan. Lock in the 50% Early Bird discount for life.</>
                      ) : (
                        <>Select a paid plan during your 30-day free trial and get this 50% discount locked in for life. Payment starts after your trial ends.</>
                      )}

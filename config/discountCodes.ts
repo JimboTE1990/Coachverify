@@ -35,6 +35,21 @@ export interface DiscountCode {
  * Add new codes here
  */
 export const DISCOUNT_CODES: Record<string, DiscountCode> = {
+  // EMCC member referral code — 15% off once
+  'EMCC15': {
+    code: 'EMCC15',
+    type: 'percentage',
+    value: 15,
+    enabled: true,
+    planRestrictions: ['monthly', 'annual'],
+    source: 'partner_referral',
+    partnerId: 'emcc',
+    displayName: 'EMCC Member Discount',
+    description: '15% off your first payment',
+    stripeCouponId: 'NStyLey1',
+    stripePromotionCodeId: 'promo_1T2AEyDbNBAbZyi',
+  },
+
   // Example: Partner referral code
   'PARTNER2026': {
     code: 'PARTNER2026',
