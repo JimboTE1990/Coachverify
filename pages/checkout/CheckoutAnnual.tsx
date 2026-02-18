@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, ArrowLeft, Loader, Lock, Zap } from 'lucide-react';
+import { CheckCircle, ArrowLeft, Loader, Lock, Zap, Tag, X } from 'lucide-react';
 import { SUBSCRIPTION_CONSTANTS } from '../../constants/subscription';
 import { supabase } from '../../lib/supabase';
 import { createCheckoutSession, getPriceId } from '../../services/stripeService';
@@ -16,6 +16,9 @@ export const CheckoutAnnual: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [appliedDiscount, setAppliedDiscount] = useState<DiscountCode | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
+  const [discountInputValue, setDiscountInputValue] = useState('');
+  const [discountError, setDiscountError] = useState<string | null>(null);
+  const [showDiscountInput, setShowDiscountInput] = useState(false);
 
   useEffect(() => {
     checkAuthAndFetchCoach();
@@ -28,9 +31,36 @@ export const CheckoutAnnual: React.FC = () => {
         setAppliedDiscount(validation.discount);
         const calc = calculateDiscount(validation.discount, SUBSCRIPTION_CONSTANTS.ANNUAL_PRICE_GBP, 'annual');
         setDiscountAmount(calc.discountAmount);
+        setDiscountInputValue(promoCode.toUpperCase());
       }
     }
   }, []);
+
+  const handleApplyDiscount = () => {
+    setDiscountError(null);
+    const code = discountInputValue.trim();
+    if (!code) return;
+    const validation = validateDiscountCode(code);
+    if (!validation.valid || !validation.discount) {
+      setDiscountError(validation.error || 'Invalid code');
+      return;
+    }
+    const calc = calculateDiscount(validation.discount, SUBSCRIPTION_CONSTANTS.ANNUAL_PRICE_GBP, 'annual');
+    if (calc.discountAmount === 0 && validation.discount.type !== 'trial_extension') {
+      setDiscountError('This code is not valid for the annual plan');
+      return;
+    }
+    setAppliedDiscount(validation.discount);
+    setDiscountAmount(calc.discountAmount);
+    setShowDiscountInput(false);
+  };
+
+  const handleRemoveDiscount = () => {
+    setAppliedDiscount(null);
+    setDiscountAmount(0);
+    setDiscountInputValue('');
+    setDiscountError(null);
+  };
 
   const checkAuthAndFetchCoach = async () => {
     try {
@@ -76,13 +106,21 @@ export const CheckoutAnnual: React.FC = () => {
       }
 
       // Auto-detect expired trials: if DB says 'trial' but trial_ends_at is in the past, treat as expired
-      if (coach.subscription_status === 'trial' && coach.trial_ends_at && new Date(coach.trial_ends_at) < new Date()) {
-        coach.subscription_status = 'expired';
-      }
+      const subscriptionStatus = (
+        coach.subscription_status === 'trial' &&
+        coach.trial_ends_at &&
+        new Date(coach.trial_ends_at) < new Date()
+      ) ? 'expired' : coach.subscription_status;
 
-      console.log('User eligible for checkout:', coach.subscription_status);
+      console.log('User eligible for checkout:', subscriptionStatus);
 
-      setCurrentCoach(coach as Coach);
+      // Map snake_case DB fields to camelCase Coach type
+      setCurrentCoach({
+        id: coach.id,
+        subscriptionStatus,
+        billingCycle: coach.billing_cycle,
+        trialEndsAt: coach.trial_ends_at ?? undefined,
+      } as Coach);
       setIsLoading(false);
     } catch (err) {
       console.error('Auth check failed:', err);
@@ -369,6 +407,66 @@ export const CheckoutAnnual: React.FC = () => {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Discount Code */}
+              <div className="mb-6">
+                {appliedDiscount ? (
+                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                    <div className="flex items-center text-green-700">
+                      <Tag className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span className="font-medium text-sm">{appliedDiscount.code} applied</span>
+                      {appliedDiscount.displayName && (
+                        <span className="ml-1 text-xs text-green-600">— {appliedDiscount.displayName}</span>
+                      )}
+                    </div>
+                    <button
+                      onClick={handleRemoveDiscount}
+                      className="text-green-600 hover:text-green-800 ml-2"
+                      aria-label="Remove discount"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : showDiscountInput ? (
+                  <div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={discountInputValue}
+                        onChange={(e) => setDiscountInputValue(e.target.value.toUpperCase())}
+                        onKeyDown={(e) => e.key === 'Enter' && handleApplyDiscount()}
+                        placeholder="Enter discount code"
+                        className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 uppercase"
+                        autoFocus
+                      />
+                      <button
+                        onClick={handleApplyDiscount}
+                        className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors"
+                      >
+                        Apply
+                      </button>
+                      <button
+                        onClick={() => { setShowDiscountInput(false); setDiscountError(null); }}
+                        className="text-slate-400 hover:text-slate-600 px-2"
+                        aria-label="Cancel"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                    {discountError && (
+                      <p className="mt-1 text-xs text-red-600">{discountError}</p>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowDiscountInput(true)}
+                    className="flex items-center text-sm text-slate-500 hover:text-brand-600 transition-colors"
+                  >
+                    <Tag className="h-4 w-4 mr-1.5" />
+                    Have a discount code?
+                  </button>
+                )}
               </div>
 
               {/* Secure Checkout Button */}
