@@ -3,7 +3,7 @@
  * Supports unique promo codes, partner codes, and automatic promotions
  */
 
-export type DiscountType = 'percentage' | 'fixed' | 'trial_extension' | 'months_free';
+export type DiscountType = 'percentage' | 'fixed' | 'trial_extension' | 'months_free' | 'lifetime_fixed';
 
 export interface DiscountCode {
   code: string;
@@ -12,7 +12,7 @@ export interface DiscountCode {
   enabled: boolean;
 
   // Restrictions
-  planRestrictions?: ('monthly' | 'annual')[]; // Which plans it applies to
+  planRestrictions?: ('monthly' | 'annual' | 'lifetime')[]; // Which plans it applies to
   maxUses?: number; // Total uses allowed
   usesRemaining?: number; // Decrements on use
   expiryDate?: string; // ISO date
@@ -104,6 +104,43 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     displayName: 'Welcome Offer',
     description: '3 months free',
   },
+
+  // ============================================================================
+  // LIFETIME PLAN DISCOUNTS
+  // ============================================================================
+
+  // Beta Tester Exclusive - Limited to 10 uses
+  // Lifetime plan: £149 → £49 with BETA100
+  'BETA100': {
+    code: 'BETA100',
+    type: 'lifetime_fixed',
+    value: 100, // £100 off the £149 lifetime price = £49 final
+    enabled: true,
+    planRestrictions: ['lifetime'],
+    maxUses: 10,
+    usesRemaining: 10, // NOTE: Update this in production to track actual uses
+    source: 'beta_tester_exclusive',
+    displayName: 'Beta Tester Exclusive',
+    description: '£100 off - Pay only £49 for lifetime access',
+    stripeCouponId: 'BETA100_LIFETIME', // Create this in Stripe production
+  },
+
+  // Limited Time Offer - £89 lifetime (to be enabled later)
+  // Lifetime plan: £149 → £89 with LIMITED60
+  'LIMITED60': {
+    code: 'LIMITED60',
+    type: 'lifetime_fixed',
+    value: 60, // £60 off the £149 lifetime price = £89 final
+    enabled: false, // Enable when ready to launch this offer
+    planRestrictions: ['lifetime'],
+    maxUses: 50, // Set your desired limit
+    usesRemaining: 50,
+    expiryDate: '2026-12-31', // Update this to your campaign end date
+    source: 'limited_time_offer',
+    displayName: 'Limited Time Offer',
+    description: '£60 off - Pay only £89 for lifetime access',
+    stripeCouponId: 'LIMITED60_LIFETIME', // Create this in Stripe when ready
+  },
 };
 
 /**
@@ -146,7 +183,7 @@ export const validateDiscountCode = (code: string): {
 export const calculateDiscount = (
   discount: DiscountCode,
   planPrice: number,
-  planId: 'monthly' | 'annual'
+  planId: 'monthly' | 'annual' | 'lifetime'
 ): {
   discountAmount: number;
   finalPrice: number;
@@ -177,6 +214,17 @@ export const calculateDiscount = (
         discountAmount,
         finalPrice: planPrice - discountAmount,
         description: `£${discount.value} off`,
+      };
+    }
+
+    case 'lifetime_fixed': {
+      // Specific handling for lifetime plan discounts
+      const discountAmount = Math.min(discount.value, planPrice);
+      const finalPrice = planPrice - discountAmount;
+      return {
+        discountAmount,
+        finalPrice,
+        description: `£${discountAmount} off - Pay only £${finalPrice}`,
       };
     }
 
