@@ -57,7 +57,7 @@ export const Pricing: React.FC = () => {
       <div className="relative pt-24 pb-16 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="inline-flex items-center bg-gradient-to-r from-rose-500 to-orange-500 text-white px-4 py-1.5 rounded-full text-sm font-bold mb-8 shadow-lg animate-pulse">
-             <Clock className="h-4 w-4 mr-2" /> Limited Time: 50% Off Lifetime Rates
+             <Clock className="h-4 w-4 mr-2" /> Limited Time: 50% Off Monthly & Annual Plans
           </div>
           <h1 className="text-5xl md:text-6xl font-display font-extrabold text-slate-900 mb-6 tracking-tight">
              Start Your Journey <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600">Risk-Free.</span>
@@ -265,15 +265,19 @@ export const Pricing: React.FC = () => {
                  <ul className="space-y-4 text-left text-sm text-slate-600">
                     <li className="flex items-center">
                       <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
-                      Verified Profile
+                      Professional verification of accreditations displayed for clients to review
                     </li>
                     <li className="flex items-center">
                       <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
-                      Unlimited Matches
+                      Professional landing page with shareable link for social media channels
                     </li>
                     <li className="flex items-center">
                       <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
-                      No long contract / flexible option
+                      Client reviews to enhance credibility and build trust
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
+                      No long contract / flexible monthly option
                     </li>
                  </ul>
               </div>
@@ -317,11 +321,15 @@ export const Pricing: React.FC = () => {
                  <ul className="space-y-4 text-left text-sm text-slate-600">
                     <li className="flex items-center">
                       <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
-                      Verified Profile
+                      Professional verification of accreditations displayed for clients to review
                     </li>
                     <li className="flex items-center">
                       <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
-                      Unlimited Matches
+                      Professional landing page with shareable link for social media channels
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
+                      Client reviews to enhance credibility and build trust
                     </li>
                     <li className="flex items-center">
                       <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />

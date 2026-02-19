@@ -5,6 +5,7 @@ import { storeReviewToken, getReviewToken, canManageReview, removeReviewToken } 
 import { Coach, QuestionnaireAnswers, CURRENCIES } from '../types';
 import { calculateMatchScore } from '../utils/matchCalculator';
 import { useAuth } from '../hooks/useAuth';
+import { AccreditationBadge } from '../components/AccreditationBadge';
 import { majorCities } from '../data/cities';
 import {
   ArrowLeft, Star, Mail, Instagram, MessageCircle, Linkedin,
@@ -602,15 +603,24 @@ export const CoachDetails: React.FC = () => {
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
 
           {/* Banner Image - Full Width at Top (like LinkedIn/X) */}
-          {coach.bannerImageUrl && (
-            <div className="w-full h-48 md:h-64 bg-gradient-to-br from-slate-100 to-slate-200">
+          <div className="w-full h-48 md:h-64 bg-gradient-to-br from-slate-100 to-slate-200 relative overflow-hidden">
+            {coach.bannerImageUrl ? (
               <img
                 src={coach.bannerImageUrl}
                 alt={`${coach.name} - Profile Banner`}
                 className="w-full h-full object-cover"
               />
-            </div>
-          )}
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-brand-600/20 to-indigo-600/20 flex items-center justify-center">
+                <div className="opacity-20 flex flex-col items-center gap-2">
+                  <svg viewBox="0 0 24 24" className="w-20 h-20 text-brand-600" fill="currentColor">
+                    <path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                  </svg>
+                  <span className="text-2xl font-black text-brand-700 tracking-wide">CoachDog</span>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Top Section: Recently Viewed (Left), Match & Photo (Center), Share (Right) */}
           <div className="px-6 pt-8 pb-6">
@@ -669,11 +679,20 @@ export const CoachDetails: React.FC = () => {
                 {/* Profile Photo */}
                 <div className="relative">
                   <div className="w-36 h-36 rounded-3xl overflow-hidden border-4 border-white shadow-2xl ring-4 ring-slate-100">
-                    <img
-                      src={coach.photoUrl || '/default-avatar.png'}
-                      alt={coach.name}
-                      className="w-full h-full object-cover"
-                    />
+                    {coach.photoUrl ? (
+                      <img
+                        src={coach.photoUrl}
+                        alt={coach.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex flex-col items-center justify-center gap-1">
+                        <svg viewBox="0 0 24 24" className="w-14 h-14 text-slate-400" fill="currentColor">
+                          <path d="M4.5 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM14.25 8.625a3.375 3.375 0 1 1 6.75 0 3.375 3.375 0 0 1-6.75 0ZM1.5 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM17.25 19.128l-.001.144a2.25 2.25 0 0 1-.233.96 10.088 10.088 0 0 0 5.06-1.01.75.75 0 0 0 .42-.643 4.875 4.875 0 0 0-6.957-4.611 8.586 8.586 0 0 1 1.71 5.157v.003Z" />
+                        </svg>
+                        <span className="text-xs font-semibold text-slate-400">No photo</span>
+                      </div>
+                    )}
                   </div>
                   {coach.isVerified && (
                     <div className="absolute -bottom-2 -right-2 bg-blue-600 text-white p-2 rounded-full shadow-lg ring-4 ring-white">
@@ -751,26 +770,40 @@ export const CoachDetails: React.FC = () => {
               <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
                 {/* Contact Button */}
                 {(emailContacts.length > 0 || phoneContacts.length > 0) && (
-                  <button
-                    onClick={() => setShowContactOptions(true)}
-                    className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
-                    title="Contact"
-                  >
-                    <Mail className="h-6 w-6 text-slate-700" />
-                  </button>
+                  <div className="relative group">
+                    <button
+                      onClick={() => setShowContactOptions(true)}
+                      className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
+                    >
+                      <Mail className="h-6 w-6 text-slate-700" />
+                    </button>
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      <div className="bg-white border border-slate-200 rounded-xl shadow-lg px-3 py-2 text-center whitespace-nowrap">
+                        <p className="text-xs font-bold text-slate-900">Contact</p>
+                        <p className="text-xs text-slate-500">Email or message</p>
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {/* WhatsApp Button - Direct link (for UK coaches with numbers) */}
                 {phoneContacts.length > 0 && phoneContacts[0].url && (
-                  <a
-                    href={`https://wa.me/${phoneContacts[0].url.replace(/\D/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
-                    title="WhatsApp"
-                  >
-                    <MessageCircle className="h-6 w-6 text-slate-700" />
-                  </a>
+                  <div className="relative group">
+                    <a
+                      href={`https://wa.me/${phoneContacts[0].url.replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
+                    >
+                      <MessageCircle className="h-6 w-6 text-slate-700" />
+                    </a>
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      <div className="bg-white border border-slate-200 rounded-xl shadow-lg px-3 py-2 text-center whitespace-nowrap">
+                        <p className="text-xs font-bold text-slate-900">WhatsApp</p>
+                        <p className="text-xs text-slate-500">{phoneContacts[0].url}</p>
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {/* Dynamically render social links (filter out email, phone, booking) */}
@@ -783,47 +816,47 @@ export const CoachDetails: React.FC = () => {
                   const isBooking = platform.includes('booking') || platform.includes('appointment') || platform.includes('schedule') || platform.includes('calendly') || platform.includes('cal.com') || url.includes('calendly.com') || url.includes('cal.com');
                   return !isEmail && !isPhone && !isBooking;
                 }).map((socialLink) => (
-                  <a
-                    key={socialLink.id || socialLink.platform}
-                    href={socialLink.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
-                    title={socialLink.platform}
-                  >
-                    {getSocialIcon(socialLink.platform)}
-                  </a>
+                  <div key={socialLink.id || socialLink.platform} className="relative group">
+                    <a
+                      href={socialLink.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
+                    >
+                      {getSocialIcon(socialLink.platform)}
+                    </a>
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      <div className="bg-white border border-slate-200 rounded-xl shadow-lg px-3 py-2 text-center whitespace-nowrap">
+                        <p className="text-xs font-bold text-slate-900">{socialLink.platform}</p>
+                        <p className="text-xs text-slate-500">{(socialLink.url || '').replace(/^https?:\/\/(www\.)?/, '')}</p>
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
 
               {/* Prominent Accreditation Badge with Official Branding */}
-              {coach.accreditationBody === 'EMCC' && coach.emccVerified && coach.emccProfileUrl && (
+              {coach.accreditationBody === 'EMCC' && coach.emccVerified && (
                 <div className="mt-6 mb-4 bg-gradient-to-br from-[#2B4170]/5 to-[#C9A961]/10 border-2 border-[#2B4170]/30 rounded-2xl p-6 shadow-md">
-                  <div className="flex items-center justify-center gap-3 mb-3">
-                    {/* EMCC-style branding: Navy blue with gold accent */}
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-[#C9A961] rounded-sm rotate-45"></div>
-                        <div className="w-2 h-2 bg-[#C9A961] rounded-sm rotate-45"></div>
-                        <div className="w-2 h-2 bg-[#C9A961] rounded-sm rotate-45"></div>
-                      </div>
-                      <span className="text-2xl font-black text-[#2B4170] tracking-wide">EMCC</span>
-                    </div>
-                    <CheckCircle className="h-6 w-6 text-green-600" />
+                  {/* Header with EMCC and verified badge on single line */}
+                  <div className="flex items-center justify-center gap-2 mb-4">
+                    <span className="text-2xl font-black text-[#2B4170] tracking-wide">EMCC</span>
+                    <span className="text-sm font-bold text-[#2B4170]">Verified Accreditation</span>
+                    <CheckCircle className="h-5 w-5 text-green-600" />
                   </div>
-                  <p className="text-center text-sm font-bold text-[#2B4170] mb-1">VERIFIED ACCREDITATION</p>
+
                   {coach.accreditationLevel && (
-                    <div className="flex flex-col items-center gap-2 mb-4">
-                      <p className="text-center text-xs text-slate-600">{coach.accreditationLevel}</p>
-                      {/* Badge placeholder - Replace with actual EMCC badge image per level */}
-                      {/* TODO: Add actual badge images for each EMCC level:
-                          - Foundation: /badges/emcc-foundation.png
-                          - Practitioner: /badges/emcc-practitioner.png
-                          - Senior Practitioner: /badges/emcc-senior-practitioner.png
-                          - Master Practitioner: /badges/emcc-master-practitioner.png
-                      */}
-                      <div className="w-16 h-16 bg-[#2B4170]/10 rounded-full flex items-center justify-center border-2 border-[#C9A961]">
-                        <Award className="h-8 w-8 text-[#2B4170]" />
+                    <div className="flex flex-col items-center gap-3 mb-4">
+                      {/* Level in bold */}
+                      <p className="text-center text-base font-bold text-[#2B4170]">{coach.accreditationLevel}</p>
+                      {/* Even larger badge for better visibility */}
+                      <div className="w-48 h-48 flex items-center justify-center">
+                        <AccreditationBadge
+                          body="EMCC"
+                          level={coach.accreditationLevel}
+                          size="large"
+                          className="!h-48 !w-48"
+                        />
                       </div>
                     </div>
                   )}
@@ -841,26 +874,28 @@ export const CoachDetails: React.FC = () => {
                 </div>
               )}
 
-              {coach.accreditationBody === 'ICF' && coach.icfVerified && coach.icfProfileUrl && (
+              {coach.accreditationBody === 'ICF' && coach.icfVerified && (
                 <div className="mt-6 mb-4 bg-gradient-to-br from-[#2E5C8A]/5 to-[#4A90E2]/10 border-2 border-[#2E5C8A]/30 rounded-2xl p-6 shadow-md">
-                  <div className="flex items-center justify-center gap-3 mb-3">
-                    {/* ICF-style branding: Navy blue */}
-                    <span className="text-3xl font-black text-[#2E5C8A] tracking-wider">ICF</span>
-                    <CheckCircle className="h-6 w-6 text-green-600" />
+                  {/* Header with ICF and verified badge on single line */}
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <span className="text-2xl font-black text-[#2E5C8A] tracking-wide">ICF</span>
+                    <span className="text-sm font-bold text-[#2E5C8A]">Verified Accreditation</span>
+                    <CheckCircle className="h-5 w-5 text-green-600" />
                   </div>
-                  <p className="text-center text-sm font-bold text-[#2E5C8A] mb-1">VERIFIED ACCREDITATION</p>
-                  <p className="text-center text-xs text-slate-600 mb-1">International Coaching Federation</p>
+                  <p className="text-center text-xs text-slate-600 mb-4">International Coaching Federation</p>
+
                   {coach.icfAccreditationLevel && (
-                    <div className="flex flex-col items-center gap-2 mb-4">
-                      <p className="text-center text-xs text-slate-600">{coach.icfAccreditationLevel}</p>
-                      {/* Badge placeholder - Replace with actual ICF badge image per level */}
-                      {/* TODO: Add actual badge images for each ICF level:
-                          - ACC: /badges/icf-acc.png
-                          - PCC: /badges/icf-pcc.png
-                          - MCC: /badges/icf-mcc.png
-                      */}
-                      <div className="w-16 h-16 bg-[#2E5C8A]/10 rounded-full flex items-center justify-center border-2 border-[#4A90E2]">
-                        <Award className="h-8 w-8 text-[#2E5C8A]" />
+                    <div className="flex flex-col items-center gap-3 mb-4">
+                      {/* Level in bold */}
+                      <p className="text-center text-base font-bold text-[#2E5C8A]">{coach.icfAccreditationLevel}</p>
+                      {/* Even larger badge for better visibility */}
+                      <div className="w-48 h-48 flex items-center justify-center">
+                        <AccreditationBadge
+                          body="ICF"
+                          level={coach.icfAccreditationLevel}
+                          size="large"
+                          className="!h-48 !w-48"
+                        />
                       </div>
                     </div>
                   )}
@@ -883,7 +918,9 @@ export const CoachDetails: React.FC = () => {
             {/* Location */}
             <div className="flex items-center justify-center gap-2 mb-4">
               <MapPin className="h-5 w-5 text-slate-600" />
-              <span className="text-lg font-bold text-slate-900">{coach.location || 'United Kingdom'}</span>
+              <span className="text-lg font-bold text-slate-900">
+                {[coach.locationCity || coach.location, coach.country || 'United Kingdom'].filter(Boolean).join(', ')}
+              </span>
             </div>
 
             {/* Price Badge */}
@@ -925,26 +962,9 @@ export const CoachDetails: React.FC = () => {
                 );
               }
 
-              // Fallback: Contact via email
-              return (
-                <div className="flex justify-center mb-8">
-                  <a
-                    href={`mailto:${coach.email}?subject=Coaching Inquiry from CoachDog&body=Hi ${coach.name},%0D%0A%0D%0AI found your profile on CoachDog and would like to inquire about your coaching services.%0D%0A%0D%0APlease let me know your availability for an initial consultation.%0D%0A%0D%0AThank you!`}
-                    className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-                  >
-                    <Calendar className="h-5 w-5" />
-                    Contact Coach
-                  </a>
-                </div>
-              );
+              // No booking link — show nothing
+              return null;
             })()}
-
-            {/* Currency Disclaimer */}
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 mx-4">
-              <p className="text-xs text-amber-900 text-center">
-                <span className="font-bold">ℹ️ Currency Notice:</span> Pricing is in the coach's local currency. International clients should consider currency conversion rates.
-              </p>
-            </div>
           </div>
 
           {/* Divider */}
@@ -1026,10 +1046,10 @@ export const CoachDetails: React.FC = () => {
               </div>
             )}
 
-            {/* CPD Qualifications */}
+            {/* Additional Certifications */}
             {coach.cpdQualifications && coach.cpdQualifications.length > 0 && (
               <div>
-                <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">CPD Qualifications:</h3>
+                <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Additional Certifications:</h3>
                 <div className="flex flex-wrap gap-2">
                   {coach.cpdQualifications.map((qual, idx) => (
                     <span
@@ -1112,17 +1132,29 @@ export const CoachDetails: React.FC = () => {
               <div>
                 <h3 className="text-sm font-bold text-slate-600 mb-4 uppercase tracking-wide">Acknowledgements:</h3>
                 <div className="space-y-3">
-                  {coach.acknowledgements.map((ack: any) => (
-                    <div key={ack.id} className="flex items-start gap-3 bg-cyan-50 px-4 py-3 rounded-2xl">
-                      <Star className="h-7 w-7 text-cyan-500 flex-shrink-0 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="font-bold text-slate-900 text-base">{ack.title}</p>
-                        {ack.year && (
-                          <p className="text-sm text-slate-600 mt-1">{ack.year}</p>
-                        )}
+                  {coach.acknowledgements.map((ack: any) => {
+                    const iconMap: { [key: string]: string } = {
+                      'trophy': '🏆',
+                      'star': '⭐',
+                      'medal': '🏅',
+                      'award': '🎖️',
+                      'certificate': '📜',
+                      'crown': '👑',
+                      'ribbon': '🎗️'
+                    };
+                    const icon = ack.icon ? (iconMap[ack.icon] || '🏆') : '🏆';
+                    return (
+                      <div key={ack.id} className="flex items-start gap-3 bg-cyan-50 px-4 py-3 rounded-2xl">
+                        <div className="text-3xl flex-shrink-0">{icon}</div>
+                        <div className="flex-1">
+                          <p className="font-bold text-slate-900 text-base">{ack.title}</p>
+                          {ack.year && (
+                            <p className="text-sm text-slate-600 mt-1">{ack.year}</p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

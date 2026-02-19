@@ -55,9 +55,9 @@ export const CoachInfo: React.FC = () => {
               <div className="bg-white w-16 h-16 rounded-2xl shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <HeartHandshake className="h-8 w-8 text-indigo-600" />
               </div>
-              <h3 className="text-2xl font-display font-bold text-slate-900 mb-4">Perfect Matches</h3>
+              <h3 className="text-2xl font-display font-bold text-slate-900 mb-4">Professional Landing Page</h3>
               <p className="text-slate-600 leading-relaxed">
-                We don't just send you traffic. We match you with clients whose goals align with your specific expertise, creating a win-win partnership.
+                Get your own professional coaching profile page with custom URL, photo, bio, credentials, and booking integration—all optimized to convert visitors into clients.
               </p>
             </div>
 
@@ -65,9 +65,9 @@ export const CoachInfo: React.FC = () => {
               <div className="bg-white w-16 h-16 rounded-2xl shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <BarChart className="h-8 w-8 text-rose-500" />
               </div>
-              <h3 className="text-2xl font-display font-bold text-slate-900 mb-4">Practice Tools</h3>
+              <h3 className="text-2xl font-display font-bold text-slate-900 mb-4">Build Your Reputation</h3>
               <p className="text-slate-600 leading-relaxed">
-                Streamline your administrative tasks. Manage your profile, view engagement analytics, and handle your subscription in one intuitive portal.
+                Collect and showcase authentic client reviews directly on your profile. Real testimonials build trust, enhance credibility, and drive new clients to choose you with confidence.
               </p>
             </div>
 

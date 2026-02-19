@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Mail, MessageSquare, Send } from 'lucide-react';
+import { Mail, MessageSquare, Send, AlertCircle } from 'lucide-react';
 
 export const Contact: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
@@ -18,6 +18,27 @@ export const Contact: React.FC = () => {
           <p className="mt-4 text-slate-500">
             Whether you are a client looking for help or a coach needing support, we are here for you.
           </p>
+        </div>
+
+        {/* Important Disclaimer */}
+        <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-6 mb-6">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-bold text-amber-900 mb-2">Important: Scope of Responsibility</h3>
+              <p className="text-sm text-amber-800 mb-3">
+                <strong>CoachDog is a verification and directory platform only.</strong> We verify coach credentials and provide a trusted marketplace, but we do not provide coaching services ourselves.
+              </p>
+              <div className="space-y-2 text-sm text-amber-800">
+                <p>
+                  <strong>Platform complaints:</strong> Issues with your account, billing, profile visibility, verification status, or platform functionality — please use this form.
+                </p>
+                <p>
+                  <strong>Coaching-related issues:</strong> Concerns about coaching quality, session content, coach conduct, or disputes arising from coaching services — please contact the coach directly. We do not mediate coaching relationships or take responsibility for the actions of coaches listed on our platform.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
@@ -46,6 +67,7 @@ export const Contact: React.FC = () => {
                   <option>I'm a Coach having trouble</option>
                   <option>Billing Support</option>
                   <option>Report a Profile</option>
+                  <option>Raise a Complaint (Platform Issues)</option>
                   <option>Account Deletion Request</option>
                 </select>
               </div>

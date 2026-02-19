@@ -25,6 +25,7 @@ export async function createCoachProfile(
   additionalData?: {
     name?: string;
     is_verified?: boolean;
+    referral_source?: string;
   },
   maxRetries: number = 3
 ): Promise<string> {
@@ -91,6 +92,8 @@ export async function createCoachProfile(
     // Optional fields for visibility management
     profile_visible: true, // Trial users should be visible
     dashboard_access: true, // Trial users have dashboard access
+    // Partner referral source (if coach arrived via a partner URL)
+    referral_source: additionalData?.referral_source || null,
   };
 
   console.log('[ProfileCreation] Profile data to insert:', insertData);

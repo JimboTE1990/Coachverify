@@ -24,35 +24,66 @@ export const getCoaches = async (): Promise<Coach[]> => {
     return [];
   }
 
-  return mapCoachProfiles(coaches || []);
+  // Filter out expired trials on the client side (since Supabase doesn't support date comparisons in .or())
+  const now = new Date();
+  const activeCoaches = (coaches || []).filter((coach: any) => {
+    // If subscription_status is 'trial', check if trial has expired
+    if (coach.subscription_status === 'trial' && coach.trial_ends_at) {
+      const trialEnd = new Date(coach.trial_ends_at);
+      return trialEnd >= now; // Only include if trial hasn't expired
+    }
+    // For non-trial statuses (active, lifetime), always include
+    return true;
+  });
+
+  return mapCoachProfiles(activeCoaches);
 };
 
 export const getCoachById = async (id: string): Promise<Coach | null> => {
-  const { data: coach, error } = await supabase
+  // Try UUID lookup first
+  let { data: coach, error } = await supabase
     .from('coach_profiles')
     .select('*')
     .eq('id', id)
     .single();
 
-  if (error) {
-    console.error('Error fetching coach:', error);
+  // If not found by UUID, try custom URL slug lookup
+  if ((error || !coach) && id && !id.includes('-')) {
+    const { data: coachBySlug } = await supabase
+      .from('coach_profiles')
+      .select('*')
+      .eq('custom_url', id)
+      .single();
+    if (coachBySlug) coach = coachBySlug;
+  } else if (error && !coach) {
+    // Could be a custom slug that looks like it has hyphens (e.g. paul-smith)
+    const { data: coachBySlug } = await supabase
+      .from('coach_profiles')
+      .select('*')
+      .eq('custom_url', id)
+      .maybeSingle();
+    if (coachBySlug) coach = coachBySlug;
+  }
+
+  if (!coach) {
+    if (error) console.error('Error fetching coach:', error);
     return null;
   }
 
-  if (!coach) return null;
+  const resolvedId = coach.id;
 
   // Fetch reviews separately
   const { data: reviews } = await supabase
     .from('reviews')
     .select('*')
-    .eq('coach_id', id)
+    .eq('coach_id', resolvedId)
     .order('created_at', { ascending: false });
 
   // Fetch social links
   const { data: socialLinks } = await supabase
     .from('social_links')
     .select('*')
-    .eq('coach_id', id)
+    .eq('coach_id', resolvedId)
     .order('display_order', { ascending: true });
 
   const mappedCoach = mapCoachProfile(coach);
@@ -60,6 +91,20 @@ export const getCoachById = async (id: string): Promise<Coach | null> => {
   mappedCoach.socialLinks = (socialLinks || []).map(mapSocialLink);
 
   return mappedCoach;
+};
+
+/**
+ * Check if a custom URL slug is available (not already taken by another coach)
+ * Returns true if available, false if taken
+ */
+export const checkCustomUrlAvailability = async (slug: string, currentCoachId: string): Promise<boolean> => {
+  const { data } = await supabase
+    .from('coaches')
+    .select('id')
+    .eq('custom_url', slug)
+    .neq('id', currentCoachId)
+    .maybeSingle();
+  return !data;
 };
 
 export const getCoachByUserId = async (userId: string): Promise<Coach | null> => {
@@ -150,6 +195,8 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   if (coach.locationCity !== undefined) updateData.location_city = coach.locationCity;
   if (coach.locationRadius !== undefined) updateData.location_radius = coach.locationRadius;
   if (coach.locationIsCustom !== undefined) updateData.location_is_custom = coach.locationIsCustom;
+  if (coach.country !== undefined) updateData.country = coach.country;
+  if (coach.customUrl !== undefined) updateData.custom_url = coach.customUrl;
   if (coach.qualifications !== undefined) updateData.qualifications = coach.qualifications;
   if (coach.acknowledgements !== undefined) updateData.acknowledgements = coach.acknowledgements;
   if (coach.mainCoachingCategories !== undefined) updateData.main_coaching_categories = coach.mainCoachingCategories;
@@ -991,6 +1038,9 @@ const mapCoachProfile = (data: any): Coach => {
     cpdQualifications: data.cpd_qualifications,
     coachingLanguages: data.coaching_languages,
     gender: data.gender,
+    referralSource: data.referral_source || null,
+    country: data.country || 'United Kingdom',
+    customUrl: data.custom_url || null,
     currency: data.currency || 'GBP',
 
     // Cancellation tracking (Phase 2)

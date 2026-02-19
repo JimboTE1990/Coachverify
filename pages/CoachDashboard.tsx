@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { updateCoach, getCoachAnalytics, getCoachById, verifyReview, flagReview, resetReviewVerification, addReviewComment, getReviewComments, flagReviewAsSpam, type CoachAnalytics } from '../services/supabaseService';
+import { updateCoach, getCoachAnalytics, getCoachById, verifyReview, flagReview, resetReviewVerification, addReviewComment, getReviewComments, flagReviewAsSpam, checkCustomUrlAvailability, type CoachAnalytics } from '../services/supabaseService';
 import { verifyEMCCAccreditation, needsEMCCVerification, getVerificationStatusMessage } from '../services/emccVerificationService';
 import {
   Coach,
@@ -26,7 +26,8 @@ import {
   Plus, Trash2, Link as LinkIcon, CheckCircle, Shield,
   AlertTriangle, Mail, Smartphone, RefreshCw, Eye, EyeOff,
   Tag, Monitor, LayoutDashboard, Sparkles, BarChart, TrendingUp, Calendar,
-  Award, GraduationCap, Trophy, Star, Flag, MessageCircle, Send, Info, ExternalLink
+  Award, GraduationCap, Trophy, Star, Flag, MessageCircle, Send, Info, ExternalLink,
+  ClipboardCheck
 } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
 import { useAuth } from '../hooks/useAuth';
@@ -153,6 +154,12 @@ export const CoachDashboard: React.FC = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Custom URL editor state
+  const [customUrlInput, setCustomUrlInput] = useState('');
+  const [customUrlStatus, setCustomUrlStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
+  const [customUrlSaving, setCustomUrlSaving] = useState(false);
+  const customUrlDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Analytics state
   const [analytics, setAnalytics] = useState<CoachAnalytics | null>(null);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
@@ -192,10 +199,19 @@ export const CoachDashboard: React.FC = () => {
         coachingHours: currentCoach.coachingHours,
         locationCity: currentCoach.locationCity,
         locationRadius: currentCoach.locationRadius,
-        locationIsCustom: currentCoach.locationIsCustom
+        locationIsCustom: currentCoach.locationIsCustom,
+        country: currentCoach.country || 'United Kingdom',
+        customUrl: currentCoach.customUrl || ''
       });
     }
   }, [currentCoach, localProfile]);
+
+  // Initialize custom URL input when coach loads
+  useEffect(() => {
+    if (currentCoach?.customUrl && !customUrlInput) {
+      setCustomUrlInput(currentCoach.customUrl);
+    }
+  }, [currentCoach?.customUrl]);
 
   // New Link State
   const [newLink, setNewLink] = useState<{ platform: string; url: string; type: 'url' | 'email' | 'tel' }>({ platform: '', url: '', type: 'url' });
@@ -1169,7 +1185,7 @@ export const CoachDashboard: React.FC = () => {
                             </div>
                           ) : (
                             <div className="bg-brand-100 p-2 rounded-full">
-                              <Sparkles className="h-6 w-6 text-brand-600" />
+                              <ClipboardCheck className="h-6 w-6 text-brand-600" />
                             </div>
                           )}
                           <div>
@@ -1419,7 +1435,121 @@ export const CoachDashboard: React.FC = () => {
                             <p className="text-xs text-slate-500 mt-2">How far you're willing to travel for in-person coaching</p>
                           </div>
                         )}
+
+                        {/* Country */}
+                        <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-3">Country</label>
+                          <select
+                            value={localProfile?.country || 'United Kingdom'}
+                            onChange={(e) => updateLocalProfile({ country: e.target.value })}
+                            className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
+                          >
+                            <option>United Kingdom</option>
+                            <option>United States</option>
+                            <option>Ireland</option>
+                            <option>Australia</option>
+                            <option>Canada</option>
+                            <option>New Zealand</option>
+                            <option>South Africa</option>
+                            <option>Other</option>
+                          </select>
+                        </div>
                       </div>
+                  </CollapsibleSection>
+
+                  {/* Custom Profile URL */}
+                  <CollapsibleSection
+                    title="Your Profile URL"
+                    subtitle="Create a custom shareable link to your coaching profile"
+                    icon={<LinkIcon className="h-4 w-4" />}
+                    defaultOpen={false}
+                    gradient="from-brand-50 to-cyan-50"
+                    borderColor="border-brand-200"
+                    iconBgColor="bg-brand-100"
+                    iconTextColor="text-brand-600"
+                  >
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Shareable URL</label>
+                        <div className="flex items-center gap-0 border border-slate-200 bg-slate-50 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-brand-500 focus-within:border-brand-500">
+                          <span className="px-3 py-3 text-sm text-slate-500 bg-slate-100 border-r border-slate-200 whitespace-nowrap">coachdog.com/coach/</span>
+                          <input
+                            type="text"
+                            value={customUrlInput}
+                            onChange={(e) => {
+                              const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                              setCustomUrlInput(val);
+                              setCustomUrlStatus('idle');
+                              if (customUrlDebounceRef.current) clearTimeout(customUrlDebounceRef.current);
+                              if (!val) { setCustomUrlStatus('idle'); return; }
+                              if (!/^[a-z0-9-]{3,50}$/.test(val)) {
+                                setCustomUrlStatus('invalid');
+                                return;
+                              }
+                              setCustomUrlStatus('checking');
+                              customUrlDebounceRef.current = setTimeout(async () => {
+                                if (!currentCoach?.id) return;
+                                const available = await checkCustomUrlAvailability(val, currentCoach.id);
+                                setCustomUrlStatus(available ? 'available' : 'taken');
+                              }, 500);
+                            }}
+                            placeholder="your-name"
+                            className="flex-1 px-3 py-3 bg-transparent outline-none text-sm text-slate-900"
+                            maxLength={50}
+                          />
+                          {customUrlStatus === 'checking' && (
+                            <span className="px-3 text-slate-400 text-sm">...</span>
+                          )}
+                          {customUrlStatus === 'available' && (
+                            <span className="px-3 text-green-600 text-lg">✓</span>
+                          )}
+                          {customUrlStatus === 'taken' && (
+                            <span className="px-3 text-red-500 text-lg">✗</span>
+                          )}
+                        </div>
+                        {customUrlStatus === 'available' && (
+                          <p className="text-xs text-green-600 font-semibold mt-1">Available</p>
+                        )}
+                        {customUrlStatus === 'taken' && (
+                          <p className="text-xs text-red-500 font-semibold mt-1">Already taken — try a different slug</p>
+                        )}
+                        {customUrlStatus === 'invalid' && (
+                          <p className="text-xs text-amber-600 font-semibold mt-1">3–50 characters, lowercase letters, numbers and hyphens only</p>
+                        )}
+                        {customUrlStatus === 'idle' && customUrlInput && (
+                          <p className="text-xs text-slate-500 mt-1">Checking availability...</p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        disabled={customUrlStatus !== 'available' || customUrlSaving}
+                        onClick={async () => {
+                          if (!currentCoach || customUrlStatus !== 'available') return;
+                          setCustomUrlSaving(true);
+                          try {
+                            await updateCoach({ ...currentCoach, customUrl: customUrlInput });
+                            setCustomUrlStatus('idle');
+                            // Refresh coach data
+                            const updated = await getCoachById(currentCoach.id);
+                            if (updated) {
+                              // Trigger a re-render by updating localProfile
+                              setLocalProfile(prev => prev ? { ...prev, customUrl: customUrlInput } : prev);
+                            }
+                            alert('Profile URL updated! Share coachdog.com/coach/' + customUrlInput);
+                          } catch {
+                            alert('Failed to save URL — please try again.');
+                          } finally {
+                            setCustomUrlSaving(false);
+                          }
+                        }}
+                        className="w-full py-2.5 rounded-xl text-sm font-bold transition-all bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {customUrlSaving ? 'Saving...' : 'Save URL'}
+                      </button>
+                      <p className="text-xs text-slate-500">
+                        Use lowercase letters, numbers and hyphens (e.g. <span className="font-mono">jane-smith</span>). Minimum 3 characters.
+                      </p>
+                    </div>
                   </CollapsibleSection>
 
                   {/* Social Links */}
@@ -1689,10 +1819,29 @@ export const CoachDashboard: React.FC = () => {
                                 <option value="AC">AC</option>
                                 <option value="Other">Other</option>
                               </select>
-                              {localProfile?.accreditationBody === 'EMCC' && localProfile?.emccVerified && (
-                                <span className="mt-1 flex items-center gap-1 text-green-600 text-xs font-bold">
-                                  <CheckCircle className="h-3 w-3" /> Verified
-                                </span>
+                              {localProfile?.accreditationBody === 'EMCC' && (
+                                localProfile?.emccVerified ? (
+                                  <span className="mt-1 flex items-center gap-1 text-green-600 text-xs font-bold">
+                                    <CheckCircle className="h-3 w-3" /> Verified
+                                  </span>
+                                ) : (
+                                  <div className="mt-1 flex items-center gap-2">
+                                    <span className="flex items-center gap-1 text-amber-600 text-xs font-semibold">
+                                      <AlertTriangle className="h-3 w-3" /> Not yet verified
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setVerificationData({ eiaNumber: '', fullName: currentCoach?.name || '' });
+                                        setVerificationError(null);
+                                        setShowVerificationModal(true);
+                                      }}
+                                      className="text-xs text-brand-600 hover:text-brand-700 font-bold underline"
+                                    >
+                                      Verify now
+                                    </button>
+                                  </div>
+                                )
                               )}
                               {localProfile?.accreditationBody === 'ICF' && localProfile?.icfVerified && (
                                 <span className="mt-1 flex items-center gap-1 text-green-600 text-xs font-bold">
@@ -1731,7 +1880,7 @@ export const CoachDashboard: React.FC = () => {
                           </div>
                         </div>
                         <p className="text-xs text-slate-500 mt-3 italic">
-                          Your accreditation details appear on your public profile. Verification status is set during signup and updated by the CoachDog team.
+                          Your accreditation details appear on your public profile. If your EMCC accreditation shows as unverified, click "Verify now" to complete verification with your EIA number.
                         </p>
                       </div>
 

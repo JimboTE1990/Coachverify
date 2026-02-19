@@ -29,6 +29,7 @@ import { ChangePlanConfirm } from './pages/subscription/ChangePlanConfirm';
 import { ChangePlanSuccess } from './pages/subscription/ChangePlanSuccess';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfService } from './pages/TermsOfService';
+import { CookiesPolicy } from './pages/CookiesPolicy';
 
 interface ErrorBoundaryProps {
   children?: ReactNode;
@@ -127,6 +128,7 @@ const App: React.FC = () => {
               <Route path="/contact" element={<Contact />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/cookies" element={<CookiesPolicy />} />
             </Routes>
           </Layout>
         </AuthProvider>

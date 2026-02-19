@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { ShieldCheck, CheckCircle, ArrowRight, Loader, Mail, AlertTriangle, Eye, EyeOff, XCircle, Info, ExternalLink } from 'lucide-react';
 import { verifyCoachLicense } from '../services/supabaseService';
 import { supabase } from '../lib/supabase';
@@ -11,12 +11,13 @@ import { handleAuthError, handleError } from '../utils/errorHandling';
 
 export const CoachSignup: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [verified, setVerified] = useState(false);
-  const [ageError, setAgeError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [signupError, setSignupError] = useState('');
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [showAccreditationInfo, setShowAccreditationInfo] = useState(false);
@@ -40,6 +41,28 @@ export const CoachSignup: React.FC = () => {
     }
   }, [showAccreditationInfo]);
 
+  // Capture partner referral URL param (?ref=emcc, ?ref=icf, etc.)
+  useEffect(() => {
+    const refParam = (searchParams.get('ref') || searchParams.get('partner') || '').toLowerCase().trim();
+    if (!refParam) return;
+
+    // Store referral source in sessionStorage for profile creation
+    sessionStorage.setItem('coachdog_referral', refParam);
+
+    // Pre-fill accreditation body based on referral
+    const bodyMap: Record<string, string> = { emcc: 'EMCC', icf: 'ICF', ac: 'AC' };
+    if (bodyMap[refParam]) {
+      setFormData(prev => ({ ...prev, body: bodyMap[refParam] }));
+    }
+
+    // Auto-apply partner discount code
+    const partnerDiscounts: Record<string, string> = { emcc: 'EMCC15', icf: 'ICF15' };
+    if (partnerDiscounts[refParam]) {
+      sessionStorage.setItem('coachdog_discount', partnerDiscounts[refParam]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Redirect if already logged in (wait for auth to finish loading)
   useEffect(() => {
     if (!authLoading && isAuthenticated && !hasRedirected.current) {
@@ -57,9 +80,7 @@ export const CoachSignup: React.FC = () => {
     gender: '',
     email: '',
     password: '',
-    dobDay: '1',
-    dobMonth: '0',
-    dobYear: '2000',
+    confirmPassword: '',
     body: 'EMCC',
     regNumber: '',
     location: '', // NEW: For ICF verification (City, Country)
@@ -68,34 +89,16 @@ export const CoachSignup: React.FC = () => {
 
   const passwordStrength = validatePassword(formData.password);
   const fullName = `${formData.first_name} ${formData.last_name}`.trim();
+  const passwordsMatch = formData.password === formData.confirmPassword;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (e.target.name.startsWith('dob')) setAgeError('');
-    if (e.target.name === 'password') setSignupError('');
+    if (e.target.name === 'password' || e.target.name === 'confirmPassword') {
+      setSignupError('');
+      setPasswordMismatch('');
+    }
   };
 
-  const checkAge = () => {
-    const today = new Date();
-    const birthDate = new Date(
-      parseInt(formData.dobYear),
-      parseInt(formData.dobMonth),
-      parseInt(formData.dobDay)
-    );
-
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-    }
-
-    if (age < 18) {
-        setAgeError('You must be at least 18 years old to register as a coach.');
-        return false;
-    }
-    return true;
-  };
 
   const checkDuplicateEmail = async (): Promise<boolean> => {
     setSignupError('');
@@ -171,10 +174,8 @@ export const CoachSignup: React.FC = () => {
       return; // Error already set by checkDuplicateEmail
     }
 
-    // Check age
-    if (checkAge()) {
-        setStep(2);
-    }
+    // Proceed to step 2
+    setStep(2);
   };
 
   const handleVerification = async () => {
@@ -242,7 +243,6 @@ export const CoachSignup: React.FC = () => {
               first_name: formData.first_name,
               last_name: formData.last_name,
               gender: formData.gender,
-              date_of_birth: `${formData.dobYear}-${formData.dobMonth.padStart(2, '0')}-${formData.dobDay.padStart(2, '0')}`,
               accreditation_body: formData.body,
               registration_number: formData.regNumber,
             },
@@ -296,10 +296,13 @@ export const CoachSignup: React.FC = () => {
 
         try {
           // Create coach profile using robust utility
+          const referralSource = sessionStorage.getItem('coachdog_referral') || undefined;
           const profileId = await createCoachProfile(authData.user, {
             name: fullName,
             is_verified: verified,
+            referral_source: referralSource,
           });
+          if (referralSource) sessionStorage.removeItem('coachdog_referral');
 
           console.log('[CoachSignup] ✅ Profile created for auto-confirmed user:', profileId);
 
@@ -417,21 +420,6 @@ export const CoachSignup: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="col-span-2 md:col-span-1">
-                   <label className="block text-sm font-medium text-slate-700 mb-1">Date of Birth</label>
-                   <div className="flex space-x-2">
-                       <select name="dobDay" value={formData.dobDay} onChange={handleChange} className="w-1/3 px-2 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white">
-                          {days.map(d => <option key={d} value={d}>{d}</option>)}
-                       </select>
-                       <select name="dobMonth" value={formData.dobMonth} onChange={handleChange} className="w-1/3 px-2 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white">
-                          {months.map((m, i) => <option key={i} value={i}>{m}</option>)}
-                       </select>
-                       <select name="dobYear" value={formData.dobYear} onChange={handleChange} className="w-1/3 px-2 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-white">
-                          {years.map(y => <option key={y} value={y}>{y}</option>)}
-                       </select>
-                   </div>
-                </div>
-
                 <div className="col-span-2">
                    <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
                    <input
@@ -522,15 +510,49 @@ export const CoachSignup: React.FC = () => {
                 </div>
               </div>
 
-              {ageError && (
-                  <div className="mt-4 bg-red-50 border border-red-200 p-4 rounded-lg flex items-start text-red-800 shadow-sm animate-fade-in">
-                      <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
-                      <div>
-                          <p className="font-bold">Age Restriction</p>
-                          <p className="text-sm">{ageError}</p>
-                      </div>
+              {/* Confirm Password */}
+              <div className="space-y-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-semibold text-slate-700">
+                  Confirm Password <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Re-enter your password"
+                    className={`w-full px-4 py-3 pr-20 border rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all ${
+                      formData.confirmPassword && !passwordsMatch
+                        ? 'border-red-300 bg-red-50'
+                        : 'border-slate-300'
+                    }`}
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="text-slate-400 hover:text-slate-600"
+                      tabIndex={-1}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                    {formData.confirmPassword && passwordsMatch && (
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                    )}
+                    {formData.confirmPassword && !passwordsMatch && (
+                      <XCircle className="h-5 w-5 text-red-500" />
+                    )}
                   </div>
-              )}
+                </div>
+                {formData.confirmPassword && !passwordsMatch && (
+                  <p className="text-xs text-red-600 flex items-start mt-1">
+                    <XCircle className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
+                    Passwords do not match
+                  </p>
+                )}
+              </div>
 
               {signupError && (
                   <div className="mt-4 bg-red-50 border border-red-200 p-4 rounded-lg flex items-start text-red-800 shadow-sm animate-fade-in">
@@ -552,7 +574,7 @@ export const CoachSignup: React.FC = () => {
               <div className="mt-8 flex justify-end">
                 <button
                   onClick={handleStep1Submit}
-                  disabled={checkingEmail || !formData.first_name || !formData.last_name || !formData.email || !formData.password || passwordStrength.score < 3}
+                  disabled={checkingEmail || !formData.first_name || !formData.last_name || !formData.email || !formData.password || !formData.confirmPassword || !passwordsMatch || passwordStrength.score < 3}
                   className="bg-brand-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
                 >
                   {checkingEmail ? (
@@ -585,20 +607,21 @@ export const CoachSignup: React.FC = () => {
                  </div>
 
                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
                       {formData.body === 'EMCC' ? 'EMCC Profile URL' :
                        formData.body === 'ICF' ? 'ICF Directory Search URL' :
                        'Registration / Member Number'}
-                      <button
-                        ref={infoButtonRef}
-                        type="button"
-                        onClick={() => setShowAccreditationInfo(!showAccreditationInfo)}
-                        className="text-brand-500 hover:text-brand-600 transition-colors"
-                        title="Where to find your accreditation details"
-                      >
-                        <Info className="h-4 w-4" />
-                      </button>
                     </label>
+                    <button
+                      ref={infoButtonRef}
+                      type="button"
+                      onClick={() => setShowAccreditationInfo(!showAccreditationInfo)}
+                      className="mb-2 inline-flex items-center gap-2 px-4 py-2 bg-brand-50 text-brand-700 rounded-lg hover:bg-brand-100 border-2 border-brand-200 transition-all font-semibold text-sm shadow-sm"
+                      title="Where to find your accreditation details"
+                    >
+                      <Info className="h-5 w-5" />
+                      <span>Need help finding your URL?</span>
+                    </button>
 
                     {/* Dynamic Info Popup - uses fixed positioning to overflow container */}
                     {showAccreditationInfo && infoButtonRef.current && (

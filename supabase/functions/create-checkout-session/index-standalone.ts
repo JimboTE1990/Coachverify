@@ -85,9 +85,8 @@ serve(async (req) => {
       const now = new Date();
 
       if (trialEndDate > now) {
-        const billingCycleAnchor = Math.floor(trialEndDate.getTime() / 1000);
-        sessionParams['subscription_data[billing_cycle_anchor]'] = billingCycleAnchor.toString();
-        sessionParams['subscription_data[trial_end]'] = billingCycleAnchor.toString();
+        const trialEndUnix = Math.floor(trialEndDate.getTime() / 1000);
+        sessionParams['subscription_data[trial_end]'] = trialEndUnix.toString();
 
         console.log('[Supabase Edge] Trial ends at:', trialEndDate.toISOString());
       }

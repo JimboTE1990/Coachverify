@@ -6,6 +6,7 @@ import { ProfileDropdown } from './navigation/ProfileDropdown';
 import { ExpiredBanner } from './subscription/ExpiredBanner';
 import { TrialCountdownBanner } from './subscription/TrialCountdownBanner';
 import { TrialLoginNotification } from './subscription/TrialLoginNotification';
+import { CookieConsent } from './CookieConsent';
 import { getStartingPrice } from '../config/pricing';
 
 // --- Using actual logo image from PDF ---
@@ -206,13 +207,6 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                             label="Join as a Coach"
                             colorClass="bg-brand-50 text-brand-600 group-hover:bg-brand-600 group-hover:text-white"
                           />
-                          <NavMenuItem
-                            to="/check-email"
-                            icon={Mail}
-                            label="Resend Verification"
-                            desc="Get a new verification link"
-                            colorClass="bg-yellow-50 text-yellow-600 group-hover:bg-yellow-600 group-hover:text-white"
-                          />
                         </>
                       )}
                     </div>
@@ -338,7 +332,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                <div className="mb-4">
                   <CoachDogFullLogo className="h-16 w-auto" />
                </div>
-               <p className="text-slate-500 text-sm font-medium">A trusted verification platform for life coaches worldwide.</p>
+               <p className="text-slate-500 text-sm font-medium">A trusted verification platform for coaches worldwide.</p>
             </div>
             
             <div>
@@ -372,6 +366,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                <ul className="space-y-2 text-sm text-slate-500 font-medium">
                  <li><Link to="/privacy" className="hover:text-brand-600">Privacy Policy</Link></li>
                  <li><Link to="/terms" className="hover:text-brand-600">Terms of Service</Link></li>
+                 <li><Link to="/cookies" className="hover:text-brand-600">Cookies Policy</Link></li>
                </ul>
             </div>
           </div>
@@ -382,6 +377,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 <Link to="/privacy" className="hover:text-brand-600 font-medium">Privacy</Link>
                 <span>·</span>
                 <Link to="/terms" className="hover:text-brand-600 font-medium">Terms</Link>
+                <span>·</span>
+                <Link to="/cookies" className="hover:text-brand-600 font-medium">Cookies</Link>
               </div>
             </div>
             <div className="flex space-x-6 mt-4 md:mt-0">
@@ -396,6 +393,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
       {/* Trial Login Notification - Bottom right notification */}
       {coach && <TrialLoginNotification coach={coach} />}
+
+      {/* Cookie Consent Banner */}
+      <CookieConsent />
     </div>
   );
 };

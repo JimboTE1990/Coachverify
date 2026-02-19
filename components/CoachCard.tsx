@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Coach, CURRENCIES } from '../types';
 import { BadgeCheck, Star, MapPin, ArrowRight, Sparkles } from 'lucide-react';
+import { AccreditationBadge } from './AccreditationBadge';
+import { hasAccreditationBadge } from '../utils/accreditationBadges';
 
 interface CoachCardProps {
   coach: Coach;
@@ -29,26 +31,34 @@ export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchP
       {/* Hover Ring Effect */}
       <div className="absolute inset-0 border-2 border-transparent group-hover:border-brand-500/50 rounded-2xl pointer-events-none transition-all duration-300"></div>
 
-      {/* Image with subtle zoom */}
-      <div className="relative w-28 h-28 flex-shrink-0 bg-slate-100 rounded-xl overflow-hidden shadow-sm">
-        <img 
-          src={coach.photoUrl} 
-          alt={coach.name} 
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        />
-        {coach.isVerified && (
-          <div className="absolute top-1.5 left-1.5 bg-white/95 backdrop-blur-sm px-1.5 py-0.5 rounded-md text-[10px] font-bold text-slate-800 flex items-center shadow-sm border border-slate-100">
-            <BadgeCheck className="h-3 w-3 text-trust-500 mr-1" />
-            Verified
-          </div>
-        )}
+      {/* Profile Photo */}
+      <div className="flex-shrink-0">
+        <div className="relative w-28 h-28 bg-slate-100 rounded-xl overflow-hidden shadow-sm">
+          <img
+            src={coach.photoUrl}
+            alt={coach.name}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+        </div>
       </div>
       
       {/* Content */}
       <div className="flex-grow min-w-0 w-full relative z-10">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="text-xl font-display font-bold text-slate-900 group-hover:text-brand-700 transition-colors truncate">{coach.name}</h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-xl font-display font-bold text-slate-900 group-hover:text-brand-700 transition-colors">{coach.name}</h3>
+              {coach.accreditationBody === 'EMCC' && coach.emccVerified && coach.accreditationLevel && (
+                <span className="text-xs font-semibold text-[#2B4170] bg-[#C9A961]/10 px-2 py-0.5 rounded-md border border-[#C9A961]/30">
+                  EMCC {coach.accreditationLevel}
+                </span>
+              )}
+              {coach.accreditationBody === 'ICF' && coach.icfVerified && coach.icfAccreditationLevel && (
+                <span className="text-xs font-semibold text-[#2E5C8A] bg-[#4A90E2]/10 px-2 py-0.5 rounded-md border border-[#4A90E2]/30">
+                  ICF {coach.icfAccreditationLevel}
+                </span>
+              )}
+            </div>
             <p className="text-brand-600 font-bold text-xs uppercase tracking-wide mb-2">{coach.specialties?.[0] || 'General'}</p>
           </div>
           <div className="text-right">
@@ -60,7 +70,7 @@ export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchP
         </div>
 
         <div className="flex items-center text-slate-500 text-xs mb-3 font-medium">
-           <MapPin className="h-3.5 w-3.5 mr-1" /> {coach.location}
+           <MapPin className="h-3.5 w-3.5 mr-1" /> {coach.location}{coach.country ? `, ${coach.country}` : ''}
            <span className="mx-2 text-slate-300">|</span>
            <Star className="h-3.5 w-3.5 text-yellow-400 fill-current mr-1" />
            {totalReviews > 0 ? (

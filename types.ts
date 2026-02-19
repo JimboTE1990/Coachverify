@@ -320,6 +320,7 @@ export interface Coach {
   locationCity?: string; // Selected city from dropdown or custom entry
   locationRadius?: string; // Travel radius: "5", "10", "25", "50", "nationwide", "international"
   locationIsCustom?: boolean; // True if location_city is custom entry (not from predefined UK cities list)
+  country?: string; // Coach's country (e.g. 'United Kingdom', 'United States')
 
   qualifications?: Qualification[]; // Formal qualifications with degree details
   acknowledgements?: Acknowledgement[]; // Awards, recognitions, achievements
@@ -334,6 +335,7 @@ export interface Coach {
   cpdQualifications?: CPDQualification[]; // Additional professional development certifications
   coachingLanguages?: CoachingLanguage[]; // Languages offered for coaching sessions
   gender?: Gender; // Coach's gender identity
+  referralSource?: string | null; // Partner referral source (e.g. 'emcc', 'icf', 'ac')
 
   // Subscription & Billing
   subscriptionStatus: SubscriptionStatus;
