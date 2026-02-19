@@ -38,8 +38,7 @@ import { CancelSubscriptionModal } from '../components/subscription/CancelSubscr
 import { TrialExpiredModal } from '../components/subscription/TrialExpiredModal';
 import { ProfileViewsChart } from '../components/analytics/ProfileViewsChart';
 import { useTrialStatus } from '../hooks/useTrialStatus';
-import { ImageUpload } from '../components/ImageUpload';
-import { BannerImageUpload } from '../components/BannerImageUpload';
+import { ImageUploadWithCrop } from '../components/ImageUploadWithCrop';
 import { MultiSelect } from '../components/forms/MultiSelect';
 import { CollapsibleSection } from '../components/forms/CollapsibleSection';
 import { LOCATION_RADIUS_OPTIONS } from '../constants/locations';
@@ -1322,19 +1321,23 @@ export const CoachDashboard: React.FC = () => {
                   >
                       {/* Profile Photo Upload */}
                       <div className="mb-6">
-                        <ImageUpload
+                        <ImageUploadWithCrop
                           currentImageUrl={localProfile?.photoUrl}
                           onImageUpdate={(newUrl) => updateLocalProfile({ photoUrl: newUrl })}
                           coachId={currentCoach.id}
+                          aspect={1}
+                          type="profile"
                         />
                       </div>
 
                       {/* Banner Image Upload */}
                       <div className="mb-6">
-                        <BannerImageUpload
+                        <ImageUploadWithCrop
                           currentImageUrl={localProfile?.bannerImageUrl}
                           onImageUpdate={(newUrl) => updateLocalProfile({ bannerImageUrl: newUrl })}
                           coachId={currentCoach.id}
+                          aspect={3}
+                          type="banner"
                         />
                       </div>
 

@@ -73,7 +73,7 @@ export const Home: React.FC = () => {
             <h2 className="text-3xl font-display font-extrabold text-slate-900 sm:text-4xl mb-4">
               What is CoachDog?
             </h2>
-            <p className="text-lg text-slate-700 max-w-3xl mx-auto leading-relaxed mb-6 font-medium">
+            <p className="text-lg text-slate-700 max-w-3xl mx-auto leading-relaxed mb-6">
               Historically, coach dogs ran alongside or under horse-drawn carriages to guard the horses and carriage from thieves or other animals. Now, CoachDog will run alongside you and your goals to guard you from fraudulent coaches and other scams.
             </p>
             <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
