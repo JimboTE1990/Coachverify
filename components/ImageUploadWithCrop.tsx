@@ -138,7 +138,7 @@ export const ImageUploadWithCrop: React.FC<ImageUploadProps> = ({
 
       // Upload to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('profile-images')
+        .from('profile-photos')
         .upload(filePath, croppedBlob, {
           cacheControl: '3600',
           upsert: false,
@@ -154,7 +154,7 @@ export const ImageUploadWithCrop: React.FC<ImageUploadProps> = ({
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('profile-images')
+        .from('profile-photos')
         .getPublicUrl(filePath);
 
       console.log('[ImageUpload] Public URL:', publicUrl);
