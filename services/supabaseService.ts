@@ -196,7 +196,10 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   if (coach.locationRadius !== undefined) updateData.location_radius = coach.locationRadius;
   if (coach.locationIsCustom !== undefined) updateData.location_is_custom = coach.locationIsCustom;
   if (coach.country !== undefined) updateData.country = coach.country;
-  if (coach.customUrl !== undefined) updateData.custom_url = coach.customUrl;
+  // Only set custom_url if it's a valid string (not empty), otherwise set to null
+  if (coach.customUrl !== undefined) {
+    updateData.custom_url = coach.customUrl && coach.customUrl.trim() ? coach.customUrl : null;
+  }
   if (coach.qualifications !== undefined) updateData.qualifications = coach.qualifications;
   if (coach.acknowledgements !== undefined) updateData.acknowledgements = coach.acknowledgements;
   if (coach.mainCoachingCategories !== undefined) updateData.main_coaching_categories = coach.mainCoachingCategories;
