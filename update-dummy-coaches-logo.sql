@@ -1,9 +1,10 @@
 -- Update all dummy coaches to use CoachDog logo for profile photo and banner
--- This gives a consistent branded look for test/demo profiles
+-- Profile photo: Logo Image only (dog icon)
+-- Banner: Full CoachDog logo with text
 
 UPDATE coaches
 SET
-  photo_url = '/coachdog-logo.png',
+  photo_url = '/logo-image-only.png',
   banner_image_url = '/coachdog-logo.png'
 WHERE
   -- Update coaches that have placeholder or missing images
@@ -13,4 +14,4 @@ WHERE
 
 -- Show updated count
 SELECT COUNT(*) as updated_coaches FROM coaches
-WHERE photo_url = '/coachdog-logo.png';
+WHERE photo_url = '/logo-image-only.png';
