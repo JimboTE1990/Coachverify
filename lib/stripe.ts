@@ -40,6 +40,16 @@ export const STRIPE_PRICES = {
   lifetime: import.meta.env.VITE_STRIPE_LIFETIME_PRICE_ID || ''
 };
 
+// Diagnostic logging for production debugging
+if (typeof window !== 'undefined') {
+  console.log('[Stripe Config] Environment variables loaded at build time:');
+  console.log('  - VITE_STRIPE_MONTHLY_PRICE_ID:', STRIPE_PRICES.monthly ? '✓ Set' : '✗ Missing');
+  console.log('  - VITE_STRIPE_ANNUAL_PRICE_ID:', STRIPE_PRICES.annual ? '✓ Set' : '✗ Missing');
+  console.log('  - VITE_STRIPE_LIFETIME_PRICE_ID:', STRIPE_PRICES.lifetime ? '✓ Set' : '✗ Missing');
+  console.log('  Raw lifetime value:', import.meta.env.VITE_STRIPE_LIFETIME_PRICE_ID);
+  console.log('  All VITE_* env vars:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')));
+}
+
 /**
  * Check if Stripe is properly configured
  */
