@@ -993,25 +993,65 @@ export const CoachDetails: React.FC = () => {
                        url.includes('cal.com');
               });
 
-              // If booking link exists, use it
-              if (bookingLink) {
-                return (
-                  <div className="flex justify-center mb-8">
-                    <a
-                      href={bookingLink.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-                    >
-                      <Calendar className="h-5 w-5" />
-                      Schedule Call
-                    </a>
-                  </div>
-                );
-              }
+              // Get primary email for contact button
+              const emailContacts = coach.socialLinks?.filter(link => link.type === 'email') || [];
+              const primaryEmail = emailContacts[0]?.url;
 
-              // No booking link — show nothing
-              return null;
+              return (
+                <div className="space-y-3 mb-6">
+                  {/* Schedule Call Button - if booking link exists */}
+                  {bookingLink && (
+                    <div className="flex justify-center">
+                      <a
+                        href={bookingLink.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                      >
+                        <Calendar className="h-5 w-5" />
+                        Schedule Call
+                      </a>
+                    </div>
+                  )}
+
+                  {/* Contact Coach Button - always show if email available */}
+                  {primaryEmail && (
+                    <div className="flex justify-center">
+                      <a
+                        href={primaryEmail.startsWith('mailto:') ? primaryEmail : `mailto:${primaryEmail}`}
+                        className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                      >
+                        <Mail className="h-5 w-5" />
+                        Contact Coach
+                      </a>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Intro Video Embed - RIGHT AFTER BUTTONS */}
+            {(() => {
+              if (!coach?.introVideoUrl) return null;
+
+              const embedUrl = getEmbedUrl(coach.introVideoUrl);
+              if (!embedUrl) return null;
+
+              return (
+                <div className="mb-6 px-4">
+                  <h3 className="text-lg font-bold text-slate-900 mb-3 text-center">Introduction Video</h3>
+                  <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border-2 border-slate-200" style={{ paddingBottom: '56.25%' }}>
+                    <iframe
+                      src={embedUrl}
+                      className="absolute top-0 left-0 w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      title="Coach Introduction Video"
+                      frameBorder="0"
+                    />
+                  </div>
+                </div>
+              );
             })()}
           </div>
 
@@ -1477,34 +1517,6 @@ export const CoachDetails: React.FC = () => {
                 </div>
               )}
             </div>
-
-            {/* Intro Video Embed */}
-            {(() => {
-              console.log('[Video Debug] coach.introVideoUrl:', coach?.introVideoUrl);
-              if (!coach?.introVideoUrl) return null;
-
-              const embedUrl = getEmbedUrl(coach.introVideoUrl);
-              console.log('[Video Debug] Original URL:', coach.introVideoUrl);
-              console.log('[Video Debug] Embed URL:', embedUrl);
-
-              if (!embedUrl) return null;
-
-              return (
-                <div className="mb-4">
-                  <h3 className="text-lg font-bold text-slate-900 mb-3 text-center">Introduction Video</h3>
-                  <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border-2 border-slate-200" style={{ paddingBottom: '56.25%' }}>
-                    <iframe
-                      src={embedUrl}
-                      className="absolute top-0 left-0 w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                      title="Coach Introduction Video"
-                      frameBorder="0"
-                    />
-                  </div>
-                </div>
-              );
-            })()}
 
             {/* Leave a Review Button - Hide if viewing own profile */}
             {!(currentUserCoach && coach && currentUserCoach.id === coach.id) && (
