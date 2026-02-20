@@ -30,7 +30,11 @@ export const Home: React.FC = () => {
               src="/home-hero.png"
               alt="CoachDog - Professional Coaching"
               className="max-w-lg w-full object-contain"
-              style={{ maxHeight: '450px' }}
+              style={{
+                maxHeight: '450px',
+                maskImage: 'radial-gradient(ellipse 80% 70% at center, black 40%, transparent 75%)',
+                WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at center, black 40%, transparent 75%)'
+              }}
             />
           </div>
 
