@@ -1365,8 +1365,11 @@ export const CoachDashboard: React.FC = () => {
                       </div>
 
                       {/* Intro Video URL */}
-                      <div className="mb-6">
-                        <label className="block text-sm font-bold text-slate-700 mb-2">
+                      <div className="mb-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-6">
+                        <label className="block text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
+                          <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
                           Intro Video (optional)
                         </label>
                         <input
@@ -1374,13 +1377,13 @@ export const CoachDashboard: React.FC = () => {
                           value={localProfile?.introVideoUrl || ''}
                           onChange={(e) => updateLocalProfile({introVideoUrl: e.target.value})}
                           placeholder="https://www.youtube.com/watch?v=..."
-                          className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
+                          className="w-full border-2 border-blue-300 bg-white rounded-xl px-4 py-3 text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                         />
-                        <p className="text-xs text-slate-600 mt-2">
-                          Embed a short introductory video. Paste a YouTube or Vimeo link.
+                        <p className="text-sm text-slate-700 mt-3 font-medium">
+                          📹 Embed a short introductory video to stand out! Paste a YouTube or Vimeo link.
                         </p>
-                        <div className="mt-2 space-y-1 text-xs text-slate-500">
-                          <p className="font-semibold">Supported formats:</p>
+                        <div className="mt-3 bg-white rounded-lg p-3 space-y-1 text-xs text-slate-600">
+                          <p className="font-bold text-slate-700">Supported formats:</p>
                           <p>• YouTube: https://www.youtube.com/watch?v=VIDEO_ID</p>
                           <p>• YouTube Short: https://youtu.be/VIDEO_ID</p>
                           <p>• Vimeo: https://vimeo.com/VIDEO_ID</p>

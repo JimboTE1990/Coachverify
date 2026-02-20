@@ -1471,19 +1471,21 @@ export const CoachDetails: React.FC = () => {
             </div>
 
             {/* Intro Video Embed */}
-            {coach.introVideoUrl && (() => {
+            {coach?.introVideoUrl && (() => {
               const embedUrl = getEmbedUrl(coach.introVideoUrl);
               if (!embedUrl) return null;
 
               return (
                 <div className="mb-4">
-                  <div className="relative w-full rounded-2xl overflow-hidden shadow-lg" style={{ paddingBottom: '56.25%' }}>
+                  <h3 className="text-lg font-bold text-slate-900 mb-3 text-center">Introduction Video</h3>
+                  <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border-2 border-slate-200" style={{ paddingBottom: '56.25%' }}>
                     <iframe
                       src={embedUrl}
                       className="absolute top-0 left-0 w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
                       title="Coach Introduction Video"
+                      frameBorder="0"
                     />
                   </div>
                 </div>
