@@ -235,12 +235,17 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   // Update main coach record (use 'coaches' table directly, not 'coach_profiles' view)
   console.log('[updateCoach Debug] Full updateData object:', updateData);
   console.log('[updateCoach Debug] intro_video_url in updateData:', updateData.intro_video_url);
+  console.log('[updateCoach Debug] Attempting update for coach.id:', coach.id, 'user.id:', user.id);
 
-  const { error: coachError } = await supabase
+  const { data: updateResult, error: coachError } = await supabase
     .from('coaches')
     .update(updateData)
     .eq('id', coach.id)
-    .eq('user_id', user.id);
+    .eq('user_id', user.id)
+    .select();
+
+  console.log('[updateCoach Debug] Update result:', updateResult);
+  console.log('[updateCoach Debug] Update error:', coachError);
 
   if (coachError) {
     console.error('Error updating coach:', coachError);
