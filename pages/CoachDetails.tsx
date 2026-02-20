@@ -860,17 +860,28 @@ export const CoachDetails: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  {coach.emccProfileUrl && (
-                    <a
-                      href={coach.emccProfileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 text-sm text-[#2B4170] hover:text-[#C9A961] font-semibold transition-colors border-t-2 border-[#2B4170]/20 pt-4"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      Check out my EMCC accreditation here
-                    </a>
-                  )}
+                  {coach.emccProfileUrl && (() => {
+                    // Clean and ensure EMCC URL is properly formatted
+                    let cleanUrl = coach.emccProfileUrl;
+
+                    // If URL contains reference parameter, extract it and rebuild clean URL
+                    const refMatch = cleanUrl.match(/reference=([^&]+)/);
+                    if (refMatch && refMatch[1]) {
+                      cleanUrl = `https://www.emccglobal.org/accreditation/eia/eia-awards/?reference=${refMatch[1]}&search=1`;
+                    }
+
+                    return (
+                      <a
+                        href={cleanUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 text-sm text-[#2B4170] hover:text-[#C9A961] font-semibold transition-colors border-t-2 border-[#2B4170]/20 pt-4"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Check out my EMCC accreditation here
+                      </a>
+                    );
+                  })()}
                 </div>
               )}
 
