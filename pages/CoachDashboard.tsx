@@ -200,7 +200,8 @@ export const CoachDashboard: React.FC = () => {
         locationRadius: currentCoach.locationRadius,
         locationIsCustom: currentCoach.locationIsCustom,
         country: currentCoach.country || 'United Kingdom',
-        customUrl: currentCoach.customUrl || ''
+        customUrl: currentCoach.customUrl || '',
+        introVideoUrl: currentCoach.introVideoUrl || ''
       });
     }
   }, [currentCoach, localProfile]);
@@ -1361,6 +1362,29 @@ export const CoachDashboard: React.FC = () => {
                           onChange={(e) => updateLocalProfile({bio: e.target.value})}
                           className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
                         />
+                      </div>
+
+                      {/* Intro Video URL */}
+                      <div className="mb-6">
+                        <label className="block text-sm font-bold text-slate-700 mb-2">
+                          Intro Video (optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={localProfile?.introVideoUrl || ''}
+                          onChange={(e) => updateLocalProfile({introVideoUrl: e.target.value})}
+                          placeholder="https://www.youtube.com/watch?v=..."
+                          className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
+                        />
+                        <p className="text-xs text-slate-600 mt-2">
+                          Embed a short introductory video. Paste a YouTube or Vimeo link.
+                        </p>
+                        <div className="mt-2 space-y-1 text-xs text-slate-500">
+                          <p className="font-semibold">Supported formats:</p>
+                          <p>• YouTube: https://www.youtube.com/watch?v=VIDEO_ID</p>
+                          <p>• YouTube Short: https://youtu.be/VIDEO_ID</p>
+                          <p>• Vimeo: https://vimeo.com/VIDEO_ID</p>
+                        </div>
                       </div>
 
                       {/* Languages */}

@@ -208,6 +208,7 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   if (coach.coachingLanguages !== undefined) updateData.coaching_languages = coach.coachingLanguages;
   if (coach.gender !== undefined) updateData.gender = coach.gender;
   if (coach.currency !== undefined) updateData.currency = coach.currency;
+  if (coach.introVideoUrl !== undefined) updateData.intro_video_url = coach.introVideoUrl || null;
 
   // Specialties and formats as JSONB columns
   if (coach.specialties !== undefined) updateData.specialties = coach.specialties;
@@ -1045,6 +1046,7 @@ const mapCoachProfile = (data: any): Coach => {
     country: data.country || 'United Kingdom',
     customUrl: data.custom_url || null,
     currency: data.currency || 'GBP',
+    introVideoUrl: data.intro_video_url || undefined,
 
     // Cancellation tracking (Phase 2)
     cancelledAt: data.cancelled_at,

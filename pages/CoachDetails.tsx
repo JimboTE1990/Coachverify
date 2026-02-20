@@ -553,6 +553,24 @@ export const CoachDetails: React.FC = () => {
     return url;
   };
 
+  // Helper function to convert video URLs to embed format
+  const getEmbedUrl = (url: string): string | null => {
+    if (!url) return null;
+
+    // YouTube
+    const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?\\/]+)/);
+    if (youtubeMatch) return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+
+    // Vimeo
+    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+    if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+
+    // Already an embed URL
+    if (url.includes('/embed/') || url.includes('player.vimeo.com')) return url;
+
+    return null;
+  };
+
   // Helper function to get the correct icon for each social platform
   const getSocialIcon = (platform: string) => {
     const lowerPlatform = platform.toLowerCase();
@@ -855,7 +873,7 @@ export const CoachDetails: React.FC = () => {
                           body="EMCC"
                           level={coach.accreditationLevel}
                           size="large"
-                          className="!h-48 !w-48"
+                          className="!h-32 !w-32"
                         />
                       </div>
                     </div>
@@ -905,7 +923,7 @@ export const CoachDetails: React.FC = () => {
                           body="ICF"
                           level={coach.icfAccreditationLevel}
                           size="large"
-                          className="!h-48 !w-48"
+                          className="!h-32 !w-32"
                         />
                       </div>
                     </div>
@@ -1446,6 +1464,26 @@ export const CoachDetails: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {/* Intro Video Embed */}
+            {coach.introVideoUrl && (() => {
+              const embedUrl = getEmbedUrl(coach.introVideoUrl);
+              if (!embedUrl) return null;
+
+              return (
+                <div className="mb-4">
+                  <div className="relative w-full rounded-2xl overflow-hidden shadow-lg" style={{ paddingBottom: '56.25%' }}>
+                    <iframe
+                      src={embedUrl}
+                      className="absolute top-0 left-0 w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title="Coach Introduction Video"
+                    />
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Leave a Review Button - Hide if viewing own profile */}
             {!(currentUserCoach && coach && currentUserCoach.id === coach.id) && (

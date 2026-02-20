@@ -79,9 +79,10 @@ export const Questionnaire: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12 md:py-20">
-      {/* Progress Bar */}
-      <div className="mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-indigo-50 to-purple-50">
+      <div className="max-w-2xl mx-auto px-4 py-12 md:py-20">
+        {/* Progress Bar */}
+        <div className="mb-8">
         <div className="flex justify-between mb-2">
           <span className="text-xs font-semibold tracking-wide uppercase text-brand-600">Step {step} of 6</span>
           <span className="text-xs font-semibold text-slate-400">{Math.round((step / 6) * 100)}% Completed</span>
@@ -322,6 +323,7 @@ export const Questionnaire: React.FC = () => {
             </button>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
