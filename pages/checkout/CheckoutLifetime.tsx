@@ -441,6 +441,13 @@ export const CheckoutLifetime: React.FC = () => {
                   By proceeding, you agree to our Terms of Service and Privacy Policy
                 </p>
               </div>
+
+              {/* Lifetime Disclaimer */}
+              <div className="mt-4 pt-4 border-t border-slate-200">
+                <p className="text-xs text-slate-400 text-center leading-relaxed">
+                  *Lifetime access refers to the lifetime of the software platform, not the purchaser's lifetime. Access is subject to our Terms of Service.
+                </p>
+              </div>
             </div>
           </div>
         </div>

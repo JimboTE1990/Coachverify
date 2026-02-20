@@ -275,13 +275,12 @@ export const Pricing: React.FC = () => {
               </p>
 
               <div className="mt-8 flex flex-col items-center justify-center">
-                <span className="text-sm text-slate-400 font-medium line-through">Was: £300+</span>
-                <div className="flex items-baseline mt-2">
+                <div className="flex items-baseline">
                   <span className="text-5xl font-display font-black text-slate-900">
                     £{SUBSCRIPTION_CONSTANTS.LIFETIME_PRICE_GBP}
                   </span>
                 </div>
-                <span className="text-xs text-slate-500 mt-1">one-time payment</span>
+                <span className="text-xs text-slate-500 mt-2">one-time payment</span>
               </div>
 
               <div className="mt-6 bg-gradient-to-r from-amber-100 to-orange-100 rounded-lg px-3 py-2 border-2 border-amber-300">
@@ -321,6 +320,11 @@ export const Pricing: React.FC = () => {
                   ? 'Current Plan'
                   : 'Secure Lifetime Access'}
               </button>
+
+              {/* Legal Disclaimer */}
+              <p className="mt-4 text-xs text-slate-400 text-center leading-relaxed">
+                *Lifetime access refers to the lifetime of the software platform, not the purchaser's lifetime. Access is subject to our Terms of Service.
+              </p>
             </div>
 
             {/* Monthly Plan */}
