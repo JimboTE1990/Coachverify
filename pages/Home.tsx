@@ -24,6 +24,16 @@ export const Home: React.FC = () => {
       <div className="relative bg-gradient-to-br from-brand-50 via-indigo-50 to-purple-50 pt-16 pb-20 lg:pt-24 lg:pb-28 overflow-hidden">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
 
+          {/* Hero Image */}
+          <div className="mb-8 flex justify-center">
+            <img
+              src="/home-hero.jpg"
+              alt="CoachDog - Professional Coaching"
+              className="rounded-3xl shadow-2xl max-w-2xl w-full object-cover"
+              style={{ maxHeight: '400px' }}
+            />
+          </div>
+
           {/* Title & Subtitle */}
           <h1 className="text-4xl tracking-tight font-display font-extrabold text-slate-900 sm:text-5xl md:text-6xl">
             <span className="block xl:inline">Top dog coaches,</span>{' '}

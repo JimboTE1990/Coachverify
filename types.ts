@@ -287,6 +287,7 @@ export interface Coach {
   bannerImageUrl?: string; // Profile banner/cover image (like LinkedIn/X/Facebook)
   specialties: Specialty[];
   bio: string;
+  introVideoUrl?: string; // YouTube or Vimeo embed URL (e.g., https://www.youtube.com/embed/VIDEO_ID)
   socialLinks: SocialLink[];
   hourlyRate: number;
   currency?: Currency; // Coach's preferred currency (defaults to GBP)
