@@ -121,6 +121,8 @@ export const CoachDetails: React.FC = () => {
       const loadCoach = async () => {
         setIsLoading(true);
         const found = await getCoachById(id);
+        console.log('[Coach Data Debug] Loaded coach:', found);
+        console.log('[Coach Data Debug] introVideoUrl:', found?.introVideoUrl);
         setCoach(found || undefined);
         setIsLoading(false);
 
@@ -1471,8 +1473,14 @@ export const CoachDetails: React.FC = () => {
             </div>
 
             {/* Intro Video Embed */}
-            {coach?.introVideoUrl && (() => {
+            {(() => {
+              console.log('[Video Debug] coach.introVideoUrl:', coach?.introVideoUrl);
+              if (!coach?.introVideoUrl) return null;
+
               const embedUrl = getEmbedUrl(coach.introVideoUrl);
+              console.log('[Video Debug] Original URL:', coach.introVideoUrl);
+              console.log('[Video Debug] Embed URL:', embedUrl);
+
               if (!embedUrl) return null;
 
               return (
