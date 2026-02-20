@@ -27,10 +27,10 @@ export const Home: React.FC = () => {
           {/* Hero Image */}
           <div className="mb-8 flex justify-center">
             <img
-              src="/home-hero.jpg"
+              src="/home-hero.png"
               alt="CoachDog - Professional Coaching"
-              className="rounded-3xl shadow-2xl max-w-2xl w-full object-cover"
-              style={{ maxHeight: '400px' }}
+              className="max-w-lg w-full object-contain"
+              style={{ maxHeight: '450px' }}
             />
           </div>
 
