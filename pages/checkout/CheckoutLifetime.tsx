@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, ArrowLeft, Loader, Lock, Zap, Tag, X, Infinity } from 'lucide-react';
 import { SUBSCRIPTION_CONSTANTS } from '../../constants/subscription';
+import { STRIPE_PRICES } from '../../lib/stripe';
 import { supabase } from '../../lib/supabase';
 import { createCheckoutSession, getPriceId } from '../../services/stripeService';
 import type { Coach } from '../../types';
@@ -151,7 +152,7 @@ export const CheckoutLifetime: React.FC = () => {
 
       // Create Stripe Checkout Session for lifetime payment
       await createCheckoutSession({
-        priceId: SUBSCRIPTION_CONSTANTS.LIFETIME_STRIPE_PRICE_ID,
+        priceId: STRIPE_PRICES.lifetime,
         coachId: currentCoach!.id,
         coachEmail: session.user.email,
         billingCycle: 'lifetime',

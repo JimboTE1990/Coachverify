@@ -37,7 +37,7 @@ export const getStripe = (): Promise<Stripe | null> => {
 export const STRIPE_PRICES = {
   monthly: import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID || '',
   annual: import.meta.env.VITE_STRIPE_ANNUAL_PRICE_ID || '',
-  lifetime: import.meta.env.VITE_STRIPE_LIFETIME_PRICE_ID || 'price_1QsEv5DbNBAbZyioZRzvMzJo'
+  lifetime: import.meta.env.VITE_STRIPE_LIFETIME_PRICE_ID || ''
 };
 
 /**

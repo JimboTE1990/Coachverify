@@ -15,7 +15,7 @@ export const SUBSCRIPTION_CONSTANTS = {
 
   // Lifetime plan
   LIFETIME_PRICE_GBP: 149,
-  LIFETIME_STRIPE_PRICE_ID: 'price_1QsEv5DbNBAbZyioZRzvMzJo', // Stripe production price ID
+  // LIFETIME_STRIPE_PRICE_ID moved to .env as VITE_STRIPE_LIFETIME_PRICE_ID
 
   // Billing
   BILLING_GRACE_PERIOD_DAYS: 3, // Days after payment failure before expiry
