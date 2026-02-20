@@ -528,6 +528,8 @@ export const CoachDashboard: React.FC = () => {
 
     setIsSaving(true);
     const updated = { ...currentCoach, ...localProfile };
+    console.log('[Dashboard Save Debug] Saving coach data:', updated);
+    console.log('[Dashboard Save Debug] introVideoUrl:', updated.introVideoUrl);
 
     const success = await updateCoach(updated);
     if (success) {
@@ -1375,7 +1377,10 @@ export const CoachDashboard: React.FC = () => {
                         <input
                           type="text"
                           value={localProfile?.introVideoUrl || ''}
-                          onChange={(e) => updateLocalProfile({introVideoUrl: e.target.value})}
+                          onChange={(e) => {
+                            console.log('[Video Input Debug] New video URL:', e.target.value);
+                            updateLocalProfile({introVideoUrl: e.target.value});
+                          }}
                           placeholder="https://www.youtube.com/watch?v=..."
                           className="w-full border-2 border-blue-300 bg-white rounded-xl px-4 py-3 text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                         />
