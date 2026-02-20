@@ -40,12 +40,17 @@ export const getCoaches = async (): Promise<Coach[]> => {
 };
 
 export const getCoachById = async (id: string): Promise<Coach | null> => {
+  console.log('[getCoachById Debug] Fetching coach with id:', id);
+
   // Try UUID lookup first
   let { data: coach, error } = await supabase
     .from('coach_profiles')
     .select('*')
     .eq('id', id)
     .single();
+
+  console.log('[getCoachById Debug] Raw data from database:', coach);
+  console.log('[getCoachById Debug] intro_video_url from DB:', coach?.intro_video_url);
 
   // If not found by UUID, try custom URL slug lookup
   if ((error || !coach) && id && !id.includes('-')) {
@@ -208,7 +213,11 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   if (coach.coachingLanguages !== undefined) updateData.coaching_languages = coach.coachingLanguages;
   if (coach.gender !== undefined) updateData.gender = coach.gender;
   if (coach.currency !== undefined) updateData.currency = coach.currency;
-  if (coach.introVideoUrl !== undefined) updateData.intro_video_url = coach.introVideoUrl || null;
+  if (coach.introVideoUrl !== undefined) {
+    console.log('[updateCoach Debug] introVideoUrl value:', coach.introVideoUrl);
+    console.log('[updateCoach Debug] Setting intro_video_url to:', coach.introVideoUrl || null);
+    updateData.intro_video_url = coach.introVideoUrl || null;
+  }
 
   // Specialties and formats as JSONB columns
   if (coach.specialties !== undefined) updateData.specialties = coach.specialties;
@@ -224,6 +233,9 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   if (coach.scheduledDeletionAt !== undefined) updateData.scheduled_deletion_at = coach.scheduledDeletionAt;
 
   // Update main coach record (use 'coaches' table directly, not 'coach_profiles' view)
+  console.log('[updateCoach Debug] Full updateData object:', updateData);
+  console.log('[updateCoach Debug] intro_video_url in updateData:', updateData.intro_video_url);
+
   const { error: coachError } = await supabase
     .from('coaches')
     .update(updateData)
