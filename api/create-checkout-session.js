@@ -73,9 +73,13 @@ export default async function handler(req) {
 
     const appUrl = process.env.VITE_APP_URL || 'https://coachverify.vercel.app';
 
+    // Determine mode based on billing cycle
+    const isLifetime = billingCycle === 'lifetime';
+    const mode = isLifetime ? 'payment' : 'subscription';
+
     // Prepare checkout session parameters
     const sessionParams = {
-      mode: 'subscription',
+      mode: mode,
       line_items: [
         {
           price: priceId,
@@ -86,31 +90,66 @@ export default async function handler(req) {
       cancel_url: `${appUrl}/checkout/${billingCycle}`,
       client_reference_id: coachId,
       customer_email: coachEmail,
-      subscription_data: {
-        metadata: {
-          coachId: coachId,
-          billingCycle: billingCycle,
-          trialEndsAt: trialEndsAt || 'none',
-        },
-      },
       metadata: {
         coachId: coachId,
         billingCycle: billingCycle,
       },
     };
 
+    // Only add subscription_data for recurring subscriptions (not lifetime)
+    if (!isLifetime) {
+      sessionParams.subscription_data = {
+        metadata: {
+          coachId: coachId,
+          billingCycle: billingCycle,
+          trialEndsAt: trialEndsAt || 'none',
+        },
+      };
+    }
+
     // If user has an active trial, set subscription to start at trial end
-    if (trialEndsAt) {
+    // Only applicable for recurring subscriptions (not lifetime)
+    if (trialEndsAt && !isLifetime) {
       const trialEndDate = new Date(trialEndsAt);
       const now = new Date();
 
       if (trialEndDate > now) {
-        const billingCycleAnchor = Math.floor(trialEndDate.getTime() / 1000);
-        sessionParams.subscription_data.billing_cycle_anchor = billingCycleAnchor;
-        sessionParams.subscription_data.trial_end = billingCycleAnchor;
+        const trialEndTimestamp = Math.floor(trialEndDate.getTime() / 1000);
+        // Use trial_end (not billing_cycle_anchor) to continue existing trial
+        sessionParams.subscription_data.trial_end = trialEndTimestamp;
 
-        console.log('[Stripe Edge] Trial ends at:', trialEndDate.toISOString());
+        console.log('[Stripe Edge] Trial continues until:', trialEndDate.toISOString());
       }
+    }
+
+    // Build request body based on mode
+    const requestBody = {
+      'mode': sessionParams.mode,
+      'line_items[0][price]': sessionParams.line_items[0].price,
+      'line_items[0][quantity]': sessionParams.line_items[0].quantity,
+      'success_url': sessionParams.success_url,
+      'cancel_url': sessionParams.cancel_url,
+      'client_reference_id': sessionParams.client_reference_id,
+      'customer_email': sessionParams.customer_email,
+      'metadata[coachId]': sessionParams.metadata.coachId,
+      'metadata[billingCycle]': sessionParams.metadata.billingCycle,
+    };
+
+    // Only add subscription-specific parameters for recurring plans
+    if (!isLifetime && sessionParams.subscription_data) {
+      requestBody['subscription_data[metadata][coachId]'] = sessionParams.subscription_data.metadata.coachId;
+      requestBody['subscription_data[metadata][billingCycle]'] = sessionParams.subscription_data.metadata.billingCycle;
+      requestBody['subscription_data[metadata][trialEndsAt]'] = sessionParams.subscription_data.metadata.trialEndsAt;
+
+      // Add trial_end if present
+      if (sessionParams.subscription_data.trial_end) {
+        requestBody['subscription_data[trial_end]'] = sessionParams.subscription_data.trial_end;
+      }
+    }
+
+    // Apply Stripe promotion code if provided
+    if (stripePromotionCodeId) {
+      requestBody['discounts[0][promotion_code]'] = stripePromotionCodeId;
     }
 
     // Call Stripe API directly via fetch (Edge Runtime doesn't support npm packages)
@@ -120,28 +159,7 @@ export default async function handler(req) {
         'Authorization': `Bearer ${secretKey}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: new URLSearchParams({
-        'mode': sessionParams.mode,
-        'line_items[0][price]': sessionParams.line_items[0].price,
-        'line_items[0][quantity]': sessionParams.line_items[0].quantity,
-        'success_url': sessionParams.success_url,
-        'cancel_url': sessionParams.cancel_url,
-        'client_reference_id': sessionParams.client_reference_id,
-        'customer_email': sessionParams.customer_email,
-        'subscription_data[metadata][coachId]': sessionParams.subscription_data.metadata.coachId,
-        'subscription_data[metadata][billingCycle]': sessionParams.subscription_data.metadata.billingCycle,
-        'subscription_data[metadata][trialEndsAt]': sessionParams.subscription_data.metadata.trialEndsAt,
-        'metadata[coachId]': sessionParams.metadata.coachId,
-        'metadata[billingCycle]': sessionParams.metadata.billingCycle,
-        ...(sessionParams.subscription_data.billing_cycle_anchor && {
-          'subscription_data[billing_cycle_anchor]': sessionParams.subscription_data.billing_cycle_anchor,
-          'subscription_data[trial_end]': sessionParams.subscription_data.trial_end,
-        }),
-        // Apply Stripe promotion code if provided (e.g. EMCC15)
-        ...(stripePromotionCodeId && {
-          'discounts[0][promotion_code]': stripePromotionCodeId,
-        }),
-      }),
+      body: new URLSearchParams(requestBody),
     });
 
     if (!stripeResponse.ok) {
