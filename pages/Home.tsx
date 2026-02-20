@@ -25,13 +25,23 @@ export const Home: React.FC = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
 
           {/* Hero Image */}
-          <div className="mb-8 flex justify-center">
-            <img
-              src="/home-hero.png"
-              alt="CoachDog - Professional Coaching"
-              className="max-w-lg w-full object-contain"
-              style={{ maxHeight: '450px' }}
-            />
+          <div className="mb-8 flex justify-center relative">
+            <div className="relative max-w-lg w-full" style={{ maxHeight: '450px' }}>
+              <img
+                src="/home-hero.png"
+                alt="CoachDog - Professional Coaching"
+                className="w-full h-full object-contain relative z-10"
+                style={{ mixBlendMode: 'multiply', maxHeight: '450px' }}
+              />
+              {/* Gradient overlay to blend edges */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(ellipse at center, transparent 40%, rgba(240, 253, 250, 0.3) 70%, rgba(240, 253, 250, 0.8) 100%)',
+                  zIndex: 5
+                }}
+              />
+            </div>
           </div>
 
           {/* Title & Subtitle */}
