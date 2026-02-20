@@ -1038,10 +1038,21 @@ export const CoachDetails: React.FC = () => {
             {coach.qualifications && coach.qualifications.length > 0 && (
               <div>
                 <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Qualifications:</h3>
-                <div className="space-y-2">
-                  {coach.qualifications.map((qual, idx) => (
-                    <p key={idx} className="text-slate-900 font-bold text-base">{qual}</p>
-                  ))}
+                <div className="space-y-3">
+                  {coach.qualifications.map((qual, idx) => {
+                    // Handle both object format {degree, institution, year} and string format (legacy)
+                    if (typeof qual === 'string') {
+                      return <p key={idx} className="text-slate-900 font-bold text-base">{qual}</p>;
+                    }
+                    // Object format with degree, institution, year
+                    return (
+                      <div key={idx} className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <p className="text-slate-900 font-bold text-base">{qual.degree}</p>
+                        {qual.institution && <p className="text-slate-600 text-sm mt-1">{qual.institution}</p>}
+                        {qual.year && <p className="text-slate-500 text-xs mt-1">{qual.year}</p>}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
