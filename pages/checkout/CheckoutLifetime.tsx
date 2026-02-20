@@ -143,12 +143,26 @@ export const CheckoutLifetime: React.FC = () => {
 
     try {
       console.log('[CheckoutLifetime] Initiating Stripe Checkout for coach:', currentCoach?.id);
+      console.log('[CheckoutLifetime] STRIPE_PRICES.lifetime:', STRIPE_PRICES.lifetime);
 
       // Get coach email from session
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user?.email) {
         throw new Error('Unable to retrieve your email. Please try logging in again.');
       }
+
+      // Validate price ID before proceeding
+      if (!STRIPE_PRICES.lifetime) {
+        throw new Error('Lifetime price ID not configured. Please check environment variables.');
+      }
+
+      console.log('[CheckoutLifetime] Creating checkout session with params:', {
+        priceId: STRIPE_PRICES.lifetime,
+        coachId: currentCoach!.id,
+        coachEmail: session.user.email,
+        billingCycle: 'lifetime',
+        hasDiscount: !!appliedDiscount?.code,
+      });
 
       // Create Stripe Checkout Session for lifetime payment
       await createCheckoutSession({

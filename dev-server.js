@@ -32,9 +32,9 @@ app.get('/api/health', (req, res) => {
 // Create Stripe Checkout Session endpoint
 app.post('/api/create-checkout-session', async (req, res) => {
   try {
-    const { priceId, coachId, coachEmail, billingCycle, trialEndsAt } = req.body;
+    const { priceId, coachId, coachEmail, billingCycle, trialEndsAt, stripePromotionCodeId } = req.body;
 
-    console.log('[Dev API] Creating checkout session:', { priceId, coachId, coachEmail, billingCycle });
+    console.log('[Dev API] Creating checkout session:', { priceId, coachId, coachEmail, billingCycle, hasPromoCode: !!stripePromotionCodeId });
 
     // Validate required fields
     if (!priceId || !coachId || !coachEmail || !billingCycle) {
@@ -45,9 +45,13 @@ app.post('/api/create-checkout-session', async (req, res) => {
 
     const appUrl = process.env.VITE_APP_URL || 'http://localhost:5173';
 
+    // Determine mode based on billing cycle
+    const isLifetime = billingCycle === 'lifetime';
+    const mode = isLifetime ? 'payment' : 'subscription';
+
     // Prepare checkout session parameters
     const sessionParams = {
-      mode: 'subscription',
+      mode: mode,
       line_items: [
         {
           price: priceId,
@@ -58,29 +62,44 @@ app.post('/api/create-checkout-session', async (req, res) => {
       cancel_url: `${appUrl}/checkout/${billingCycle}`,
       client_reference_id: coachId,
       customer_email: coachEmail,
-      subscription_data: {
-        metadata: {
-          coachId: coachId,
-          billingCycle: billingCycle,
-          trialEndsAt: trialEndsAt || 'none',
-        },
-      },
       metadata: {
         coachId: coachId,
         billingCycle: billingCycle,
       },
     };
 
+    // Only add subscription_data for recurring subscriptions (not lifetime)
+    if (!isLifetime) {
+      sessionParams.subscription_data = {
+        metadata: {
+          coachId: coachId,
+          billingCycle: billingCycle,
+          trialEndsAt: trialEndsAt || 'none',
+        },
+      };
+    }
+
     // If user has an active trial, set subscription to start at trial end
-    if (trialEndsAt) {
+    // Only applicable for recurring subscriptions (not lifetime)
+    if (trialEndsAt && !isLifetime) {
       const trialEndDate = new Date(trialEndsAt);
       const now = new Date();
 
       if (trialEndDate > now) {
-        const billingCycleAnchor = Math.floor(trialEndDate.getTime() / 1000);
-        sessionParams.subscription_data.billing_cycle_anchor = billingCycleAnchor;
-        sessionParams.subscription_data.trial_end = billingCycleAnchor;
+        const trialEndTimestamp = Math.floor(trialEndDate.getTime() / 1000);
+        // Use trial_end (not billing_cycle_anchor) to continue existing trial
+        sessionParams.subscription_data.trial_end = trialEndTimestamp;
+        console.log('[Dev API] Trial continues until:', trialEndDate.toISOString());
       }
+    }
+
+    // Apply Stripe promotion code if provided
+    if (stripePromotionCodeId) {
+      sessionParams.discounts = [
+        {
+          promotion_code: stripePromotionCodeId,
+        },
+      ];
     }
 
     // Create Stripe Checkout Session
