@@ -258,7 +258,7 @@ export const CheckoutLifetime: React.FC = () => {
                     <div className="bg-green-100 p-1 rounded-full mr-3">
                       <CheckCircle className="h-4 w-4 text-green-600" />
                     </div>
-                    <span className="font-medium">Professional verification of accreditations displayed for clients to review</span>
+                    <span className="font-medium">Verified Accreditation Badge: Proof of your expertise, authenticated for every client to see</span>
                   </li>
                   <li className="flex items-center text-slate-700">
                     <div className="bg-green-100 p-1 rounded-full mr-3">

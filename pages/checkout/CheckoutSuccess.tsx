@@ -36,12 +36,14 @@ export const CheckoutSuccess: React.FC = () => {
 
   // Use coach data to determine subscription details
   const billingCycle = coach?.billingCycle || 'monthly';
-  const amount = billingCycle === 'monthly' ? 15 : 150;
+  const isLifetime = billingCycle === 'lifetime';
+  const amount = isLifetime ? 149 : (billingCycle === 'monthly' ? 15 : 150);
   const hasActiveTrial = coach?.subscriptionStatus === 'trial' && coach?.trialEndsAt;
   const trialEndDate = coach?.trialEndsAt ? new Date(coach.trialEndsAt) : null;
 
-  // Calculate next billing date
+  // Calculate next billing date (only for recurring subscriptions)
   const getNextBillingDate = () => {
+    if (isLifetime) return null; // Lifetime has no next billing date
     if (hasActiveTrial && trialEndDate) {
       return trialEndDate;
     }
@@ -71,7 +73,9 @@ export const CheckoutSuccess: React.FC = () => {
           </h1>
 
           <p className="text-lg text-slate-600 mb-8">
-            {hasActiveTrial
+            {isLifetime
+              ? 'You now have lifetime access to CoachDog. This is a one-time payment with no recurring fees—ever!'
+              : hasActiveTrial
               ? `You're now a premium CoachDog user. Your plan starts after your free trial ends on ${trialEndDate?.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}.`
               : 'Thank you for subscribing to CoachDog. Your premium account is now active.'}
           </p>
@@ -87,7 +91,7 @@ export const CheckoutSuccess: React.FC = () => {
               <div className="flex items-center justify-between">
                 <span className="text-slate-700">Billing Cycle</span>
                 <span className="font-semibold text-slate-900">
-                  {billingCycle === 'monthly' ? 'Monthly' : 'Annual'}
+                  {isLifetime ? 'Lifetime Access' : (billingCycle === 'monthly' ? 'Monthly' : 'Annual')}
                 </span>
               </div>
 
@@ -95,7 +99,10 @@ export const CheckoutSuccess: React.FC = () => {
               <div className="flex items-center justify-between">
                 <span className="text-slate-700">Price</span>
                 <span className="font-semibold text-slate-900">
-                  £{amount.toFixed(2)}/{billingCycle === 'monthly' ? 'month' : 'year'}
+                  {isLifetime
+                    ? `£${amount.toFixed(2)} (one-time)`
+                    : `£${amount.toFixed(2)}/${billingCycle === 'monthly' ? 'month' : 'year'}`
+                  }
                 </span>
               </div>
 
@@ -103,24 +110,37 @@ export const CheckoutSuccess: React.FC = () => {
               <div className="flex items-center justify-between">
                 <span className="text-slate-700">Status</span>
                 <span className="inline-flex items-center bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded-full">
-                  {hasActiveTrial ? 'Premium (Free Trial Active)' : 'Active'}
+                  {isLifetime ? 'Lifetime Access' : (hasActiveTrial ? 'Premium (Free Trial Active)' : 'Active')}
                 </span>
               </div>
 
-              {/* Next Billing Date */}
-              <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-                <div className="flex items-center text-slate-700">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  <span>Next Billing Date</span>
+              {/* Next Billing Date (only for recurring subscriptions) */}
+              {!isLifetime && nextBillingDate && (
+                <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+                  <div className="flex items-center text-slate-700">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    <span>Next Billing Date</span>
+                  </div>
+                  <span className="font-semibold text-slate-900">
+                    {nextBillingDate.toLocaleDateString('en-GB', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </span>
                 </div>
-                <span className="font-semibold text-slate-900">
-                  {nextBillingDate.toLocaleDateString('en-GB', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
-                </span>
-              </div>
+              )}
+
+              {/* Lifetime - No recurring payments */}
+              {isLifetime && (
+                <div className="flex items-center justify-center pt-4 border-t border-slate-200">
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 text-center">
+                    <span className="text-sm font-bold text-amber-900">
+                      ✓ No recurring payments · Access forever
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -131,7 +151,40 @@ export const CheckoutSuccess: React.FC = () => {
             </h2>
 
             <ul className="space-y-3 text-sm text-slate-700">
-              {hasActiveTrial ? (
+              {isLifetime ? (
+                <>
+                  <li className="flex items-start">
+                    <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <span>
+                      Your profile is now live and visible to users looking for coaches
+                    </span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <span>
+                      You have permanent access to all CoachDog premium features
+                    </span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <span>
+                      This was a one-time payment—no recurring charges will ever be made
+                    </span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <span>
+                      Your lifetime access continues for as long as the CoachDog platform operates
+                    </span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <span>
+                      You'll receive all future feature updates at no additional cost
+                    </span>
+                  </li>
+                </>
+              ) : hasActiveTrial ? (
                 <>
                   <li className="flex items-start">
                     <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
@@ -181,7 +234,7 @@ export const CheckoutSuccess: React.FC = () => {
                   <li className="flex items-start">
                     <CreditCard className="h-5 w-5 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
                     <span>
-                      Your next billing date is {nextBillingDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} (£{amount.toFixed(2)})
+                      Your next billing date is {nextBillingDate?.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} (£{amount.toFixed(2)})
                     </span>
                   </li>
                   <li className="flex items-start">
@@ -228,16 +281,18 @@ export const CheckoutSuccess: React.FC = () => {
           </p>
         </div>
 
-        {/* Lock-in Reminder */}
-        <div className="mt-8 bg-yellow-50 rounded-2xl p-6 border border-yellow-200 text-center">
-          <p className="text-sm font-semibold text-slate-900 mb-1">
-            🎉 You've locked in the 50% Early Bird discount!
-          </p>
-          <p className="text-xs text-slate-600">
-            This discounted rate is yours for life while you remain subscribed. Regular price: £
-            {billingCycle === 'monthly' ? '30' : '300'}/{billingCycle === 'monthly' ? 'mo' : 'yr'}
-          </p>
-        </div>
+        {/* Lock-in Reminder (only for recurring subscriptions) */}
+        {!isLifetime && (
+          <div className="mt-8 bg-yellow-50 rounded-2xl p-6 border border-yellow-200 text-center">
+            <p className="text-sm font-semibold text-slate-900 mb-1">
+              🎉 You've locked in the 50% Early Bird discount!
+            </p>
+            <p className="text-xs text-slate-600">
+              This discounted rate is yours for life while you remain subscribed. Regular price: £
+              {billingCycle === 'monthly' ? '30' : '300'}/{billingCycle === 'monthly' ? 'mo' : 'yr'}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

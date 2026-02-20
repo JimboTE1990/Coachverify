@@ -1,0 +1,168 @@
+/**
+ * Supabase Edge Function: Create Stripe Checkout Session
+ * STANDALONE VERSION - Copy this entire file to Supabase Dashboard
+ */
+
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+
+// CORS headers (inlined to avoid import issues)
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    // Get Stripe secret key from environment
+    const secretKey = Deno.env.get('STRIPE_SECRET_KEY');
+
+    if (!secretKey) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is not set');
+    }
+
+    if (!secretKey.startsWith('sk_')) {
+      throw new Error('Invalid STRIPE_SECRET_KEY format');
+    }
+
+    // Parse request body
+    const { priceId, coachId, coachEmail, billingCycle, trialEndsAt, discountCode } = await req.json();
+
+    // Validate required fields
+    if (!priceId || !coachId || !coachEmail || !billingCycle) {
+      return new Response(
+        JSON.stringify({
+          error: 'Missing required fields: priceId, coachId, coachEmail, billingCycle'
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Determine if this is a lifetime (one-time payment) or recurring subscription
+    const isLifetime = billingCycle === 'lifetime';
+    const mode = isLifetime ? 'payment' : 'subscription';
+
+    console.log('[Supabase Edge] Creating checkout session:', {
+      priceId,
+      coachId,
+      billingCycle,
+      mode,
+      hasTrialEndsAt: !!trialEndsAt,
+      discountCode: discountCode || 'none'
+    });
+
+    // Get app URL from environment or use production default
+    const appUrl = Deno.env.get('APP_URL') || 'https://coachverify.vercel.app';
+
+    // Prepare checkout session parameters (common for both modes)
+    const sessionParams: Record<string, string> = {
+      'mode': mode,
+      'line_items[0][price]': priceId,
+      'line_items[0][quantity]': '1',
+      'success_url': `${appUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      'cancel_url': `${appUrl}/checkout/${billingCycle}`,
+      'client_reference_id': coachId,
+      'customer_email': coachEmail,
+      'metadata[coachId]': coachId,
+      'metadata[billingCycle]': billingCycle,
+    };
+
+    // Only add subscription_data for recurring subscriptions (not lifetime)
+    if (!isLifetime) {
+      sessionParams['subscription_data[metadata][coachId]'] = coachId;
+      sessionParams['subscription_data[metadata][billingCycle]'] = billingCycle;
+      sessionParams['subscription_data[metadata][trialEndsAt]'] = trialEndsAt || 'none';
+
+      // If user has an active trial, set subscription to start at trial end
+      // Note: billing_cycle_anchor and trial_end are mutually exclusive in Stripe - use only trial_end
+      if (trialEndsAt) {
+        const trialEndDate = new Date(trialEndsAt);
+        const now = new Date();
+
+        if (trialEndDate > now) {
+          const trialEndUnix = Math.floor(trialEndDate.getTime() / 1000);
+          sessionParams['subscription_data[trial_end]'] = trialEndUnix.toString();
+
+          console.log('[Supabase Edge] Trial ends at:', trialEndDate.toISOString());
+        }
+      }
+    }
+
+    // Apply discount code if provided
+    if (discountCode) {
+      // Map discount codes to Stripe coupon IDs
+      const discountCodes: Record<string, string> = {
+        'PARTNER2026': 'partner_30_off',
+        'FLASH50': 'flash_50_annual',
+        'EXTRATRIAL': 'trial_extension_14',
+        'WELCOME3': 'welcome_3mo_free',
+        'BETA100': 'BETA100_LIFETIME',
+        'LIMITED60': 'LIMITED60_LIFETIME',
+      };
+
+      const stripeCouponId = discountCodes[discountCode.toUpperCase()];
+
+      if (stripeCouponId) {
+        sessionParams['discounts[0][coupon]'] = stripeCouponId;
+        // Only add to subscription_data if it's a subscription
+        if (!isLifetime) {
+          sessionParams['subscription_data[metadata][discountCode]'] = discountCode;
+        }
+        console.log('[Supabase Edge] Applying discount code:', discountCode, '→', stripeCouponId);
+      } else {
+        console.warn('[Supabase Edge] Unknown discount code:', discountCode);
+      }
+    }
+
+    // Call Stripe API
+    const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${secretKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams(sessionParams),
+    });
+
+    if (!stripeResponse.ok) {
+      const errorData = await stripeResponse.json();
+      console.error('[Supabase Edge] Error from Stripe API:', errorData);
+      throw new Error(errorData.error?.message || 'Failed to create checkout session');
+    }
+
+    const session = await stripeResponse.json();
+    console.log('[Supabase Edge] Checkout session created:', session.id);
+
+    return new Response(
+      JSON.stringify({
+        sessionId: session.id,
+        url: session.url,
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
+
+  } catch (error) {
+    console.error('[Supabase Edge] Error:', error);
+
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Failed to create checkout session',
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
+  }
+});

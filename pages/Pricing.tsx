@@ -222,7 +222,7 @@ export const Pricing: React.FC = () => {
                     <ul className="space-y-3">
                       <li className="flex items-center text-slate-700 font-medium">
                         <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
-                        Professional verification of accreditations displayed for clients to review
+                        Verified Accreditation Badge: Proof of your expertise, authenticated for every client to see
                       </li>
                       <li className="flex items-center text-slate-700 font-medium">
                         <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
@@ -294,7 +294,7 @@ export const Pricing: React.FC = () => {
                  <ul className="space-y-4 text-left text-sm text-slate-600">
                     <li className="flex items-center">
                       <CheckCircle className="h-5 w-5 text-brand-500 mr-3 flex-shrink-0" />
-                      Professional verification of accreditations displayed for clients to review
+                      Verified Accreditation Badge: Proof of your expertise, authenticated for every client to see
                     </li>
                     <li className="flex items-center">
                       <CheckCircle className="h-5 w-5 text-brand-500 mr-3 flex-shrink-0" />
@@ -347,7 +347,7 @@ export const Pricing: React.FC = () => {
                  <ul className="space-y-4 text-left text-sm text-slate-600">
                     <li className="flex items-center">
                       <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
-                      Professional verification of accreditations displayed for clients to review
+                      Verified Accreditation Badge: Proof of your expertise, authenticated for every client to see
                     </li>
                     <li className="flex items-center">
                       <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
@@ -403,7 +403,7 @@ export const Pricing: React.FC = () => {
                  <ul className="space-y-4 text-left text-sm text-slate-600">
                     <li className="flex items-center">
                       <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
-                      Professional verification of accreditations displayed for clients to review
+                      Verified Accreditation Badge: Proof of your expertise, authenticated for every client to see
                     </li>
                     <li className="flex items-center">
                       <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
