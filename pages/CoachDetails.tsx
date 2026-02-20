@@ -901,11 +901,17 @@ export const CoachDetails: React.FC = () => {
                       cleanUrl = `https://www.emccglobal.org/accreditation/eia/eia-awards/?reference=${refMatch[1]}&search=1`;
                     }
 
+                    console.log('[EMCC URL Debug] Original URL:', coach.emccProfileUrl);
+                    console.log('[EMCC URL Debug] Clean URL:', cleanUrl);
+
                     return (
                       <a
                         href={cleanUrl}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={(e) => {
+                          console.log('[EMCC URL Debug] Clicked! Opening:', cleanUrl);
+                        }}
                         className="flex items-center justify-center gap-2 text-sm text-[#2B4170] hover:text-[#C9A961] font-semibold transition-colors border-t-2 border-[#2B4170]/20 pt-4"
                       >
                         <ExternalLink className="h-4 w-4" />
