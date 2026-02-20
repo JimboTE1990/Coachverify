@@ -13,6 +13,10 @@ export const SUBSCRIPTION_CONSTANTS = {
   ANNUAL_PRICE_GBP: 150,
   ANNUAL_SAVINGS_PERCENT: 17, // (15*12 - 150) / (15*12) * 100
 
+  // Lifetime plan
+  LIFETIME_PRICE_GBP: 149,
+  LIFETIME_STRIPE_PRICE_ID: 'price_1QsEv5DbNBAbZyioZRzvMzJo', // Stripe production price ID
+
   // Billing
   BILLING_GRACE_PERIOD_DAYS: 3, // Days after payment failure before expiry
 
@@ -26,8 +30,8 @@ export const TRIAL_DURATION_MS = SUBSCRIPTION_CONSTANTS.TRIAL_DURATION_DAYS * 24
 export const GRACE_PERIOD_MS = SUBSCRIPTION_CONSTANTS.BILLING_GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000;
 
 // Subscription status types (exported for reuse)
-export type SubscriptionStatus = 'active' | 'trial' | 'expired' | 'onboarding';
-export type BillingCycle = 'monthly' | 'annual';
+export type SubscriptionStatus = 'active' | 'trial' | 'expired' | 'onboarding' | 'lifetime';
+export type BillingCycle = 'monthly' | 'annual' | 'lifetime';
 
 // Cancellation reasons (for dropdown in cancellation modal)
 export const CANCELLATION_REASONS = [

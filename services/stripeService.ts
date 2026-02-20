@@ -9,7 +9,7 @@ export interface CreateCheckoutSessionParams {
   priceId: string;
   coachId: string;
   coachEmail: string;
-  billingCycle: 'monthly' | 'annual';
+  billingCycle: 'monthly' | 'annual' | 'lifetime';
   trialEndsAt?: string;
   discountCode?: string; // Raw code string (for display/logging)
   stripePromotionCodeId?: string; // Stripe promo code ID (e.g. promo_xxx) to apply at checkout
@@ -84,8 +84,12 @@ export const createCheckoutSession = async (params: CreateCheckoutSessionParams)
 /**
  * Get the Price ID for a billing cycle
  */
-export const getPriceId = (billingCycle: 'monthly' | 'annual'): string => {
-  const priceId = billingCycle === 'monthly' ? STRIPE_PRICES.monthly : STRIPE_PRICES.annual;
+export const getPriceId = (billingCycle: 'monthly' | 'annual' | 'lifetime'): string => {
+  const priceId = billingCycle === 'monthly'
+    ? STRIPE_PRICES.monthly
+    : billingCycle === 'annual'
+    ? STRIPE_PRICES.annual
+    : STRIPE_PRICES.lifetime;
 
   if (!priceId) {
     throw new Error(`Price ID not configured for ${billingCycle} billing cycle`);

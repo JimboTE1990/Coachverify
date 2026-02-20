@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle, Zap, Clock } from 'lucide-react';
+import { CheckCircle, Zap, Clock, Infinity } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { PRICING_CONFIG } from '../config/pricing';
+import { SUBSCRIPTION_CONSTANTS } from '../constants/subscription';
 
 export const Pricing: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +18,24 @@ export const Pricing: React.FC = () => {
   // Get current billing cycle for premium users
   const currentBillingCycle = coach?.billingCycle; // 'monthly' or 'annual'
 
-  const handlePlanSelection = (plan: 'monthly' | 'annual') => {
+  const handlePlanSelection = (plan: 'monthly' | 'annual' | 'lifetime') => {
+    // Lifetime is one-time payment, can't switch to it
+    if (plan === 'lifetime') {
+      // If not authenticated, redirect to login
+      if (!isAuthenticated) {
+        sessionStorage.setItem('pendingCheckout', JSON.stringify({
+          plan,
+          discountCode: appliedDiscount?.code || null,
+          timestamp: Date.now()
+        }));
+        navigate('/coach-login', { state: { from: { pathname: `/checkout/${plan}` } } });
+        return;
+      }
+      // Authenticated - go to checkout
+      navigate(`/checkout/${plan}`);
+      return;
+    }
+
     // If already subscribed and trying to switch plans, go to change plan flow
     if (hasActiveSubscription && currentBillingCycle && currentBillingCycle !== plan) {
       navigate(`/subscription/change-plan?to=${plan}`);
@@ -204,15 +222,15 @@ export const Pricing: React.FC = () => {
                     <ul className="space-y-3">
                       <li className="flex items-center text-slate-700 font-medium">
                         <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
-                        Verified Profile
+                        Professional verification of accreditations displayed for clients to review
                       </li>
                       <li className="flex items-center text-slate-700 font-medium">
                         <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
-                        Unlimited Matches
+                        Professional landing page with shareable link for social media channels
                       </li>
                       <li className="flex items-center text-slate-700 font-medium">
                         <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
-                        Full Platform Access
+                        Client reviews to enhance credibility and build trust
                       </li>
                     </ul>
                   </div>
@@ -243,7 +261,67 @@ export const Pricing: React.FC = () => {
           </div>
 
           {/* Paid Plans Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+
+            {/* Lifetime Plan */}
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl shadow-xl border-2 border-amber-400 p-8 flex flex-col items-center relative transform md:-translate-y-4">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-4 py-1.5 rounded-full font-bold uppercase tracking-wider shadow-md animate-pulse">
+                ⚡ Limited Offer
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mt-2">Lifetime Access</h3>
+              <p className="text-sm text-slate-600 mt-1 flex items-center">
+                Pay once, own forever
+                <Infinity className="h-4 w-4 ml-1 text-amber-600" />
+              </p>
+
+              <div className="mt-8 flex flex-col items-center justify-center">
+                <span className="text-sm text-slate-400 font-medium line-through">Was: £300+</span>
+                <div className="flex items-baseline mt-2">
+                  <span className="text-5xl font-display font-black text-slate-900">
+                    £{SUBSCRIPTION_CONSTANTS.LIFETIME_PRICE_GBP}
+                  </span>
+                </div>
+                <span className="text-xs text-slate-500 mt-1">one-time payment</span>
+              </div>
+
+              <div className="mt-6 bg-gradient-to-r from-amber-100 to-orange-100 rounded-lg px-3 py-2 border-2 border-amber-300">
+                <p className="text-xs text-amber-900 font-bold text-center">
+                  🔥 Limited time & quantity - won't return at this price!
+                </p>
+              </div>
+
+              <div className="mt-8 border-t border-amber-200 w-full pt-8">
+                 <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4 text-center">Everything included</p>
+                 <ul className="space-y-4 text-left text-sm text-slate-600">
+                    <li className="flex items-center">
+                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3 flex-shrink-0" />
+                      Professional verification of accreditations displayed for clients to review
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3 flex-shrink-0" />
+                      Professional landing page with shareable link for social media channels
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3 flex-shrink-0" />
+                      Client reviews to enhance credibility and build trust
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="h-5 w-5 text-amber-600 mr-3 flex-shrink-0" />
+                      <span className="font-bold text-amber-900">Never pay again - lifetime access!</span>
+                    </li>
+                 </ul>
+              </div>
+
+              <button
+                onClick={() => handlePlanSelection('lifetime')}
+                disabled={hasActiveSubscription && currentBillingCycle === 'lifetime'}
+                className="mt-8 w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-4 rounded-xl font-bold hover:from-amber-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {hasActiveSubscription && currentBillingCycle === 'lifetime'
+                  ? 'Current Plan'
+                  : 'Secure Lifetime Access'}
+              </button>
+            </div>
 
             {/* Monthly Plan */}
             <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 flex flex-col items-center hover:shadow-md transition-shadow">
