@@ -288,80 +288,146 @@ export const ImageUploadWithCrop: React.FC<ImageUploadProps> = ({
         </div>
       )}
 
-      <div className="flex items-start gap-6">
-        {/* Image Preview */}
-        <div className="relative">
-          {currentImageUrl && !isDefaultImage ? (
-            <div className="relative group">
-              <img
-                src={currentImageUrl}
-                alt={type === 'profile' ? 'Profile' : 'Banner'}
-                className={type === 'profile'
-                  ? "w-32 h-32 rounded-2xl object-cover border-4 border-slate-100 shadow-lg"
-                  : "w-full h-48 rounded-2xl object-cover border-4 border-slate-100 shadow-lg"
-                }
-              />
-              {!uploading && (
-                <button
-                  onClick={handleRemoveImage}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white p-1.5 rounded-full shadow-lg hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
-                  title="Remove photo"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className={type === 'profile'
-              ? "w-32 h-32 rounded-2xl border-4 border-dashed border-slate-200 flex items-center justify-center bg-slate-50"
-              : "w-full h-48 rounded-2xl border-4 border-dashed border-slate-200 flex items-center justify-center bg-slate-50"
-            }>
-              <Camera className="h-12 w-12 text-slate-300" />
-            </div>
-          )}
-        </div>
-
-        {/* Upload Button and Instructions */}
-        <div className="flex-1">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-            className="hidden"
-            id={`${type}-upload`}
-          />
-
-          <label
-            htmlFor={`${type}-upload`}
-            className="inline-flex items-center px-5 py-3 rounded-xl font-bold transition-all cursor-pointer bg-brand-600 text-white hover:bg-brand-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-          >
-            <Upload className="h-5 w-5 mr-2" />
-            {currentImageUrl && !isDefaultImage ? 'Change Image' : 'Upload Image'}
-          </label>
-
-          <div className="mt-3 space-y-1">
-            <p className="text-xs text-slate-500">
-              {type === 'profile'
-                ? 'Recommended: Square image, at least 400x400px'
-                : 'Recommended: Wide image, at least 1200x400px'
-              }
-            </p>
-            <p className="text-xs text-slate-500">
-              Accepted formats: JPG, PNG, WebP (max 5MB)
-            </p>
-            <p className="text-xs text-slate-500 font-medium text-brand-600">
-              ✨ Crop and zoom after selecting
-            </p>
+      {/* Banner: Full width layout */}
+      {type === 'banner' ? (
+        <div className="space-y-4">
+          {/* Banner Preview */}
+          <div className="relative">
+            {currentImageUrl && !isDefaultImage ? (
+              <div className="relative group">
+                <div className="w-full aspect-[3/1] rounded-2xl overflow-hidden border-4 border-slate-100 shadow-lg bg-slate-100">
+                  <img
+                    src={currentImageUrl}
+                    alt="Banner"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {!uploading && (
+                  <button
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full shadow-lg hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                    title="Remove banner"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="w-full aspect-[3/1] rounded-2xl border-4 border-dashed border-slate-200 flex items-center justify-center bg-slate-50">
+                <div className="text-center">
+                  <Camera className="h-12 w-12 text-slate-300 mx-auto mb-2" />
+                  <p className="text-sm text-slate-400">Wide banner image</p>
+                </div>
+              </div>
+            )}
           </div>
 
-          {error && (
-            <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
-              {error}
+          {/* Upload Button */}
+          <div className="flex-1">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+              id={`${type}-upload`}
+            />
+
+            <label
+              htmlFor={`${type}-upload`}
+              className="inline-flex items-center px-5 py-3 rounded-xl font-bold transition-all cursor-pointer bg-brand-600 text-white hover:bg-brand-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+            >
+              <Upload className="h-5 w-5 mr-2" />
+              {currentImageUrl && !isDefaultImage ? 'Change Banner' : 'Upload Banner'}
+            </label>
+
+            <div className="mt-3 space-y-1">
+              <p className="text-xs text-slate-500">
+                Recommended: Wide image, at least 1200x400px
+              </p>
+              <p className="text-xs text-slate-500">
+                Accepted formats: JPG, PNG, WebP (max 5MB)
+              </p>
+              <p className="text-xs text-slate-500 font-medium text-brand-600">
+                ✨ Crop and zoom after selecting
+              </p>
             </div>
-          )}
+
+            {error && (
+              <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        /* Profile: Side-by-side layout */
+        <div className="flex items-start gap-6">
+          {/* Image Preview */}
+          <div className="relative">
+            {currentImageUrl && !isDefaultImage ? (
+              <div className="relative group">
+                <img
+                  src={currentImageUrl}
+                  alt="Profile"
+                  className="w-32 h-32 rounded-2xl object-cover border-4 border-slate-100 shadow-lg"
+                />
+                {!uploading && (
+                  <button
+                    onClick={handleRemoveImage}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white p-1.5 rounded-full shadow-lg hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                    title="Remove photo"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="w-32 h-32 rounded-2xl border-4 border-dashed border-slate-200 flex items-center justify-center bg-slate-50">
+                <Camera className="h-12 w-12 text-slate-300" />
+              </div>
+            )}
+          </div>
+
+          {/* Upload Button and Instructions */}
+          <div className="flex-1">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+              id={`${type}-upload`}
+            />
+
+            <label
+              htmlFor={`${type}-upload`}
+              className="inline-flex items-center px-5 py-3 rounded-xl font-bold transition-all cursor-pointer bg-brand-600 text-white hover:bg-brand-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+            >
+              <Upload className="h-5 w-5 mr-2" />
+              {currentImageUrl && !isDefaultImage ? 'Change Photo' : 'Upload Photo'}
+            </label>
+
+            <div className="mt-3 space-y-1">
+              <p className="text-xs text-slate-500">
+                Recommended: Square image, at least 400x400px
+              </p>
+              <p className="text-xs text-slate-500">
+                Accepted formats: JPG, PNG, WebP (max 5MB)
+              </p>
+              <p className="text-xs text-slate-500 font-medium text-brand-600">
+                ✨ Crop and zoom after selecting
+              </p>
+            </div>
+
+            {error && (
+              <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
