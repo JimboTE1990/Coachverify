@@ -789,16 +789,27 @@ export const CoachDetails: React.FC = () => {
                 {/* Contact Button */}
                 {(emailContacts.length > 0 || phoneContacts.length > 0) && (
                   <div className="relative group">
-                    <button
-                      onClick={() => setShowContactOptions(true)}
-                      className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
-                    >
-                      <Mail className="h-6 w-6 text-slate-700" />
-                    </button>
+                    {emailContacts.length === 1 && phoneContacts.length === 0 ? (
+                      // Single email - direct mailto link
+                      <a
+                        href={emailContacts[0].url.startsWith('mailto:') ? emailContacts[0].url : `mailto:${emailContacts[0].url}`}
+                        className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
+                      >
+                        <Mail className="h-6 w-6 text-slate-700" />
+                      </a>
+                    ) : (
+                      // Multiple contacts - show dropdown
+                      <button
+                        onClick={() => setShowContactOptions(true)}
+                        className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
+                      >
+                        <Mail className="h-6 w-6 text-slate-700" />
+                      </button>
+                    )}
                     <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                       <div className="bg-white border border-slate-200 rounded-xl shadow-lg px-3 py-2 text-center whitespace-nowrap">
                         <p className="text-xs font-bold text-slate-900">Contact</p>
-                        <p className="text-xs text-slate-500">Email or message</p>
+                        <p className="text-xs text-slate-500">{emailContacts.length === 1 && phoneContacts.length === 0 ? stripProtocol(emailContacts[0].url) : 'Email or message'}</p>
                       </div>
                     </div>
                   </div>
@@ -1412,17 +1423,17 @@ export const CoachDetails: React.FC = () => {
                         Email
                       </div>
                       {emailContacts.map((contact, idx) => (
-                        <button
+                        <a
                           key={idx}
-                          onClick={() => copyToClipboard(contact.url, contact.platform)}
-                          className="w-full px-4 py-3 text-left hover:bg-cyan-50 transition-colors flex items-center justify-between group"
+                          href={contact.url.startsWith('mailto:') ? contact.url : `mailto:${contact.url}`}
+                          className="w-full px-4 py-3 text-left hover:bg-cyan-50 transition-colors flex items-center justify-between group block"
                         >
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-slate-900">{contact.platform}</p>
                             <p className="text-sm text-slate-600 break-all">{stripProtocol(contact.url)}</p>
                           </div>
-                          <Copy className={`h-5 w-5 flex-shrink-0 ml-3 ${copiedContact === contact.platform ? 'text-green-600' : 'text-slate-400 group-hover:text-cyan-600'}`} />
-                        </button>
+                          <Mail className="h-5 w-5 flex-shrink-0 ml-3 text-slate-400 group-hover:text-cyan-600" />
+                        </a>
                       ))}
                     </div>
                   )}
@@ -1434,24 +1445,18 @@ export const CoachDetails: React.FC = () => {
                         Telephone
                       </div>
                       {phoneContacts.map((contact, idx) => (
-                        <button
+                        <a
                           key={idx}
-                          onClick={() => copyToClipboard(contact.url, contact.platform)}
-                          className="w-full px-4 py-3 text-left hover:bg-cyan-50 transition-colors flex items-center justify-between group"
+                          href={contact.url.startsWith('tel:') ? contact.url : `tel:${contact.url}`}
+                          className="w-full px-4 py-3 text-left hover:bg-cyan-50 transition-colors flex items-center justify-between group block"
                         >
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-slate-900">{contact.platform}</p>
                             <p className="text-sm text-slate-600 break-all">{stripProtocol(contact.url)}</p>
                           </div>
-                          <Copy className={`h-5 w-5 flex-shrink-0 ml-3 ${copiedContact === contact.platform ? 'text-green-600' : 'text-slate-400 group-hover:text-cyan-600'}`} />
-                        </button>
+                          <Phone className="h-5 w-5 flex-shrink-0 ml-3 text-slate-400 group-hover:text-cyan-600" />
+                        </a>
                       ))}
-                    </div>
-                  )}
-
-                  {copiedContact && (
-                    <div className="px-4 py-2 bg-green-50 text-green-700 text-sm font-bold text-center border-t border-green-200">
-                      {copiedContact} copied to clipboard!
                     </div>
                   )}
                 </div>
