@@ -988,7 +988,7 @@ export const CoachDetails: React.FC = () => {
                       body={coach.accreditationBody}
                       level={coach.accreditationLevel || coach.icfAccreditationLevel || ''}
                       size="large"
-                      className="!h-24 !w-24"
+                      className="!h-32 !w-32"
                     />
                   )}
                 </div>
