@@ -848,12 +848,25 @@ export const CoachDetails: React.FC = () => {
                   const isPhone = url.startsWith('tel:') || url.startsWith('+') || platform.includes('phone') || platform.includes('tel') || platform.includes('mobile');
                   const isBooking = platform.includes('booking') || platform.includes('appointment') || platform.includes('schedule') || platform.includes('calendly') || platform.includes('cal.com') || url.includes('calendly.com') || url.includes('cal.com');
                   return !isEmail && !isPhone && !isBooking;
-                }).map((socialLink) => (
+                }).map((socialLink) => {
+                  // Determine click type from platform
+                  const getPlatformType = (platform: string): 'linkedin' | 'instagram' | 'facebook' | 'youtube' | 'twitter' | 'website' => {
+                    const lowerPlatform = platform.toLowerCase();
+                    if (lowerPlatform.includes('linkedin')) return 'linkedin';
+                    if (lowerPlatform.includes('instagram')) return 'instagram';
+                    if (lowerPlatform.includes('facebook')) return 'facebook';
+                    if (lowerPlatform.includes('youtube')) return 'youtube';
+                    if (lowerPlatform.includes('twitter') || lowerPlatform.includes('x.com')) return 'twitter';
+                    return 'website';
+                  };
+
+                  return (
                   <div key={socialLink.id || socialLink.platform} className="relative group">
                     <a
                       href={socialLink.url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => trackContactClick(id!, getPlatformType(socialLink.platform))}
                       className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
                     >
                       {getSocialIcon(socialLink.platform)}
@@ -865,7 +878,8 @@ export const CoachDetails: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                );
+                })}
               </div>
             </div>
 

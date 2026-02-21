@@ -1187,10 +1187,10 @@ export const trackProfileView = async (coachId: string): Promise<void> => {
   }
 };
 
-// Track contact click (email, phone, booking, whatsapp)
+// Track contact click (email, phone, booking, whatsapp, social media, website)
 export const trackContactClick = async (
   coachId: string,
-  clickType: 'email' | 'phone' | 'booking' | 'whatsapp'
+  clickType: 'email' | 'phone' | 'booking' | 'whatsapp' | 'linkedin' | 'instagram' | 'facebook' | 'youtube' | 'twitter' | 'website'
 ): Promise<void> => {
   try {
     const sessionId = getSessionId();
