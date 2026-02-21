@@ -972,15 +972,22 @@ export const CoachDashboard: React.FC = () => {
                 Subscription
               </button>
               <button
-                onClick={() => setActiveTab('analytics')}
+                onClick={() => !trialStatus.isExpired && setActiveTab('analytics')}
+                disabled={trialStatus.isExpired}
                 className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
                   activeTab === 'analytics'
                     ? 'bg-green-50 text-green-700 shadow-sm'
+                    : trialStatus.isExpired
+                    ? 'text-slate-300 cursor-not-allowed opacity-50'
                     : 'text-slate-500 hover:bg-slate-50'
                 }`}
+                title={trialStatus.isExpired ? 'Requires active subscription' : ''}
               >
                 <BarChart className="h-4 w-4 inline mr-2" />
                 Analytics
+                {trialStatus.isExpired && (
+                  <span className="ml-2 text-xs bg-slate-200 px-2 py-0.5 rounded">Locked</span>
+                )}
               </button>
               <button
                 onClick={() => setActiveTab('reviews')}
@@ -1054,10 +1061,22 @@ export const CoachDashboard: React.FC = () => {
                   <CreditCard className={`h-5 w-5 mr-3 ${activeTab === 'subscription' ? 'text-indigo-600' : 'text-slate-400'}`} /> Subscription
                 </button>
                 <button
-                  onClick={() => setActiveTab('analytics')}
-                  className={`w-full flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'analytics' ? 'bg-green-50 text-green-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
+                  onClick={() => !trialStatus.isExpired && setActiveTab('analytics')}
+                  disabled={trialStatus.isExpired}
+                  className={`w-full flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-all ${
+                    activeTab === 'analytics'
+                      ? 'bg-green-50 text-green-700 shadow-sm'
+                      : trialStatus.isExpired
+                      ? 'text-slate-300 cursor-not-allowed opacity-50'
+                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                  }`}
+                  title={trialStatus.isExpired ? 'Requires active subscription' : ''}
                 >
-                  <BarChart className={`h-5 w-5 mr-3 ${activeTab === 'analytics' ? 'text-green-600' : 'text-slate-400'}`} /> Analytics
+                  <BarChart className={`h-5 w-5 mr-3 ${activeTab === 'analytics' ? 'text-green-600' : trialStatus.isExpired ? 'text-slate-300' : 'text-slate-400'}`} />
+                  Analytics
+                  {trialStatus.isExpired && (
+                    <span className="ml-auto text-xs bg-slate-200 text-slate-600 px-2 py-0.5 rounded">Locked</span>
+                  )}
                 </button>
                 <button
                   onClick={() => setActiveTab('reviews')}
@@ -1102,22 +1121,25 @@ export const CoachDashboard: React.FC = () => {
                 {currentCoach.subscriptionStatus === 'expired' && (
                   <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-6 animate-fade-in">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                      <div className="text-center md:text-left">
+                      <div className="text-center md:text-left flex-grow">
                         <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
                           <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                           </svg>
-                          <h3 className="text-xl font-bold text-red-800">Your profile is hidden from clients</h3>
+                          <h3 className="text-xl font-bold text-red-800">Profile Hidden - View Only Mode</h3>
                         </div>
-                        <p className="text-red-700 text-sm">
-                          Your free trial ended on <strong>{currentCoach.trialEndsAt ? new Date(currentCoach.trialEndsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'recently'}</strong>. Upgrade to make your profile visible again.
+                        <p className="text-red-700 text-sm mb-2">
+                          Your profile is <strong>not visible in search results</strong>. Your subscription ended on <strong>{currentCoach.subscriptionEndsAt ? new Date(currentCoach.subscriptionEndsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : currentCoach.trialEndsAt ? new Date(currentCoach.trialEndsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'recently'}</strong>.
+                        </p>
+                        <p className="text-red-600 text-xs font-semibold">
+                          ℹ️ You can view your profile but cannot edit it. Upgrade to reactivate editing and become visible to clients.
                         </p>
                       </div>
                       <Link
                         to="/pricing"
-                        className="bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 whitespace-nowrap"
+                        className="bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 whitespace-nowrap flex-shrink-0"
                       >
-                        Upgrade Now
+                        Reactivate
                       </Link>
                     </div>
                   </div>
@@ -1297,8 +1319,9 @@ export const CoachDashboard: React.FC = () => {
                       </button>
                       <button
                         onClick={handleSaveProfile}
-                        disabled={!hasUnsavedChanges || isSaving}
+                        disabled={!hasUnsavedChanges || isSaving || trialStatus.isExpired}
                         className="bg-brand-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                        title={trialStatus.isExpired ? 'Profile editing disabled - Reactivate subscription to edit' : ''}
                       >
                         {isSaving ? (
                           <>
@@ -1310,6 +1333,9 @@ export const CoachDashboard: React.FC = () => {
                       </button>
                     </div>
                   </div>
+
+                  {/* Disable all editing for expired users */}
+                  <div className={trialStatus.isExpired ? 'opacity-60 pointer-events-none select-none' : ''}>
 
                   {/* Coach Bio Section - CONSOLIDATED */}
                   <CollapsibleSection
@@ -2153,6 +2179,8 @@ export const CoachDashboard: React.FC = () => {
                     </div>
                   </CollapsibleSection>
                 </div>
+              </div>
+              {/* Close disabled wrapper for expired users */}
               </div>
             )}
 
