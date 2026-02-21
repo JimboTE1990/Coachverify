@@ -868,25 +868,25 @@ export const CoachDetails: React.FC = () => {
 
               {/* Prominent Accreditation Badge with Official Branding */}
               {coach.accreditationBody === 'EMCC' && coach.emccVerified && (
-                <div className="mt-6 mb-4 bg-gradient-to-br from-[#2B4170]/5 to-[#C9A961]/10 border-2 border-[#2B4170]/30 rounded-2xl p-6 shadow-md">
+                <div className="mt-6 mb-4 bg-gradient-to-br from-[#2B4170]/5 to-[#C9A961]/10 border-2 border-[#2B4170]/30 rounded-2xl p-4 shadow-md">
                   {/* Header with EMCC and verified badge on single line */}
-                  <div className="flex items-center justify-center gap-2 mb-4">
-                    <span className="text-2xl font-black text-[#2B4170] tracking-wide">EMCC</span>
-                    <span className="text-sm font-bold text-[#2B4170]">Verified Accreditation</span>
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  <div className="flex items-center justify-center gap-2 mb-3">
+                    <span className="text-xl font-black text-[#2B4170] tracking-wide">EMCC</span>
+                    <span className="text-xs font-bold text-[#2B4170]">Verified Accreditation</span>
+                    <CheckCircle className="h-4 w-4 text-green-600" />
                   </div>
 
                   {coach.accreditationLevel && (
-                    <div className="flex flex-col items-center gap-3 mb-4">
+                    <div className="flex flex-col items-center gap-2 mb-3">
                       {/* Level in bold */}
-                      <p className="text-center text-base font-bold text-[#2B4170]">{coach.accreditationLevel}</p>
-                      {/* Even larger badge for better visibility */}
-                      <div className="w-48 h-48 flex items-center justify-center">
+                      <p className="text-center text-sm font-bold text-[#2B4170]">{coach.accreditationLevel}</p>
+                      {/* Smaller badge */}
+                      <div className="w-32 h-32 flex items-center justify-center">
                         <AccreditationBadge
                           body="EMCC"
                           level={coach.accreditationLevel}
                           size="large"
-                          className="!h-32 !w-32"
+                          className="!h-24 !w-24"
                         />
                       </div>
                     </div>
@@ -923,26 +923,26 @@ export const CoachDetails: React.FC = () => {
               )}
 
               {coach.accreditationBody === 'ICF' && coach.icfVerified && (
-                <div className="mt-6 mb-4 bg-gradient-to-br from-[#2E5C8A]/5 to-[#4A90E2]/10 border-2 border-[#2E5C8A]/30 rounded-2xl p-6 shadow-md">
+                <div className="mt-6 mb-4 bg-gradient-to-br from-[#2E5C8A]/5 to-[#4A90E2]/10 border-2 border-[#2E5C8A]/30 rounded-2xl p-4 shadow-md">
                   {/* Header with ICF and verified badge on single line */}
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <span className="text-2xl font-black text-[#2E5C8A] tracking-wide">ICF</span>
-                    <span className="text-sm font-bold text-[#2E5C8A]">Verified Accreditation</span>
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <span className="text-xl font-black text-[#2E5C8A] tracking-wide">ICF</span>
+                    <span className="text-xs font-bold text-[#2E5C8A]">Verified Accreditation</span>
+                    <CheckCircle className="h-4 w-4 text-green-600" />
                   </div>
-                  <p className="text-center text-xs text-slate-600 mb-4">International Coaching Federation</p>
+                  <p className="text-center text-xs text-slate-600 mb-3">International Coaching Federation</p>
 
                   {coach.icfAccreditationLevel && (
-                    <div className="flex flex-col items-center gap-3 mb-4">
+                    <div className="flex flex-col items-center gap-2 mb-3">
                       {/* Level in bold */}
-                      <p className="text-center text-base font-bold text-[#2E5C8A]">{coach.icfAccreditationLevel}</p>
-                      {/* Even larger badge for better visibility */}
-                      <div className="w-48 h-48 flex items-center justify-center">
+                      <p className="text-center text-sm font-bold text-[#2E5C8A]">{coach.icfAccreditationLevel}</p>
+                      {/* Smaller badge */}
+                      <div className="w-32 h-32 flex items-center justify-center">
                         <AccreditationBadge
                           body="ICF"
                           level={coach.icfAccreditationLevel}
                           size="large"
-                          className="!h-32 !w-32"
+                          className="!h-24 !w-24"
                         />
                       </div>
                     </div>
@@ -1749,7 +1749,7 @@ export const CoachDetails: React.FC = () => {
             {/* CoachDog Logo - Top Right Corner */}
             <div className="absolute top-4 right-16 w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center z-10 border-2 border-cyan-200 overflow-hidden">
               <img
-                src="/coachdog-logo.png"
+                src="/Favicon2.png"
                 alt="CoachDog"
                 className="w-full h-full object-cover"
               />
