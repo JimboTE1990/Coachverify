@@ -27,7 +27,7 @@ import {
   AlertTriangle, Mail, Smartphone, RefreshCw, Eye, EyeOff,
   Tag, Monitor, LayoutDashboard, Sparkles, BarChart, TrendingUp, Calendar,
   Award, GraduationCap, Trophy, Star, Flag, MessageCircle, Send, Info, ExternalLink,
-  ClipboardCheck
+  ClipboardCheck, Phone
 } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
 import { useAuth } from '../hooks/useAuth';
@@ -2907,6 +2907,101 @@ export const CoachDashboard: React.FC = () => {
                       viewsByDay={analytics.viewsByDay || []}
                       totalViews={analytics.totalViews}
                     />
+
+                    {/* Analytics Metrics Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {/* Total Profile Views */}
+                      <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-6">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-bold text-slate-600 uppercase tracking-wide">Profile Views</h4>
+                          <div className="bg-blue-100 p-2 rounded-lg">
+                            <Eye className="h-5 w-5 text-blue-600" />
+                          </div>
+                        </div>
+                        <p className="text-3xl font-black text-slate-900">{analytics.totalViews}</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          {analytics.viewsLast7Days} in last 7 days
+                        </p>
+                      </div>
+
+                      {/* Total Contact Clicks */}
+                      <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-6">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-bold text-slate-600 uppercase tracking-wide">Contact Clicks</h4>
+                          <div className="bg-cyan-100 p-2 rounded-lg">
+                            <Mail className="h-5 w-5 text-cyan-600" />
+                          </div>
+                        </div>
+                        <p className="text-3xl font-black text-slate-900">{analytics.totalContactClicks}</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          {analytics.contactClicksLast7Days} in last 7 days
+                        </p>
+                      </div>
+
+                      {/* Booking Clicks */}
+                      <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-6">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-bold text-slate-600 uppercase tracking-wide">Booking Clicks</h4>
+                          <div className="bg-green-100 p-2 rounded-lg">
+                            <Calendar className="h-5 w-5 text-green-600" />
+                          </div>
+                        </div>
+                        <p className="text-3xl font-black text-slate-900">
+                          {analytics.clicksByType?.find(c => c.type === 'booking')?.count || 0}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1">Last 30 days</p>
+                      </div>
+
+                      {/* Email Clicks */}
+                      <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-6">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-bold text-slate-600 uppercase tracking-wide">Email Clicks</h4>
+                          <div className="bg-purple-100 p-2 rounded-lg">
+                            <Mail className="h-5 w-5 text-purple-600" />
+                          </div>
+                        </div>
+                        <p className="text-3xl font-black text-slate-900">
+                          {analytics.clicksByType?.find(c => c.type === 'email')?.count || 0}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1">Last 30 days</p>
+                      </div>
+                    </div>
+
+                    {/* Contact Clicks Breakdown */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-8">
+                      <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                        <Phone className="h-5 w-5 mr-2 text-slate-600" />
+                        Contact Click Breakdown
+                      </h3>
+                      {analytics.clicksByType && analytics.clicksByType.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {analytics.clicksByType.map((clickType, idx) => {
+                            const icons = {
+                              booking: { icon: Calendar, color: 'green', label: 'Booking Link' },
+                              email: { icon: Mail, color: 'purple', label: 'Email' },
+                              phone: { icon: Phone, color: 'blue', label: 'Phone' },
+                              whatsapp: { icon: MessageCircle, color: 'emerald', label: 'WhatsApp' }
+                            };
+                            const config = icons[clickType.type as keyof typeof icons] || { icon: Phone, color: 'slate', label: clickType.type };
+                            const Icon = config.icon;
+
+                            return (
+                              <div key={idx} className={`flex items-center justify-between py-4 px-5 bg-${config.color}-50 rounded-lg border border-${config.color}-200`}>
+                                <div className="flex items-center gap-3">
+                                  <div className={`bg-${config.color}-100 p-2.5 rounded-lg`}>
+                                    <Icon className={`h-5 w-5 text-${config.color}-600`} />
+                                  </div>
+                                  <span className="text-sm font-bold text-slate-700">{config.label}</span>
+                                </div>
+                                <span className="text-2xl font-black text-slate-900">{clickType.count}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className="text-slate-500 text-sm text-center py-8">No contact clicks yet. Share your profile to start tracking engagement!</p>
+                      )}
+                    </div>
 
                     {/* Top Referrers Card */}
                     <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-8">
