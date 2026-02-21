@@ -747,8 +747,6 @@ export const addReviewComment = async (
   coachName: string,
   commentText: string
 ): Promise<boolean> => {
-  console.log('[addReviewComment] Adding comment to review:', { reviewId, coachId });
-
   const { error } = await supabase
     .from('review_comments')
     .insert({
@@ -756,14 +754,14 @@ export const addReviewComment = async (
       author_id: coachId,
       author_name: coachName,
       text: commentText,
-    });
+    })
+    .select();
 
   if (error) {
-    console.error('[addReviewComment] Error adding comment:', error);
+    console.error('[addReviewComment] Error:', error);
     return false;
   }
 
-  console.log('[addReviewComment] Successfully added comment');
   return true;
 };
 
@@ -778,7 +776,7 @@ export const getReviewComments = async (reviewId: string): Promise<any[]> => {
     .order('created_at', { ascending: true });
 
   if (error) {
-    console.error('[getReviewComments] Error fetching comments:', error);
+    console.error('[getReviewComments] Error:', error);
     return [];
   }
 

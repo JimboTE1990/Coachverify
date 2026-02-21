@@ -158,15 +158,22 @@ export const CoachDetails: React.FC = () => {
   useEffect(() => {
     const loadAllComments = async () => {
       if (coach?.reviews && coach.reviews.length > 0) {
-        console.log('[CoachDetails] Loading comments for', coach.reviews.length, 'reviews');
-        for (const review of coach.reviews) {
-          console.log('[CoachDetails] Loading comments for review:', review.id);
+        // Load all comments in parallel
+        const commentsPromises = coach.reviews.map(async (review) => {
           const comments = await getReviewComments(review.id);
-          console.log('[CoachDetails] Got comments for review', review.id, ':', comments);
-          if (comments && comments.length > 0) {
-            setReviewComments(prev => ({ ...prev, [review.id]: comments }));
-          }
-        }
+          return { reviewId: review.id, comments };
+        });
+
+        // Wait for all to complete
+        const results = await Promise.all(commentsPromises);
+
+        // Update state once with all comments
+        const newComments: Record<string, any[]> = {};
+        results.forEach(({ reviewId, comments }) => {
+          newComments[reviewId] = comments;
+        });
+
+        setReviewComments(newComments);
       }
     };
     loadAllComments();
@@ -1364,7 +1371,34 @@ export const CoachDetails: React.FC = () => {
                   </div>
                 )}
 
-                {/* Coach Actions - Comment and Flag Spam (Only for coach viewing their own profile) */}
+                {/* Display Comments - PUBLIC (visible to everyone) */}
+                {reviewComments[currentReview.id] && reviewComments[currentReview.id].length > 0 && (
+                  <div className="mt-6 pt-6 border-t-2 border-cyan-200">
+                    <p className="text-sm font-bold text-slate-600">Comments:</p>
+                    <div className="space-y-3 mt-3">
+                      {reviewComments[currentReview.id].map((comment: any) => (
+                        <div key={comment.id} className="bg-white/50 rounded-lg p-3 border border-slate-200">
+                          <div className="flex items-start gap-2">
+                            <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
+                              <span className="text-brand-600 font-bold text-xs">
+                                {comment.author_name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-bold text-xs text-slate-900">{comment.author_name}</p>
+                              <p className="text-slate-700 text-sm mt-1">{comment.text}</p>
+                              <p className="text-xs text-slate-500 mt-1">
+                                {new Date(comment.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Coach Actions - Comment Form (Only for coach viewing their own profile) */}
                 {currentUserCoach && coach && currentUserCoach.id === coach.id && (
                   <div className="mt-6 pt-6 border-t-2 border-cyan-200">
                     {/* Comment Form */}
@@ -1400,31 +1434,6 @@ export const CoachDetails: React.FC = () => {
                         </div>
                       </div>
                     ) : null}
-
-                    {/* Display Comments */}
-                    {reviewComments[currentReview.id] && reviewComments[currentReview.id].length > 0 && (
-                      <div className="mt-4 space-y-3">
-                        <p className="text-sm font-bold text-slate-600">Comments:</p>
-                        {reviewComments[currentReview.id].map((comment: any) => (
-                          <div key={comment.id} className="bg-white/50 rounded-lg p-3 border border-slate-200">
-                            <div className="flex items-start gap-2">
-                              <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
-                                <span className="text-brand-600 font-bold text-xs">
-                                  {comment.author_name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
-                                </span>
-                              </div>
-                              <div className="flex-1">
-                                <p className="font-bold text-xs text-slate-900">{comment.author_name}</p>
-                                <p className="text-slate-700 text-sm mt-1">{comment.text}</p>
-                                <p className="text-xs text-slate-500 mt-1">
-                                  {new Date(comment.created_at).toLocaleDateString()}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 )}
 
@@ -1909,6 +1918,33 @@ export const CoachDetails: React.FC = () => {
                     </div>
                   )}
 
+                  {/* Display Comments - PUBLIC (visible to everyone) */}
+                  {reviewComments[review.id] && reviewComments[review.id].length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-cyan-200">
+                      <p className="text-sm font-bold text-slate-600">Comments:</p>
+                      <div className="space-y-3 mt-3">
+                        {reviewComments[review.id].map((comment: any) => (
+                          <div key={comment.id} className="bg-white/50 rounded-lg p-3 border border-slate-200">
+                            <div className="flex items-start gap-2">
+                              <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
+                                <span className="text-brand-600 font-bold text-xs">
+                                  {comment.author_name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
+                                </span>
+                              </div>
+                              <div className="flex-1">
+                                <p className="font-bold text-xs text-slate-900">{comment.author_name}</p>
+                                <p className="text-slate-700 text-sm mt-1">{comment.text}</p>
+                                <p className="text-xs text-slate-500 mt-1">
+                                  {new Date(comment.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Coach Actions - Comment and Flag Spam (Only for coach viewing their own profile) */}
                   {currentUserCoach && coach && currentUserCoach.id === coach.id && (
                     <div className="mt-4 pt-4 border-t border-cyan-200">
@@ -1945,31 +1981,6 @@ export const CoachDetails: React.FC = () => {
                           </div>
                         </div>
                       ) : null}
-
-                      {/* Display Comments */}
-                      {reviewComments[review.id] && reviewComments[review.id].length > 0 && (
-                        <div className="mt-4 space-y-3">
-                          <p className="text-sm font-bold text-slate-600">Comments:</p>
-                          {reviewComments[review.id].map((comment: any) => (
-                            <div key={comment.id} className="bg-white/50 rounded-lg p-3 border border-slate-200">
-                              <div className="flex items-start gap-2">
-                                <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
-                                  <span className="text-brand-600 font-bold text-xs">
-                                    {comment.author_name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
-                                  </span>
-                                </div>
-                                <div className="flex-1">
-                                  <p className="font-bold text-xs text-slate-900">{comment.author_name}</p>
-                                  <p className="text-slate-700 text-sm mt-1">{comment.text}</p>
-                                  <p className="text-xs text-slate-500 mt-1">
-                                    {new Date(comment.created_at).toLocaleDateString()}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   )}
 
