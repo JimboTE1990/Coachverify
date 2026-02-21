@@ -970,11 +970,11 @@ export const CoachDetails: React.FC = () => {
           {/* Details Section */}
           <div className="px-6 py-6 space-y-6">
 
-            {/* Accreditation Badge - Full Width Layout */}
+            {/* Accreditation Badge - Compact with Border */}
             {((coach.accreditationBody === 'EMCC' && coach.emccVerified) ||
               (coach.accreditationBody === 'ICF' && coach.icfVerified) ||
               (coach.accreditationBody === 'AC')) && (
-              <div className={`grid grid-cols-[auto,1fr] gap-8 p-6 rounded-2xl border-2 shadow-md mb-6 ${
+              <div className={`flex items-center gap-6 p-5 rounded-2xl border-2 shadow-md mb-6 ${
                 coach.accreditationBody === 'EMCC'
                   ? 'bg-gradient-to-br from-[#2B4170]/5 to-[#C9A961]/10 border-[#2B4170]/30'
                   : coach.accreditationBody === 'ICF'
@@ -982,81 +982,75 @@ export const CoachDetails: React.FC = () => {
                   : 'bg-gradient-to-br from-slate-100 to-slate-50 border-slate-300'
               }`}>
                 {/* Badge on the left */}
-                <div className="flex-shrink-0 self-center">
+                <div className="flex-shrink-0">
                   {coach.accreditationLevel && (
                     <AccreditationBadge
                       body={coach.accreditationBody}
                       level={coach.accreditationLevel || coach.icfAccreditationLevel || ''}
                       size="large"
-                      className="!h-32 !w-32"
+                      className="!h-24 !w-24"
                     />
                   )}
                 </div>
 
-                {/* Accreditation info spread across right side */}
-                <div className="flex flex-col justify-center gap-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className={`text-3xl font-black tracking-wide ${
-                        coach.accreditationBody === 'EMCC' ? 'text-[#2B4170]' :
-                        coach.accreditationBody === 'ICF' ? 'text-[#2E5C8A]' : 'text-slate-900'
-                      }`}>{coach.accreditationBody}</span>
-                      <CheckCircle className="h-6 w-6 text-green-600" />
-                    </div>
-                    {coach.accreditationLevel && (
-                      <span className={`text-xl font-bold px-4 py-1 rounded-full border-2 ${
-                        coach.accreditationBody === 'EMCC'
-                          ? 'text-[#2B4170] bg-[#2B4170]/10 border-[#2B4170]/30'
-                          : coach.accreditationBody === 'ICF'
-                          ? 'text-[#2E5C8A] bg-[#2E5C8A]/10 border-[#2E5C8A]/30'
-                          : 'text-slate-700 bg-slate-100 border-slate-300'
-                      }`}>
-                        {coach.accreditationLevel || coach.icfAccreditationLevel}
-                      </span>
-                    )}
+                {/* Accreditation info - vertical stack like original */}
+                <div className="flex-grow">
+                  {/* Header with body name and checkmark */}
+                  <div className="flex items-center justify-center gap-2 mb-3">
+                    <span className={`text-xl font-black tracking-wide ${
+                      coach.accreditationBody === 'EMCC' ? 'text-[#2B4170]' :
+                      coach.accreditationBody === 'ICF' ? 'text-[#2E5C8A]' : 'text-slate-900'
+                    }`}>{coach.accreditationBody}</span>
+                    <span className={`text-sm font-bold ${
+                      coach.accreditationBody === 'EMCC' ? 'text-[#2B4170]' :
+                      coach.accreditationBody === 'ICF' ? 'text-[#2E5C8A]' : 'text-slate-600'
+                    }`}>Verified Accreditation</span>
+                    <CheckCircle className="h-5 w-5 text-green-600" />
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className={`text-base font-bold ${
-                        coach.accreditationBody === 'EMCC' ? 'text-[#2B4170]' :
-                        coach.accreditationBody === 'ICF' ? 'text-[#2E5C8A]' : 'text-slate-600'
-                      }`}>Verified Accreditation</p>
-                      {coach.accreditationBody === 'ICF' && (
-                        <p className="text-sm text-slate-600 mt-1">International Coaching Federation</p>
-                      )}
-                    </div>
+                  {/* Level */}
+                  {coach.accreditationLevel && (
+                    <p className={`text-center text-base font-bold mb-3 ${
+                      coach.accreditationBody === 'EMCC' ? 'text-[#2B4170]' :
+                      coach.accreditationBody === 'ICF' ? 'text-[#2E5C8A]' : 'text-slate-700'
+                    }`}>{coach.accreditationLevel || coach.icfAccreditationLevel}</p>
+                  )}
 
-                    {coach.emccProfileUrl && coach.accreditationBody === 'EMCC' && (() => {
-                      let cleanUrl = coach.emccProfileUrl;
-                      const refMatch = cleanUrl.match(/reference=([^&]+)/);
-                      if (refMatch && refMatch[1]) {
-                        cleanUrl = `https://www.emccglobal.org/accreditation/eia/eia-awards/?reference=${refMatch[1]}&search=1`;
-                      }
-                      return (
-                        <a
-                          href={cleanUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-base text-[#2B4170] hover:text-[#C9A961] font-bold transition-colors px-4 py-2 rounded-lg hover:bg-[#2B4170]/10"
-                        >
-                          <ExternalLink className="h-5 w-5" />
-                          Verify EMCC Accreditation
-                        </a>
-                      );
-                    })()}
-                    {coach.icfProfileUrl && coach.accreditationBody === 'ICF' && (
+                  {/* ICF subtitle */}
+                  {coach.accreditationBody === 'ICF' && (
+                    <p className="text-center text-xs text-slate-600 mb-3">International Coaching Federation</p>
+                  )}
+
+                  {/* Separator line + Verify link */}
+                  {coach.emccProfileUrl && coach.accreditationBody === 'EMCC' && (() => {
+                    let cleanUrl = coach.emccProfileUrl;
+                    const refMatch = cleanUrl.match(/reference=([^&]+)/);
+                    if (refMatch && refMatch[1]) {
+                      cleanUrl = `https://www.emccglobal.org/accreditation/eia/eia-awards/?reference=${refMatch[1]}&search=1`;
+                    }
+                    return (
                       <a
-                        href={coach.icfProfileUrl}
+                        href={cleanUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-base text-[#2E5C8A] hover:text-brand-600 font-bold transition-colors px-4 py-2 rounded-lg hover:bg-[#2E5C8A]/10"
+                        className="flex items-center justify-center gap-2 text-sm text-[#2B4170] hover:text-[#C9A961] font-semibold transition-colors border-t-2 border-[#2B4170]/20 pt-3"
                       >
-                        <ExternalLink className="h-5 w-5" />
-                        Verify ICF Accreditation
+                        <ExternalLink className="h-4 w-4" />
+                        Check out my EMCC accreditation here
                       </a>
-                    )}
-                  </div>
+                    );
+                  })()}
+                  {coach.icfProfileUrl && coach.accreditationBody === 'ICF' && (
+                    <a
+                      href={coach.icfProfileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 text-sm text-[#2E5C8A] hover:text-brand-600 font-semibold transition-colors border-t-2 border-[#2E5C8A]/20 pt-3"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Check out my ICF accreditation here
+                    </a>
+                  )}
                 </div>
               </div>
             )}
