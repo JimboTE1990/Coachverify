@@ -970,11 +970,17 @@ export const CoachDetails: React.FC = () => {
           {/* Details Section */}
           <div className="px-6 py-6 space-y-6">
 
-            {/* Compact Accreditation Badge - Left Side */}
+            {/* Accreditation Badge - Compact with Border */}
             {((coach.accreditationBody === 'EMCC' && coach.emccVerified) ||
               (coach.accreditationBody === 'ICF' && coach.icfVerified) ||
               (coach.accreditationBody === 'AC')) && (
-              <div className="flex items-start gap-4 mb-6">
+              <div className={`flex items-center gap-6 p-5 rounded-2xl border-2 shadow-md mb-6 ${
+                coach.accreditationBody === 'EMCC'
+                  ? 'bg-gradient-to-br from-[#2B4170]/5 to-[#C9A961]/10 border-[#2B4170]/30'
+                  : coach.accreditationBody === 'ICF'
+                  ? 'bg-gradient-to-br from-[#2E5C8A]/5 to-[#4A90E2]/10 border-[#2E5C8A]/30'
+                  : 'bg-gradient-to-br from-slate-100 to-slate-50 border-slate-300'
+              }`}>
                 {/* Badge on the left */}
                 <div className="flex-shrink-0">
                   {coach.accreditationLevel && (
@@ -982,23 +988,32 @@ export const CoachDetails: React.FC = () => {
                       body={coach.accreditationBody}
                       level={coach.accreditationLevel || coach.icfAccreditationLevel || ''}
                       size="large"
-                      className="!h-20 !w-20"
+                      className="!h-28 !w-28"
                     />
                   )}
                 </div>
 
                 {/* Accreditation info on the right */}
                 <div className="flex-grow">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-lg font-black text-slate-900">{coach.accreditationBody}</span>
-                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`text-2xl font-black tracking-wide ${
+                      coach.accreditationBody === 'EMCC' ? 'text-[#2B4170]' :
+                      coach.accreditationBody === 'ICF' ? 'text-[#2E5C8A]' : 'text-slate-900'
+                    }`}>{coach.accreditationBody}</span>
+                    <CheckCircle className="h-5 w-5 text-green-600" />
                   </div>
-                  <p className="text-xs font-bold text-slate-600 mb-1">Verified Accreditation</p>
+                  <p className={`text-sm font-bold mb-2 ${
+                    coach.accreditationBody === 'EMCC' ? 'text-[#2B4170]' :
+                    coach.accreditationBody === 'ICF' ? 'text-[#2E5C8A]' : 'text-slate-600'
+                  }`}>Verified Accreditation</p>
                   {coach.accreditationLevel && (
-                    <p className="text-sm font-bold text-slate-700 mb-2">{coach.accreditationLevel || coach.icfAccreditationLevel}</p>
+                    <p className={`text-base font-bold mb-2 ${
+                      coach.accreditationBody === 'EMCC' ? 'text-[#2B4170]' :
+                      coach.accreditationBody === 'ICF' ? 'text-[#2E5C8A]' : 'text-slate-700'
+                    }`}>{coach.accreditationLevel || coach.icfAccreditationLevel}</p>
                   )}
                   {coach.accreditationBody === 'ICF' && (
-                    <p className="text-xs text-slate-500 mb-2">International Coaching Federation</p>
+                    <p className="text-xs text-slate-600 mb-3">International Coaching Federation</p>
                   )}
                   {coach.emccProfileUrl && coach.accreditationBody === 'EMCC' && (() => {
                     let cleanUrl = coach.emccProfileUrl;
@@ -1011,9 +1026,9 @@ export const CoachDetails: React.FC = () => {
                         href={cleanUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 font-semibold"
+                        className="inline-flex items-center gap-2 text-sm text-[#2B4170] hover:text-[#C9A961] font-semibold transition-colors"
                       >
-                        <ExternalLink className="h-3 w-3" />
+                        <ExternalLink className="h-4 w-4" />
                         Verify EMCC Accreditation
                       </a>
                     );
@@ -1023,9 +1038,9 @@ export const CoachDetails: React.FC = () => {
                       href={coach.icfProfileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 font-semibold"
+                      className="inline-flex items-center gap-2 text-sm text-[#2E5C8A] hover:text-brand-600 font-semibold transition-colors"
                     >
-                      <ExternalLink className="h-3 w-3" />
+                      <ExternalLink className="h-4 w-4" />
                       Verify ICF Accreditation
                     </a>
                   )}
