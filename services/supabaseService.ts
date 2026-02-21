@@ -1156,7 +1156,7 @@ export const trackProfileView = async (coachId: string): Promise<void> => {
     }
 
     // Track the view
-    await supabase.from('profile_views').insert({
+    const { data: insertData, error: insertError } = await supabase.from('profile_views').insert({
       coach_id: coachId,
       viewed_at: new Date().toISOString(),
       viewer_user_agent: navigator.userAgent,
@@ -1164,7 +1164,12 @@ export const trackProfileView = async (coachId: string): Promise<void> => {
       session_id: sessionId
     });
 
-    console.log('[Analytics] Profile view tracked successfully');
+    if (insertError) {
+      console.error('[Analytics] Error inserting profile view:', insertError);
+      return;
+    }
+
+    console.log('[Analytics] Profile view tracked successfully', { coachId, sessionId });
   } catch (error) {
     console.error('[Analytics] Error tracking profile view:', error);
     // Don't throw - analytics failures shouldn't break user experience
