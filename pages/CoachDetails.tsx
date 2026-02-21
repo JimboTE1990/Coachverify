@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { getCoachById, trackProfileView, getCoaches, addReview, addCoachReply, deleteReview, updateReview, addReviewComment, getReviewComments, flagReviewAsSpam } from '../services/supabaseService';
+import { getCoachById, trackProfileView, trackContactClick, getCoaches, addReview, addCoachReply, deleteReview, updateReview, addReviewComment, getReviewComments, flagReviewAsSpam } from '../services/supabaseService';
 import { storeReviewToken, getReviewToken, canManageReview, removeReviewToken } from '../utils/reviewTokens';
 import { Coach, QuestionnaireAnswers, CURRENCIES } from '../types';
 import { calculateMatchScore } from '../utils/matchCalculator';
@@ -795,6 +795,7 @@ export const CoachDetails: React.FC = () => {
                       // Single email - direct mailto link
                       <a
                         href={emailContacts[0].url.startsWith('mailto:') ? emailContacts[0].url : `mailto:${emailContacts[0].url}`}
+                        onClick={() => coach?.id && trackContactClick(coach.id, 'email')}
                         className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
                       >
                         <Mail className="h-6 w-6 text-slate-700" />
@@ -824,6 +825,7 @@ export const CoachDetails: React.FC = () => {
                       href={`https://wa.me/${phoneContacts[0].url.replace(/\D/g, '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => coach?.id && trackContactClick(coach.id, 'whatsapp')}
                       className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
                     >
                       <MessageCircle className="h-6 w-6 text-slate-700" />
@@ -1006,6 +1008,7 @@ export const CoachDetails: React.FC = () => {
                         href={bookingLink.url}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => coach?.id && trackContactClick(coach.id, 'booking')}
                         className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
                       >
                         <Calendar className="h-5 w-5" />
@@ -1019,6 +1022,7 @@ export const CoachDetails: React.FC = () => {
                     <div className="flex justify-center">
                       <a
                         href={primaryEmail.startsWith('mailto:') ? primaryEmail : `mailto:${primaryEmail}`}
+                        onClick={() => coach?.id && trackContactClick(coach.id, 'email')}
                         className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
                       >
                         <Mail className="h-5 w-5" />
@@ -1474,6 +1478,7 @@ export const CoachDetails: React.FC = () => {
                         <a
                           key={idx}
                           href={contact.url.startsWith('mailto:') ? contact.url : `mailto:${contact.url}`}
+                          onClick={() => coach?.id && trackContactClick(coach.id, 'email')}
                           className="w-full px-4 py-3 text-left hover:bg-cyan-50 transition-colors flex items-center justify-between group block"
                         >
                           <div className="flex-1 min-w-0">
@@ -1496,6 +1501,7 @@ export const CoachDetails: React.FC = () => {
                         <a
                           key={idx}
                           href={contact.url.startsWith('tel:') ? contact.url : `tel:${contact.url}`}
+                          onClick={() => coach?.id && trackContactClick(coach.id, 'phone')}
                           className="w-full px-4 py-3 text-left hover:bg-cyan-50 transition-colors flex items-center justify-between group block"
                         >
                           <div className="flex-1 min-w-0">

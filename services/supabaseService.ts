@@ -1171,6 +1171,30 @@ export const trackProfileView = async (coachId: string): Promise<void> => {
   }
 };
 
+// Track contact click (email, phone, booking, whatsapp)
+export const trackContactClick = async (
+  coachId: string,
+  clickType: 'email' | 'phone' | 'booking' | 'whatsapp'
+): Promise<void> => {
+  try {
+    const sessionId = getSessionId();
+
+    await supabase.from('contact_clicks').insert({
+      coach_id: coachId,
+      click_type: clickType,
+      session_id: sessionId,
+      clicked_at: new Date().toISOString(),
+      referrer: document.referrer || 'direct',
+      user_agent: navigator.userAgent
+    });
+
+    console.log(`[Analytics] ${clickType} click tracked successfully`);
+  } catch (error) {
+    console.error(`[Analytics] Error tracking ${clickType} click:`, error);
+    // Don't throw - analytics failures shouldn't break user experience
+  }
+};
+
 // Get analytics for a specific coach
 export interface CoachAnalytics {
   totalViews: number;
@@ -1178,6 +1202,10 @@ export interface CoachAnalytics {
   viewsLast30Days: number;
   viewsByDay: { date: string; views: number }[];
   topReferrers: { referrer: string; count: number }[];
+  totalContactClicks: number;
+  contactClicksLast7Days: number;
+  contactClicksLast30Days: number;
+  clicksByType: { type: string; count: number }[];
 }
 
 export const getCoachAnalytics = async (coachId: string): Promise<CoachAnalytics> => {
@@ -1245,12 +1273,48 @@ export const getCoachAnalytics = async (coachId: string): Promise<CoachAnalytics
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
+    // Contact clicks - all time
+    const { data: allContactClicks } = await supabase
+      .from('contact_clicks')
+      .select('id')
+      .eq('coach_id', coachId);
+
+    // Contact clicks - last 7 days
+    const { data: contactClicks7Days } = await supabase
+      .from('contact_clicks')
+      .select('id')
+      .eq('coach_id', coachId)
+      .gte('clicked_at', sevenDaysAgo);
+
+    // Contact clicks - last 30 days
+    const { data: contactClicks30Days } = await supabase
+      .from('contact_clicks')
+      .select('click_type')
+      .eq('coach_id', coachId)
+      .gte('clicked_at', thirtyDaysAgo);
+
+    // Group contact clicks by type
+    const clicksByType = contactClicks30Days?.reduce((acc: any, click: any) => {
+      const type = click.click_type;
+      const existing = acc.find((item: any) => item.type === type);
+      if (existing) {
+        existing.count++;
+      } else {
+        acc.push({ type, count: 1 });
+      }
+      return acc;
+    }, []) || [];
+
     return {
       totalViews: coach?.total_profile_views || 0,
       viewsLast7Days: views7Days?.length || 0,
       viewsLast30Days: views30Days?.length || 0,
       viewsByDay,
-      topReferrers
+      topReferrers,
+      totalContactClicks: allContactClicks?.length || 0,
+      contactClicksLast7Days: contactClicks7Days?.length || 0,
+      contactClicksLast30Days: contactClicks30Days?.length || 0,
+      clicksByType
     };
   } catch (error) {
     console.error('[Analytics] Error fetching analytics:', error);
