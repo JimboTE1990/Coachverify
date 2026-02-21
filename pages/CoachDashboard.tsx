@@ -2607,44 +2607,32 @@ export const CoachDashboard: React.FC = () => {
                   {currentCoach?.reviews && currentCoach.reviews.length > 0 ? (
                     <>
                       {/* Sub-tabs for Pending/Archived */}
-                      <div className="flex gap-2 mb-6 border-b border-slate-200">
-                        <button
-                          onClick={() => setReviewSubTab('pending')}
-                          className={`px-4 py-2 font-bold text-sm transition-colors relative ${
-                            reviewSubTab === 'pending'
-                              ? 'text-yellow-600 border-b-2 border-yellow-600'
-                              : 'text-slate-500 hover:text-slate-700'
-                          }`}
-                        >
-                          Awaiting Approval
-                          {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').length > 0 && (
-                            <span className="ml-2 bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                              {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').length}
-                            </span>
-                          )}
-                        </button>
-                        <button
-                          onClick={() => setReviewSubTab('archived')}
-                          className={`px-4 py-2 font-bold text-sm transition-colors relative ${
-                            reviewSubTab === 'archived'
-                              ? 'text-slate-600 border-b-2 border-slate-600'
-                              : 'text-slate-500 hover:text-slate-700'
-                          }`}
-                        >
-                          Archived
-                          {currentCoach.reviews.filter(r => r.verificationStatus === 'verified' || r.verificationStatus === 'flagged').length > 0 && (
-                            <span className="ml-2 bg-slate-400 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                              {currentCoach.reviews.filter(r => r.verificationStatus === 'verified' || r.verificationStatus === 'flagged').length}
-                            </span>
-                          )}
-                        </button>
+                      {/* No tabs needed - just show all reviews with notification badge */}
+                      <div className="mb-6">
+                        {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified' && !r.coachReply).length > 0 && (
+                          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg mb-4">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                              <div className="ml-3">
+                                <p className="text-sm font-bold text-yellow-800">
+                                  You have {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified' && !r.coachReply).length} new {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified' && !r.coachReply).length === 1 ? 'review' : 'reviews'} to respond to
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Pending Reviews */}
-                      {reviewSubTab === 'pending' && (
-                        <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                          {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').length > 0 ? (
-                            currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').map((review: Review) => (
+                      {/* All Reviews - Sorted by date, newest first */}
+                      <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                        {currentCoach.reviews.length > 0 ? (
+                          currentCoach.reviews
+                            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                            .map((review: Review) => (
                         <div
                           key={review.id}
                           className={`border-2 rounded-xl p-6 transition-all ${
@@ -2793,18 +2781,19 @@ export const CoachDashboard: React.FC = () => {
                           </div>
                         </div>
                       ))
-                          ) : (
-                            <div className="text-center py-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
-                              <CheckCircle className="h-12 w-12 text-green-300 mx-auto mb-4" />
-                              <p className="text-slate-600 font-bold">All caught up!</p>
-                              <p className="text-slate-400 text-sm mt-2">No reviews awaiting approval</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                        ) : (
+                          <div className="text-center py-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
+                            <Star className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                            <p className="text-slate-600 font-bold">No reviews yet</p>
+                            <p className="text-slate-400 text-sm mt-2">Reviews from your clients will appear here</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
-                      {/* Archived Reviews */}
-                      {reviewSubTab === 'archived' && (
+                  {/* Remove archived section - keeping this for code structure */}
+                  {false && reviewSubTab === 'archived' && (
                         <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                           {currentCoach.reviews.filter(r => r.verificationStatus === 'verified' || r.verificationStatus === 'flagged').length > 0 ? (
                             currentCoach.reviews.filter(r => r.verificationStatus === 'verified' || r.verificationStatus === 'flagged').map((review: Review) => (
