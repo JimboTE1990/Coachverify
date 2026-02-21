@@ -1136,18 +1136,26 @@ const getSessionId = (): string => {
 
 // Track profile view
 export const trackProfileView = async (coachId: string): Promise<void> => {
+  console.log('[Analytics] trackProfileView called with coachId:', coachId);
   try {
     const sessionId = getSessionId();
+    console.log('[Analytics] Session ID:', sessionId);
 
     // Check if this session already viewed this profile in last 30 minutes
+    console.log('[Analytics] Checking for recent view...');
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-    const { data: recentView } = await supabase
+    const { data: recentView, error: checkError } = await supabase
       .from('profile_views')
       .select('id')
       .eq('coach_id', coachId)
       .eq('session_id', sessionId)
       .gte('viewed_at', thirtyMinutesAgo)
       .maybeSingle();
+
+    if (checkError) {
+      console.error('[Analytics] Error checking for recent view:', checkError);
+    }
+    console.log('[Analytics] Recent view check result:', recentView);
 
     // If already viewed recently, don't track again
     if (recentView) {
@@ -1156,6 +1164,7 @@ export const trackProfileView = async (coachId: string): Promise<void> => {
     }
 
     // Track the view
+    console.log('[Analytics] Inserting new profile view...');
     const { data: insertData, error: insertError } = await supabase.from('profile_views').insert({
       coach_id: coachId,
       viewed_at: new Date().toISOString(),
@@ -1163,6 +1172,8 @@ export const trackProfileView = async (coachId: string): Promise<void> => {
       referrer: document.referrer || 'direct',
       session_id: sessionId
     });
+
+    console.log('[Analytics] Insert completed:', { data: insertData, error: insertError });
 
     if (insertError) {
       console.error('[Analytics] Error inserting profile view:', insertError);
