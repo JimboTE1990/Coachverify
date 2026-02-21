@@ -2788,12 +2788,9 @@ export const CoachDashboard: React.FC = () => {
                             <p className="text-slate-400 text-sm mt-2">Reviews from your clients will appear here</p>
                           </div>
                         )}
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Remove archived section - keeping this for code structure */}
-                  {false && reviewSubTab === 'archived' && (
+                      {/* Remove archived section - keeping this for code structure */}
+                      {false && reviewSubTab === 'archived' && (
                         <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                           {currentCoach.reviews.filter(r => r.verificationStatus === 'verified' || r.verificationStatus === 'flagged').length > 0 ? (
                             currentCoach.reviews.filter(r => r.verificationStatus === 'verified' || r.verificationStatus === 'flagged').map((review: Review) => (
