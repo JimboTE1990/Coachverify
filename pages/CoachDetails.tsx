@@ -154,6 +154,21 @@ export const CoachDetails: React.FC = () => {
     }
   }, [id]);
 
+  // Load comments for all reviews when coach data is loaded
+  useEffect(() => {
+    const loadAllComments = async () => {
+      if (coach?.reviews && coach.reviews.length > 0) {
+        for (const review of coach.reviews) {
+          if (!reviewComments[review.id]) {
+            const comments = await getReviewComments(review.id);
+            setReviewComments(prev => ({ ...prev, [review.id]: comments }));
+          }
+        }
+      }
+    };
+    loadAllComments();
+  }, [coach?.id, coach?.reviews?.length]); // Re-run when coach changes or review count changes
+
   // Loading state
   if (isLoading) {
     return (

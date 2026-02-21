@@ -27,7 +27,7 @@ import {
   AlertTriangle, Mail, Smartphone, RefreshCw, Eye, EyeOff,
   Tag, Monitor, LayoutDashboard, Sparkles, BarChart, TrendingUp, Calendar,
   Award, GraduationCap, Trophy, Star, Flag, MessageCircle, Send, Info, ExternalLink,
-  ClipboardCheck, Phone
+  ClipboardCheck, Phone, Linkedin, Instagram, Facebook, Youtube, Twitter, Globe
 } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
 import { useAuth } from '../hooks/useAuth';
@@ -2890,9 +2890,15 @@ export const CoachDashboard: React.FC = () => {
                               booking: { icon: Calendar, color: 'green', label: 'Booking Link' },
                               email: { icon: Mail, color: 'purple', label: 'Email' },
                               phone: { icon: Phone, color: 'blue', label: 'Phone' },
-                              whatsapp: { icon: MessageCircle, color: 'emerald', label: 'WhatsApp' }
+                              whatsapp: { icon: MessageCircle, color: 'emerald', label: 'WhatsApp' },
+                              linkedin: { icon: Linkedin, color: 'blue', label: 'LinkedIn' },
+                              instagram: { icon: Instagram, color: 'pink', label: 'Instagram' },
+                              facebook: { icon: Facebook, color: 'blue', label: 'Facebook' },
+                              youtube: { icon: Youtube, color: 'red', label: 'YouTube' },
+                              twitter: { icon: Twitter, color: 'sky', label: 'Twitter' },
+                              website: { icon: Globe, color: 'indigo', label: 'Website' }
                             };
-                            const config = icons[clickType.type as keyof typeof icons] || { icon: Phone, color: 'slate', label: clickType.type };
+                            const config = icons[clickType.type as keyof typeof icons] || { icon: Globe, color: 'slate', label: clickType.type };
                             const Icon = config.icon;
 
                             return (
