@@ -158,16 +158,19 @@ export const CoachDetails: React.FC = () => {
   useEffect(() => {
     const loadAllComments = async () => {
       if (coach?.reviews && coach.reviews.length > 0) {
+        console.log('[CoachDetails] Loading comments for', coach.reviews.length, 'reviews');
         for (const review of coach.reviews) {
-          if (!reviewComments[review.id]) {
-            const comments = await getReviewComments(review.id);
+          console.log('[CoachDetails] Loading comments for review:', review.id);
+          const comments = await getReviewComments(review.id);
+          console.log('[CoachDetails] Got comments for review', review.id, ':', comments);
+          if (comments && comments.length > 0) {
             setReviewComments(prev => ({ ...prev, [review.id]: comments }));
           }
         }
       }
     };
     loadAllComments();
-  }, [coach?.id, coach?.reviews?.length]); // Re-run when coach changes or review count changes
+  }, [coach?.id]); // Re-run when coach ID changes
 
   // Loading state
   if (isLoading) {
