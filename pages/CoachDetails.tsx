@@ -867,101 +867,6 @@ export const CoachDetails: React.FC = () => {
                   </div>
                 ))}
               </div>
-
-              {/* Prominent Accreditation Badge with Official Branding */}
-              {coach.accreditationBody === 'EMCC' && coach.emccVerified && (
-                <div className="mt-6 mb-4 bg-gradient-to-br from-[#2B4170]/5 to-[#C9A961]/10 border-2 border-[#2B4170]/30 rounded-2xl p-4 shadow-md">
-                  {/* Header with EMCC and verified badge on single line */}
-                  <div className="flex items-center justify-center gap-2 mb-3">
-                    <span className="text-xl font-black text-[#2B4170] tracking-wide">EMCC</span>
-                    <span className="text-xs font-bold text-[#2B4170]">Verified Accreditation</span>
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                  </div>
-
-                  {coach.accreditationLevel && (
-                    <div className="flex flex-col items-center gap-2 mb-3">
-                      {/* Level in bold */}
-                      <p className="text-center text-sm font-bold text-[#2B4170]">{coach.accreditationLevel}</p>
-                      {/* Smaller badge */}
-                      <div className="w-32 h-32 flex items-center justify-center">
-                        <AccreditationBadge
-                          body="EMCC"
-                          level={coach.accreditationLevel}
-                          size="large"
-                          className="!h-24 !w-24"
-                        />
-                      </div>
-                    </div>
-                  )}
-                  {coach.emccProfileUrl && (() => {
-                    // Clean and ensure EMCC URL is properly formatted
-                    let cleanUrl = coach.emccProfileUrl;
-
-                    // If URL contains reference parameter, extract it and rebuild clean URL
-                    const refMatch = cleanUrl.match(/reference=([^&]+)/);
-                    if (refMatch && refMatch[1]) {
-                      cleanUrl = `https://www.emccglobal.org/accreditation/eia/eia-awards/?reference=${refMatch[1]}&search=1`;
-                    }
-
-                    console.log('[EMCC URL Debug] Original URL:', coach.emccProfileUrl);
-                    console.log('[EMCC URL Debug] Clean URL:', cleanUrl);
-
-                    return (
-                      <a
-                        href={cleanUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => {
-                          console.log('[EMCC URL Debug] Clicked! Opening:', cleanUrl);
-                        }}
-                        className="flex items-center justify-center gap-2 text-sm text-[#2B4170] hover:text-[#C9A961] font-semibold transition-colors border-t-2 border-[#2B4170]/20 pt-4"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        Check out my EMCC accreditation here
-                      </a>
-                    );
-                  })()}
-                </div>
-              )}
-
-              {coach.accreditationBody === 'ICF' && coach.icfVerified && (
-                <div className="mt-6 mb-4 bg-gradient-to-br from-[#2E5C8A]/5 to-[#4A90E2]/10 border-2 border-[#2E5C8A]/30 rounded-2xl p-4 shadow-md">
-                  {/* Header with ICF and verified badge on single line */}
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <span className="text-xl font-black text-[#2E5C8A] tracking-wide">ICF</span>
-                    <span className="text-xs font-bold text-[#2E5C8A]">Verified Accreditation</span>
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                  </div>
-                  <p className="text-center text-xs text-slate-600 mb-3">International Coaching Federation</p>
-
-                  {coach.icfAccreditationLevel && (
-                    <div className="flex flex-col items-center gap-2 mb-3">
-                      {/* Level in bold */}
-                      <p className="text-center text-sm font-bold text-[#2E5C8A]">{coach.icfAccreditationLevel}</p>
-                      {/* Smaller badge */}
-                      <div className="w-32 h-32 flex items-center justify-center">
-                        <AccreditationBadge
-                          body="ICF"
-                          level={coach.icfAccreditationLevel}
-                          size="large"
-                          className="!h-24 !w-24"
-                        />
-                      </div>
-                    </div>
-                  )}
-                  {coach.icfProfileUrl && (
-                    <a
-                      href={coach.icfProfileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 text-sm text-[#2E5C8A] hover:text-brand-600 font-semibold transition-colors border-t-2 border-[#2E5C8A]/20 pt-4"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      Check out my ICF accreditation here
-                    </a>
-                  )}
-                </div>
-              )}
             </div>
 
 
@@ -1064,6 +969,69 @@ export const CoachDetails: React.FC = () => {
 
           {/* Details Section */}
           <div className="px-6 py-6 space-y-6">
+
+            {/* Compact Accreditation Badge - Left Side */}
+            {((coach.accreditationBody === 'EMCC' && coach.emccVerified) ||
+              (coach.accreditationBody === 'ICF' && coach.icfVerified) ||
+              (coach.accreditationBody === 'AC')) && (
+              <div className="flex items-start gap-4 mb-6">
+                {/* Badge on the left */}
+                <div className="flex-shrink-0">
+                  {coach.accreditationLevel && (
+                    <AccreditationBadge
+                      body={coach.accreditationBody}
+                      level={coach.accreditationLevel || coach.icfAccreditationLevel || ''}
+                      size="large"
+                      className="!h-20 !w-20"
+                    />
+                  )}
+                </div>
+
+                {/* Accreditation info on the right */}
+                <div className="flex-grow">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg font-black text-slate-900">{coach.accreditationBody}</span>
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  </div>
+                  <p className="text-xs font-bold text-slate-600 mb-1">Verified Accreditation</p>
+                  {coach.accreditationLevel && (
+                    <p className="text-sm font-bold text-slate-700 mb-2">{coach.accreditationLevel || coach.icfAccreditationLevel}</p>
+                  )}
+                  {coach.accreditationBody === 'ICF' && (
+                    <p className="text-xs text-slate-500 mb-2">International Coaching Federation</p>
+                  )}
+                  {coach.emccProfileUrl && coach.accreditationBody === 'EMCC' && (() => {
+                    let cleanUrl = coach.emccProfileUrl;
+                    const refMatch = cleanUrl.match(/reference=([^&]+)/);
+                    if (refMatch && refMatch[1]) {
+                      cleanUrl = `https://www.emccglobal.org/accreditation/eia/eia-awards/?reference=${refMatch[1]}&search=1`;
+                    }
+                    return (
+                      <a
+                        href={cleanUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 font-semibold"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Verify EMCC Accreditation
+                      </a>
+                    );
+                  })()}
+                  {coach.icfProfileUrl && coach.accreditationBody === 'ICF' && (
+                    <a
+                      href={coach.icfProfileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 font-semibold"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Verify ICF Accreditation
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Bio - MOVED TO TOP */}
             {coach.bio && (
@@ -1755,7 +1723,7 @@ export const CoachDetails: React.FC = () => {
             {/* CoachDog Logo - Top Right Corner */}
             <div className="absolute top-4 right-16 w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center z-10 border-2 border-cyan-200 overflow-hidden">
               <img
-                src="/Favicon2.png"
+                src="/favicon2.png"
                 alt="CoachDog"
                 className="w-full h-full object-cover"
               />
