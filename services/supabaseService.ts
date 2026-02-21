@@ -1214,26 +1214,37 @@ export const getCoachAnalytics = async (coachId: string): Promise<CoachAnalytics
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Total views (from cached count)
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('total_profile_views')
-      .eq('id', coachId)
-      .single();
+    // Total views - count all profile views
+    const { count: totalViewsCount, error: totalViewsError } = await supabase
+      .from('profile_views')
+      .select('*', { count: 'exact', head: true })
+      .eq('coach_id', coachId);
+
+    if (totalViewsError) {
+      console.error('[Analytics] Error fetching total views:', totalViewsError);
+    }
 
     // Views last 7 days
-    const { data: views7Days } = await supabase
+    const { data: views7Days, error: views7Error } = await supabase
       .from('profile_views')
       .select('id')
       .eq('coach_id', coachId)
       .gte('viewed_at', sevenDaysAgo);
 
+    if (views7Error) {
+      console.error('[Analytics] Error fetching 7-day views:', views7Error);
+    }
+
     // Views last 30 days
-    const { data: views30Days } = await supabase
+    const { data: views30Days, error: views30Error } = await supabase
       .from('profile_views')
       .select('id')
       .eq('coach_id', coachId)
       .gte('viewed_at', thirtyDaysAgo);
+
+    if (views30Error) {
+      console.error('[Analytics] Error fetching 30-day views:', views30Error);
+    }
 
     // Views by day (last 30 days)
     const { data: viewsRaw } = await supabase
@@ -1305,8 +1316,17 @@ export const getCoachAnalytics = async (coachId: string): Promise<CoachAnalytics
       return acc;
     }, []) || [];
 
+    console.log('[Analytics] Analytics data:', {
+      totalViews: totalViewsCount || 0,
+      viewsLast7Days: views7Days?.length || 0,
+      viewsLast30Days: views30Days?.length || 0,
+      viewsByDayLength: viewsByDay.length,
+      topReferrersLength: topReferrers.length,
+      totalContactClicks: allContactClicks?.length || 0
+    });
+
     return {
-      totalViews: coach?.total_profile_views || 0,
+      totalViews: totalViewsCount || 0,
       viewsLast7Days: views7Days?.length || 0,
       viewsLast30Days: views30Days?.length || 0,
       viewsByDay,

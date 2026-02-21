@@ -623,20 +623,20 @@ export const CoachDetails: React.FC = () => {
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
 
           {/* Banner Image - Full Width at Top (like LinkedIn/X) */}
-          <div className="w-full h-48 md:h-64 bg-gradient-to-br from-slate-100 to-slate-200 relative overflow-hidden">
+          <div className="w-full h-40 sm:h-48 md:h-64 bg-gradient-to-br from-slate-100 to-slate-200 relative overflow-hidden">
             {coach.bannerImageUrl ? (
               <img
                 src={coach.bannerImageUrl}
                 alt={`${coach.name} - Profile Banner`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-brand-600/20 to-indigo-600/20 flex items-center justify-center">
                 <div className="opacity-20 flex flex-col items-center gap-2">
-                  <svg viewBox="0 0 24 24" className="w-20 h-20 text-brand-600" fill="currentColor">
-                    <path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                  <svg viewBox="0 0 24 24" className="w-16 h-16 sm:w-20 sm:h-20 text-brand-600" fill="currentColor">
+                    <path d="M15.75 6 a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                   </svg>
-                  <span className="text-2xl font-black text-brand-700 tracking-wide">CoachDog</span>
+                  <span className="text-xl sm:text-2xl font-black text-brand-700 tracking-wide">CoachDog</span>
                 </div>
               </div>
             )}
