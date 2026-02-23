@@ -1267,26 +1267,26 @@ export const CoachDashboard: React.FC = () => {
                   );
                 })()}
 
-                <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-8 space-y-8 animate-fade-in-up">
-                  <div className="flex justify-between items-center border-b border-slate-100 pb-6">
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-4 sm:p-8 space-y-8 animate-fade-in-up">
+                  <div className="flex flex-col gap-4 border-b border-slate-100 pb-6">
                     <div className="flex items-center">
-                        <div className="bg-brand-100 p-2 rounded-lg mr-4 text-brand-600">
-                            <User className="h-6 w-6" />
+                        <div className="bg-brand-100 p-2 rounded-lg mr-3 text-brand-600">
+                            <User className="h-5 w-5 sm:h-6 sm:w-6" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-display font-bold text-slate-900">Public Profile</h2>
-                            <p className="text-slate-500 text-sm">Update how clients see you.</p>
+                            <h2 className="text-xl sm:text-2xl font-display font-bold text-slate-900">Public Profile</h2>
+                            <p className="text-slate-500 text-xs sm:text-sm">Update how clients see you.</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                       {hasUnsavedChanges && (
-                        <span className="text-xs font-bold text-amber-600 flex items-center">
+                        <span className="text-xs font-bold text-amber-600 flex items-center justify-center sm:justify-start">
                           <AlertTriangle className="h-4 w-4 mr-1" /> Unsaved changes
                         </span>
                       )}
                       <button
                         onClick={() => navigate(`/coach/${currentCoach?.id}`)}
-                        className="bg-slate-100 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all flex items-center"
+                        className="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all flex items-center justify-center"
                       >
                         <Eye className="h-4 w-4 mr-2" />
                         Preview Profile
@@ -1294,7 +1294,7 @@ export const CoachDashboard: React.FC = () => {
                       <button
                         onClick={handleSaveProfile}
                         disabled={!hasUnsavedChanges || isSaving || trialStatus.isExpired}
-                        className="bg-brand-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                        className="bg-brand-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                         title={trialStatus.isExpired ? 'Profile editing disabled - Reactivate subscription to edit' : ''}
                       >
                         {isSaving ? (
