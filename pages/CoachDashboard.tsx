@@ -143,7 +143,10 @@ export const CoachDashboard: React.FC = () => {
   const { viewMode, setViewMode, isMobile, isTablet } = useDeviceDetection();
   const hasRedirected = useRef(false);
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'subscription' | 'analytics'>('profile');
+  // Default to 'account' tab if subscription is expired, otherwise 'profile'
+  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'subscription' | 'analytics' | 'reviews'>(
+    currentCoach?.subscriptionStatus === 'expired' ? 'account' : 'profile'
+  );
 
   // Onboarding checklist dismiss state (persisted in localStorage per coach)
   const [checklistDismissed, setChecklistDismissed] = useState(false);
@@ -850,38 +853,9 @@ export const CoachDashboard: React.FC = () => {
     return null;
   }
 
-  // ---------------- EXPIRED ----------------
-  if (currentCoach.subscriptionStatus === 'expired') {
-    return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-4">
-         <div className="bg-white max-w-lg w-full rounded-3xl shadow-2xl p-10 text-center border border-slate-100">
-             <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Lock className="h-10 w-10 text-red-500" />
-             </div>
-             <h2 className="text-3xl font-display font-bold text-slate-900 mb-3">Trial Expired</h2>
-             <p className="text-slate-500 mb-8">Your dashboard is locked. Choose a plan to continue managing your profile.</p>
-             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                <Link
-                  to="/checkout/monthly"
-                  className="bg-slate-100 border-2 border-transparent hover:border-slate-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all block"
-                >
-                  <span className="block font-bold text-slate-900 text-xl">Monthly</span>
-                  <span className="block text-slate-500">£15/mo</span>
-                </Link>
-                <Link
-                  to="/checkout/annual"
-                  className="bg-slate-900 border-2 border-slate-900 p-5 rounded-2xl relative shadow-lg hover:-translate-y-1 transition-all block text-white"
-                >
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-600 text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-sm">SAVE 17%</div>
-                  <span className="block font-bold text-xl">Annual</span>
-                  <span className="block text-slate-300">£150/yr</span>
-                </Link>
-             </div>
-             <button onClick={handleLogout} className="text-slate-400 hover:text-slate-600 font-medium text-sm">Log Out</button>
-         </div>
-      </div>
-    );
-  }
+  // ---------------- EXPIRED - Allow limited access to Account settings ----------------
+  // Expired users can still access Account tab to manage settings and delete account
+  // Profile editing is disabled via the existing trialStatus.isExpired checks
 
   // ---------------- MAIN DASHBOARD ----------------
   // Determine if we should show sidebar or mobile tabs based on view mode
@@ -2609,7 +2583,7 @@ export const CoachDashboard: React.FC = () => {
                       {/* Sub-tabs for Pending/Archived */}
                       {/* No tabs needed - just show all reviews with notification badge */}
                       <div className="mb-6">
-                        {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified' && !r.coachReply).length > 0 && (
+                        {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified' && !r.coachReply && (!reviewComments[r.id] || reviewComments[r.id].length === 0)).length > 0 && (
                           <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg mb-4">
                             <div className="flex items-center">
                               <div className="flex-shrink-0">
@@ -2619,7 +2593,7 @@ export const CoachDashboard: React.FC = () => {
                               </div>
                               <div className="ml-3">
                                 <p className="text-sm font-bold text-yellow-800">
-                                  You have {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified' && !r.coachReply).length} new {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified' && !r.coachReply).length === 1 ? 'review' : 'reviews'} to respond to
+                                  You have {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified' && !r.coachReply && (!reviewComments[r.id] || reviewComments[r.id].length === 0)).length} new {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified' && !r.coachReply && (!reviewComments[r.id] || reviewComments[r.id].length === 0)).length === 1 ? 'review' : 'reviews'} to respond to
                                 </p>
                               </div>
                             </div>
