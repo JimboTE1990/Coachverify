@@ -10,7 +10,13 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { corsHeaders } from '../_shared/cors.ts';
+
+// CORS headers for webhook responses
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
+};
 
 const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET');
 const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY');
@@ -110,7 +116,6 @@ async function handleCheckoutCompleted(session: any, supabase: any) {
       stripe_customer_id: session.customer,
       stripe_subscription_id: isLifetime ? null : session.subscription,
       subscription_ends_at: null, // Lifetime never expires, active will be managed by subscription events
-      trial_used: true,
       trial_ends_at: null, // Clear trial when they subscribe
     })
     .eq('id', coachId);

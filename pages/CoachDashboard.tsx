@@ -519,6 +519,25 @@ export const CoachDashboard: React.FC = () => {
     setReviewComments(prev => ({ ...prev, [reviewId]: comments }));
   };
 
+  // Load all review comments on mount to ensure notification badges are accurate
+  useEffect(() => {
+    if (currentCoach?.reviews && currentCoach.reviews.length > 0) {
+      const loadAllComments = async () => {
+        const commentsPromises = currentCoach.reviews.map(async (review) => {
+          const comments = await getReviewComments(review.id);
+          return { reviewId: review.id, comments };
+        });
+        const results = await Promise.all(commentsPromises);
+        const newComments: Record<string, any[]> = {};
+        results.forEach(({ reviewId, comments }) => {
+          newComments[reviewId] = comments;
+        });
+        setReviewComments(newComments);
+      };
+      loadAllComments();
+    }
+  }, [currentCoach?.reviews]);
+
   // Update local profile state (doesn't save to database)
   const updateLocalProfile = (updates: Partial<Coach>) => {
     setLocalProfile(prev => ({ ...prev, ...updates }));
@@ -973,9 +992,9 @@ export const CoachDashboard: React.FC = () => {
               >
                 <Star className="h-4 w-4 inline mr-2" />
                 Reviews
-                {currentCoach?.reviews && currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').length > 0 && (
+                {currentCoach?.reviews && currentCoach.reviews.filter(r => r.verificationStatus === 'unverified' && !r.coachReply && (!reviewComments[r.id] || reviewComments[r.id].length === 0)).length > 0 && (
                   <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').length}
+                    {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified' && !r.coachReply && (!reviewComments[r.id] || reviewComments[r.id].length === 0)).length}
                   </span>
                 )}
               </button>
@@ -1059,9 +1078,9 @@ export const CoachDashboard: React.FC = () => {
                   <div className="flex items-center">
                     <Star className={`h-5 w-5 mr-3 ${activeTab === 'reviews' ? 'text-yellow-600' : 'text-slate-400'}`} /> Reviews
                   </div>
-                  {currentCoach?.reviews && currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').length > 0 && (
+                  {currentCoach?.reviews && currentCoach.reviews.filter(r => r.verificationStatus === 'unverified' && !r.coachReply && (!reviewComments[r.id] || reviewComments[r.id].length === 0)).length > 0 && (
                     <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                      {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified').length}
+                      {currentCoach.reviews.filter(r => r.verificationStatus === 'unverified' && !r.coachReply && (!reviewComments[r.id] || reviewComments[r.id].length === 0)).length}
                     </span>
                   )}
                 </button>
@@ -2183,6 +2202,13 @@ export const CoachDashboard: React.FC = () => {
                             </span>
                         </div>
 
+                        {/* Debug logging */}
+                        {console.log('Dashboard subscription check:', {
+                            subscriptionStatus: currentCoach.subscriptionStatus,
+                            billingCycle: currentCoach.billingCycle,
+                            isLifetime: currentCoach.subscriptionStatus === 'lifetime'
+                        })}
+
                         {/* Show upgrade CTA only if no billing cycle is set (unpaid trial) */}
                         {currentCoach.subscriptionStatus === 'trial' && !currentCoach.billingCycle ? (
                             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-8 text-center">
@@ -2209,6 +2235,25 @@ export const CoachDashboard: React.FC = () => {
                                     </Link>
                                 </div>
                             </div>
+                        ) : currentCoach.subscriptionStatus === 'lifetime' ? (
+                            // Lifetime member - show special message
+                            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-2xl p-8 text-center">
+                                <div className="flex justify-center mb-4">
+                                    <svg className="h-16 w-16 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-2xl font-bold text-purple-900 mb-2">Lifetime Member</h3>
+                                <p className="text-purple-700 mb-4">
+                                    You have unlimited access to all features forever. No recurring payments needed.
+                                </p>
+                                <div className="inline-flex items-center bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-sm font-bold">
+                                    <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    Premium Features Unlocked
+                                </div>
+                            </div>
                         ) : (
                             <div className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -2224,7 +2269,7 @@ export const CoachDashboard: React.FC = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                            {!currentCoach.pendingPlanChange && (
+                                            {!currentCoach.pendingPlanChange && currentCoach.billingCycle !== 'lifetime' && currentCoach.subscriptionStatus !== 'lifetime' && (
                                                 <Link
                                                     to={`/subscription/change-plan?to=${(currentCoach.billingCycle || 'monthly') === 'monthly' ? 'annual' : 'monthly'}`}
                                                     className="text-sm text-brand-600 font-bold hover:underline flex items-center bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm hover:shadow transition-all"
