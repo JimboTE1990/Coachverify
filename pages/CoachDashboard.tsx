@@ -1902,6 +1902,17 @@ export const CoachDashboard: React.FC = () => {
                                   <CheckCircle className="h-3 w-3" /> Verified
                                 </span>
                               )}
+                              {localProfile?.accreditationBody === 'AC' && (
+                                localProfile?.acVerified ? (
+                                  <span className="mt-1 flex items-center gap-1 text-green-600 text-xs font-bold">
+                                    <CheckCircle className="h-3 w-3" /> Verified
+                                  </span>
+                                ) : (
+                                  <span className="mt-1 flex items-center gap-1 text-amber-600 text-xs font-semibold">
+                                    <AlertTriangle className="h-3 w-3" /> Not yet verified - contact support
+                                  </span>
+                                )
+                              )}
                             </div>
                           </div>
 

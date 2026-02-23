@@ -610,7 +610,7 @@ export const CoachSignup: React.FC = () => {
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       {formData.body === 'EMCC' ? 'EMCC Profile URL' :
                        formData.body === 'ICF' ? 'ICF Directory Search URL' :
-                       'Registration / Member Number'}
+                       'AC Member Profile URL'}
                     </label>
                     <button
                       ref={infoButtonRef}
@@ -748,20 +748,38 @@ export const CoachSignup: React.FC = () => {
                         {formData.body === 'AC' && (
                           <div className="space-y-3 text-sm text-slate-700">
                             <div>
-                              <p className="font-semibold text-brand-600 mb-1">📍 Visit AC Website</p>
+                              <p className="font-semibold text-brand-600 mb-1">📍 Step 1: Visit AC Member Directory</p>
                               <a
-                                href="https://www.associationforcoaching.com"
+                                href="https://www.associationforcoaching.com/page/MemberDirectory"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-brand-500 hover:text-brand-600 underline flex items-center gap-1"
                               >
-                                Open AC Website <ExternalLink className="h-3 w-3" />
+                                Open AC Member Directory <ExternalLink className="h-3 w-3" />
                               </a>
                             </div>
 
-                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                              <p className="text-xs text-amber-700">
-                                ⚠️ AC verification is not yet automated. Please enter your member number and we'll verify manually.
+                            <div>
+                              <p className="font-semibold text-brand-600 mb-1">🔍 Step 2: Find Your Profile</p>
+                              <p className="text-slate-600 mb-1">Search for your name in the member directory</p>
+                            </div>
+
+                            <div>
+                              <p className="font-semibold text-brand-600 mb-1">📋 Step 3: Copy Your Profile URL</p>
+                              <p className="text-slate-600">Copy the <strong>complete URL</strong> from your browser's address bar and paste it below</p>
+                            </div>
+
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                              <p className="font-semibold text-green-800 mb-1">✅ Your Profile Must Show:</p>
+                              <ul className="text-xs text-green-700 space-y-1 ml-4 list-disc">
+                                <li>"Coach Accredited: Yes"</li>
+                                <li>Your accreditation level (e.g., "AC Accredited Coach")</li>
+                              </ul>
+                            </div>
+
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                              <p className="text-xs text-blue-800">
+                                💡 <strong>Note:</strong> We'll verify your AC accreditation by checking your member profile shows "Coach Accredited: Yes"
                               </p>
                             </div>
                           </div>
@@ -771,13 +789,14 @@ export const CoachSignup: React.FC = () => {
 
                     <input
                       name="regNumber"
-                      type={formData.body === 'EMCC' || formData.body === 'ICF' ? 'url' : 'text'}
+                      type={formData.body === 'EMCC' || formData.body === 'ICF' || formData.body === 'AC' ? 'url' : 'text'}
                       value={formData.regNumber}
                       onChange={handleChange}
                       className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
                       placeholder={
                         formData.body === 'EMCC' ? 'Paste your EMCC profile URL here' :
                         formData.body === 'ICF' ? 'Paste your ICF directory search URL here' :
+                        formData.body === 'AC' ? 'Paste your AC member profile URL here' :
                         'e.g. 12345-AB'
                       }
                     />

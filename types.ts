@@ -314,6 +314,12 @@ export interface Coach {
   icfAccreditationLevel?: 'ACC' | 'PCC' | 'MCC' | ''; // ICF credential level
   icfProfileUrl?: string; // Link to coach's ICF directory profile
 
+  // AC (Association for Coaching) Verification
+  acVerified?: boolean; // Whether coach was verified via AC directory
+  acVerifiedAt?: string; // When AC verification was completed
+  acLevel?: string; // AC accreditation level (e.g. "AC Accredited Coach")
+  acProfileUrl?: string; // Link to coach's AC member directory profile
+
   additionalCertifications?: AdditionalCertification[]; // e.g. ["Mental Health First Aid Trained", "Trauma Informed"]
   coachingHours?: number; // Total hours of coaching experience (e.g. 500)
 

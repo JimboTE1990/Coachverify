@@ -1012,7 +1012,7 @@ export const CoachDetails: React.FC = () => {
             {/* Accreditation Badge - Compact with Border */}
             {((coach.accreditationBody === 'EMCC' && coach.emccVerified) ||
               (coach.accreditationBody === 'ICF' && coach.icfVerified) ||
-              (coach.accreditationBody === 'AC')) && (
+              (coach.accreditationBody === 'AC' && coach.acVerified)) && (
               <div className={`flex items-center gap-6 p-5 rounded-2xl border-2 shadow-md mb-6 ${
                 coach.accreditationBody === 'EMCC'
                   ? 'bg-gradient-to-br from-[#2B4170]/5 to-[#C9A961]/10 border-[#2B4170]/30'
@@ -1088,6 +1088,17 @@ export const CoachDetails: React.FC = () => {
                     >
                       <ExternalLink className="h-4 w-4" />
                       Check out my ICF accreditation here
+                    </a>
+                  )}
+                  {coach.acProfileUrl && coach.accreditationBody === 'AC' && (
+                    <a
+                      href={coach.acProfileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 text-sm text-slate-700 hover:text-brand-600 font-semibold transition-colors border-t-2 border-slate-300 pt-3"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Check out my AC accreditation here
                     </a>
                   )}
                 </div>
