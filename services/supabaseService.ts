@@ -431,8 +431,50 @@ export const verifyCoachLicense = async (
         pendingManualReview: data.pendingManualReview || false
       };
 
+    } else if (body === 'AC') {
+      // Call AC verification edge function
+      const { data, error } = await supabase.functions.invoke('verify-ac-accreditation', {
+        body: {
+          profileUrl: regNumber, // regNumber contains the AC member profile URL
+          coachName: fullName
+        }
+      });
+
+      if (error) {
+        console.error('[verifyCoachLicense] AC verification error:', error);
+        return {
+          verified: false,
+          reason: error.message || 'Verification service error'
+        };
+      }
+
+      console.log('[verifyCoachLicense] AC verification result:', data);
+
+      if (!data.verified) {
+        return {
+          verified: false,
+          reason: data.errorMessage || 'Could not verify AC accreditation'
+        };
+      }
+
+      // Update coach with AC verification details
+      await supabase
+        .from('coaches')
+        .update({
+          ac_verified: true,
+          ac_verified_at: new Date().toISOString(),
+          ac_level: data.level || 'AC Accredited Coach',
+          ac_profile_url: regNumber
+        })
+        .eq('id', coachId);
+
+      return {
+        verified: true,
+        reason: 'AC accreditation verified successfully'
+      };
+
     } else {
-      // For other accreditation bodies (AC, etc.), skip verification for now
+      // For other accreditation bodies, skip verification for now
       console.log('[verifyCoachLicense] Skipping verification for body:', body);
       return {
         verified: true,
