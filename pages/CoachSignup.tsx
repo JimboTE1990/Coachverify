@@ -95,7 +95,6 @@ export const CoachSignup: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (e.target.name === 'password' || e.target.name === 'confirmPassword') {
       setSignupError('');
-      setPasswordMismatch('');
     }
   };
 
