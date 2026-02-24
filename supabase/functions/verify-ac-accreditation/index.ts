@@ -65,6 +65,43 @@ serve(async (req) => {
     const profileName = extractBetween(html, '<h1 class="page-title">', '</h1>') ||
                        extractBetween(html, 'class="page-title">', '</');
 
+    console.log('[AC Verification] Extracted profile name:', profileName);
+
+    // Validate name match
+    if (!profileName) {
+      return new Response(
+        JSON.stringify({
+          verified: false,
+          errorMessage: 'Could not extract name from AC profile. Please ensure the profile URL is correct.'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+    }
+
+    // Normalize names for comparison (remove extra spaces, convert to lowercase)
+    const normalizedProfileName = profileName.toLowerCase().replace(/\s+/g, ' ').trim();
+    const normalizedCoachName = coachName.toLowerCase().replace(/\s+/g, ' ').trim();
+
+    console.log('[AC Verification] Name comparison:', {
+      profileName: normalizedProfileName,
+      coachName: normalizedCoachName
+    });
+
+    // Check if names match (allowing for partial matches like "John Smith" matching "John P. Smith")
+    const nameMatches = normalizedProfileName.includes(normalizedCoachName) ||
+                       normalizedCoachName.includes(normalizedProfileName) ||
+                       fuzzyNameMatch(normalizedProfileName, normalizedCoachName);
+
+    if (!nameMatches) {
+      return new Response(
+        JSON.stringify({
+          verified: false,
+          errorMessage: `Name mismatch: Profile shows "${profileName}" but you entered "${coachName}". Please ensure you're using the correct AC profile URL.`
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+    }
+
     // Check "Coach Accredited: Yes/No"
     const coachAccreditedMatch = html.match(/Coach Accredited:<\/.*?>\s*<.*?>(Yes|No)</i);
     const isAccredited = coachAccreditedMatch?.[1] === 'Yes';
@@ -125,4 +162,23 @@ function extractBetween(text: string, start: string, end: string): string | null
   if (endIndex === -1) return null;
 
   return text.substring(contentStart, endIndex).trim();
+}
+
+// Helper function for fuzzy name matching (handles middle initials, etc.)
+function fuzzyNameMatch(name1: string, name2: string): boolean {
+  // Split names into parts
+  const parts1 = name1.split(' ').filter(p => p.length > 0);
+  const parts2 = name2.split(' ').filter(p => p.length > 0);
+
+  // Must have at least first and last name
+  if (parts1.length < 2 || parts2.length < 2) return false;
+
+  // Check if first name matches
+  const firstNameMatch = parts1[0] === parts2[0];
+
+  // Check if last name matches
+  const lastNameMatch = parts1[parts1.length - 1] === parts2[parts2.length - 1];
+
+  // Both first and last must match for fuzzy match
+  return firstNameMatch && lastNameMatch;
 }
