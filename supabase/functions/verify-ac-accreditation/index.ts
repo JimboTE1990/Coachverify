@@ -82,15 +82,22 @@ serve(async (req) => {
     const normalizedProfileName = profileName.toLowerCase().replace(/\s+/g, ' ').trim();
     const normalizedCoachName = coachName.toLowerCase().replace(/\s+/g, ' ').trim();
 
+    // Handle organization names: "Nikkie Pullen, Abri" should match "Nikkie Pullen"
+    // Extract just the person's name (before any comma)
+    const profileNameOnly = normalizedProfileName.split(',')[0].trim();
+
     console.log('[AC Verification] Name comparison:', {
       profileName: normalizedProfileName,
+      profileNameOnly: profileNameOnly,
       coachName: normalizedCoachName
     });
 
-    // Check if names match (allowing for partial matches like "John Smith" matching "John P. Smith")
-    const nameMatches = normalizedProfileName.includes(normalizedCoachName) ||
-                       normalizedCoachName.includes(normalizedProfileName) ||
-                       fuzzyNameMatch(normalizedProfileName, normalizedCoachName);
+    // Check if names match (allowing for partial matches and organization suffixes)
+    const nameMatches =
+      profileNameOnly === normalizedCoachName ||
+      normalizedProfileName.includes(normalizedCoachName) ||
+      normalizedCoachName.includes(profileNameOnly) ||
+      fuzzyNameMatch(profileNameOnly, normalizedCoachName);
 
     if (!nameMatches) {
       return new Response(
