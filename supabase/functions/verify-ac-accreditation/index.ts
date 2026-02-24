@@ -72,7 +72,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           verified: false,
-          errorMessage: 'Could not extract name from AC profile. Please ensure the profile URL is correct.'
+          errorMessage: 'We could not find a name on this AC profile. Please check the URL is correct and try again.'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
@@ -96,7 +96,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           verified: false,
-          errorMessage: `Name mismatch: Profile shows "${profileName}" but you entered "${coachName}". Please ensure you're using the correct AC profile URL.`
+          errorMessage: 'Your name does not match the name on the AC profile URL you provided. Please check the name you signed up with matches, or provide the correct URL.'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
