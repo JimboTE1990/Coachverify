@@ -72,7 +72,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           verified: false,
-          errorMessage: 'We could not find a name on this AC profile. Please check the URL is correct and try again.'
+          errorMessage: 'Your name does not match the name on the AC profile URL you provided. Please check the name you signed up with matches, or provide the correct URL.'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
