@@ -2,6 +2,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Layout } from './components/Layout';
+import { ScrollToTop } from './components/ScrollToTop';
 import { Home } from './pages/Home';
 import { CoachList } from './pages/CoachList';
 import { CoachDetails } from './pages/CoachDetails';
@@ -98,6 +99,7 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <Router>
+        <ScrollToTop />
         <AuthProvider>
           <Layout>
             <Routes>
