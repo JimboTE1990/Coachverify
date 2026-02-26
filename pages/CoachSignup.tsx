@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { ShieldCheck, CheckCircle, ArrowRight, Loader, Mail, AlertTriangle, Eye, EyeOff, XCircle, Info, ExternalLink } from 'lucide-react';
+import { ShieldCheck, CheckCircle, ArrowRight, Loader, Mail, AlertTriangle, Eye, EyeOff, XCircle, Info, ExternalLink, FileText } from 'lucide-react';
 import { verifyCoachLicense } from '../services/supabaseService';
 import { supabase } from '../lib/supabase';
 import { validatePassword } from '../utils/passwordValidation';
@@ -853,31 +853,46 @@ export const CoachSignup: React.FC = () => {
                    </div>
                  )}
 
-                 {/* Terms of Service Acceptance */}
+                 {/* Terms of Service Acceptance - Hard Stop */}
                  {!verified && (
-                   <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                     <label className="flex items-start gap-3 cursor-pointer">
-                       <input
-                         type="checkbox"
-                         checked={termsAccepted}
-                         onChange={(e) => setTermsAccepted(e.target.checked)}
-                         className="mt-1 h-5 w-5 text-brand-600 focus:ring-brand-500 border-slate-300 rounded"
-                       />
-                       <span className="text-sm text-slate-700 flex-1">
-                         I agree to the{' '}
+                   <div className={`border-2 rounded-xl p-5 transition-all ${
+                     termsAccepted
+                       ? 'bg-green-50 border-green-300'
+                       : 'bg-amber-50 border-amber-300'
+                   }`}>
+                     {!termsAccepted ? (
+                       <div className="text-center">
+                         <div className="flex items-center justify-center gap-2 mb-3">
+                           <AlertTriangle className="h-5 w-5 text-amber-600" />
+                           <p className="text-sm font-bold text-amber-900">
+                             Review Required
+                           </p>
+                         </div>
+                         <p className="text-sm text-amber-800 mb-4">
+                           Before proceeding, you must review and accept our Coach Terms of Service.
+                         </p>
                          <button
                            type="button"
                            onClick={() => setShowTermsModal(true)}
-                           className="text-brand-600 hover:underline font-semibold"
+                           className="w-full bg-amber-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-amber-700 transition-all shadow-md flex items-center justify-center gap-2"
                          >
-                           Coach Terms of Service
+                           <FileText className="h-5 w-5" />
+                           Review Coach Terms of Service
                          </button>
-                         {' '}and{' '}
-                         <Link to="/privacy" target="_blank" className="text-brand-600 hover:underline font-semibold">
-                           Privacy Policy
-                         </Link>
-                       </span>
-                     </label>
+                       </div>
+                     ) : (
+                       <div className="flex items-start gap-3">
+                         <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
+                         <div className="flex-1">
+                           <p className="text-sm font-bold text-green-900 mb-1">
+                             Terms Accepted
+                           </p>
+                           <p className="text-xs text-green-700">
+                             You have reviewed and accepted the Coach Terms of Service and Privacy Policy.
+                           </p>
+                         </div>
+                       </div>
+                     )}
                    </div>
                  )}
 
@@ -1079,7 +1094,22 @@ export const CoachSignup: React.FC = () => {
                     className="mt-1 h-5 w-5 text-brand-600 focus:ring-brand-500 border-slate-300 rounded"
                   />
                   <span className="text-sm text-slate-700">
-                    I have read and agree to the Coach Terms of Service
+                    I have read and agree to the{' '}
+                    <Link
+                      to="/terms?tab=coaches"
+                      target="_blank"
+                      className="text-brand-600 hover:underline font-semibold"
+                    >
+                      Coach Terms of Service
+                    </Link>
+                    {' '}and{' '}
+                    <Link
+                      to="/privacy"
+                      target="_blank"
+                      className="text-brand-600 hover:underline font-semibold"
+                    >
+                      Privacy Policy
+                    </Link>
                   </span>
                 </label>
                 <button
@@ -1087,7 +1117,7 @@ export const CoachSignup: React.FC = () => {
                   disabled={!termsAccepted}
                   className="bg-brand-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 >
-                  Continue
+                  Accept & Continue
                 </button>
               </div>
             </div>
