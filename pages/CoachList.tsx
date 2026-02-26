@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { Search, SlidersHorizontal, X, Sparkles, Bone, AlertCircle } from 'lucide-react';
 import { getCoaches } from '../services/supabaseService';
 import { Coach, QuestionnaireAnswers, Specialty, Format, CoachingExpertise, CoachingLanguage, CPDQualification } from '../types';
@@ -649,6 +649,22 @@ export const CoachList: React.FC = () => {
                   >
                     Clear all filters
                   </button>
+                </div>
+              )}
+
+              {/* Terms Footer */}
+              {filteredCoaches.length > 0 && (
+                <div className="mt-12 pt-8 border-t border-slate-200 text-center">
+                  <p className="text-xs text-slate-500">
+                    By using CoachDog, you agree to our{' '}
+                    <Link to="/terms?tab=clients" className="text-brand-600 hover:underline font-medium">
+                      Terms of Service
+                    </Link>
+                    {' '}and{' '}
+                    <Link to="/privacy" className="text-brand-600 hover:underline font-medium">
+                      Privacy Policy
+                    </Link>
+                  </p>
                 </div>
               )}
             </div>

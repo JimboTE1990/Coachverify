@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import { QuestionnaireAnswers, Specialty, Format, CoachingExpertise, CoachingLanguage, CPDQualification } from '../types';
 import { MultiSelectDropdown } from '../components/filters/MultiSelectDropdown';
@@ -323,6 +323,22 @@ export const Questionnaire: React.FC = () => {
             </button>
           )}
         </div>
+
+        {/* Terms Link - Show on final step */}
+        {step === 6 && (
+          <div className="mt-6 text-center">
+            <p className="text-xs text-slate-500">
+              By using CoachDog, you agree to our{' '}
+              <Link to="/terms?tab=clients" className="text-brand-600 hover:underline font-medium">
+                Terms of Service
+              </Link>
+              {' '}and{' '}
+              <Link to="/privacy" className="text-brand-600 hover:underline font-medium">
+                Privacy Policy
+              </Link>
+            </p>
+          </div>
+        )}
       </div>
       </div>
     </div>

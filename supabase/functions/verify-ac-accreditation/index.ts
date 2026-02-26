@@ -61,11 +61,48 @@ serve(async (req) => {
     const html = await response.text();
     console.log('[AC Verification] Profile fetched, length:', html.length);
 
-    // Extract profile data
-    const profileName = extractBetween(html, '<h1 class="page-title">', '</h1>') ||
-                       extractBetween(html, 'class="page-title">', '</');
+    // Log a sample from the body section where profile data lives
+    const bodyStart = html.indexOf('<body');
+    const bodySample = bodyStart !== -1 ? html.substring(bodyStart, bodyStart + 5000) : html.substring(3000, 8000);
+    console.log('[AC Verification] Body Sample:', bodySample.substring(0, 3000));
 
-    console.log('[AC Verification] Extracted profile name:', profileName);
+    // Extract profile data - try multiple patterns
+    let profileName = extractBetween(html, '<h1 class="page-title">', '</h1>');
+    console.log('[AC Verification] First attempt (h1.page-title):', profileName);
+
+    if (!profileName) {
+      profileName = extractBetween(html, 'class="page-title">', '</');
+      console.log('[AC Verification] Second attempt (class page-title):', profileName);
+    }
+
+    // Try alternative patterns if still not found
+    if (!profileName) {
+      // Look for any h1 tag
+      profileName = extractBetween(html, '<h1>', '</h1>');
+      console.log('[AC Verification] Third attempt (any h1):', profileName);
+    }
+
+    // Try looking for title tag
+    if (!profileName) {
+      profileName = extractBetween(html, '<title>', '</title>');
+      // Clean up title tag (often has " | Association for Coaching" suffix)
+      if (profileName) {
+        profileName = profileName.split('|')[0].trim();
+      }
+      console.log('[AC Verification] Fourth attempt (title tag):', profileName);
+    }
+
+    // Try looking for meta property="og:title"
+    if (!profileName) {
+      const ogTitleMatch = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i);
+      profileName = ogTitleMatch?.[1] || null;
+      if (profileName) {
+        profileName = profileName.split('|')[0].trim();
+      }
+      console.log('[AC Verification] Fifth attempt (og:title):', profileName);
+    }
+
+    console.log('[AC Verification] Final extracted profile name:', profileName);
 
     // Validate name match
     if (!profileName) {
@@ -109,17 +146,50 @@ serve(async (req) => {
       );
     }
 
-    // Check "Coach Accredited: Yes/No"
-    const coachAccreditedMatch = html.match(/Coach Accredited:<\/.*?>\s*<.*?>(Yes|No)</i);
-    const isAccredited = coachAccreditedMatch?.[1] === 'Yes';
+    // Check "Coach Accredited: Yes/No" - try multiple patterns
+    let coachAccreditedMatch = html.match(/Coach Accredited:<\/.*?>\s*<.*?>(Yes|No)/i);
+    console.log('[AC Verification] First accreditation pattern result:', coachAccreditedMatch?.[1]);
 
-    console.log('[AC Verification] Coach Accredited:', coachAccreditedMatch?.[1]);
+    // Try alternative pattern without closing tag requirement
+    if (!coachAccreditedMatch) {
+      coachAccreditedMatch = html.match(/Coach Accredited[:\s]*<[^>]*>(Yes|No)/i);
+      console.log('[AC Verification] Second accreditation pattern result:', coachAccreditedMatch?.[1]);
+    }
+
+    // Try even simpler pattern
+    if (!coachAccreditedMatch) {
+      coachAccreditedMatch = html.match(/Coach Accredited[:\s]*(Yes|No)/i);
+      console.log('[AC Verification] Third accreditation pattern result:', coachAccreditedMatch?.[1]);
+    }
+
+    // Log a snippet around "Coach Accredited" if it exists
+    const coachAccreditedIndex = html.indexOf('Coach Accredited');
+    if (coachAccreditedIndex !== -1) {
+      const snippet = html.substring(coachAccreditedIndex, coachAccreditedIndex + 200);
+      console.log('[AC Verification] Coach Accredited snippet:', snippet);
+    } else {
+      console.log('[AC Verification] "Coach Accredited" text not found in HTML');
+    }
+
+    // Check if this is a corporate member (who don't have individual coach accreditation)
+    const isCorporateMember = html.includes('Membership Level:</strong></td>') && html.includes('>Corporate<');
+    console.log('[AC Verification] Is corporate member:', isCorporateMember);
+
+    const isAccredited = coachAccreditedMatch?.[1] === 'Yes';
+    console.log('[AC Verification] Final Coach Accredited value:', coachAccreditedMatch?.[1]);
 
     if (!isAccredited) {
+      // Provide clearer error message for corporate members
+      const errorMessage = isCorporateMember
+        ? 'This AC profile shows Corporate Membership, not individual coach accreditation. CoachDog requires individual AC coach accreditation. If you have individual accreditation, please provide your individual member profile URL instead.'
+        : coachAccreditedIndex === -1
+        ? 'No coach accreditation information found on this AC profile. Please ensure your profile displays "Coach Accredited: Yes" or contact AC support to update your profile.'
+        : 'AC profile shows "Coach Accredited: No". Please ensure your AC coach accreditation is active and displayed on your profile.';
+
       return new Response(
         JSON.stringify({
           verified: false,
-          errorMessage: 'AC profile shows "Coach Accredited: No" or accreditation status not found. Please ensure your AC accreditation is active and displayed on your profile.'
+          errorMessage: errorMessage
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );

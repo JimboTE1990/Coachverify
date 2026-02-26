@@ -961,19 +961,6 @@ export const CoachDetails: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Contact Coach Button - always show if email available */}
-                  {primaryEmail && (
-                    <div className="flex justify-center">
-                      <a
-                        href={primaryEmail.startsWith('mailto:') ? primaryEmail : `mailto:${primaryEmail}`}
-                        onClick={() => coach?.id && trackContactClick(coach.id, 'email')}
-                        className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-                      >
-                        <Mail className="h-5 w-5" />
-                        Contact Coach
-                      </a>
-                    </div>
-                  )}
                 </div>
               );
             })()}

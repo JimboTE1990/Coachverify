@@ -21,6 +21,8 @@ export const CoachSignup: React.FC = () => {
   const [signupError, setSignupError] = useState('');
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [showAccreditationInfo, setShowAccreditationInfo] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const infoButtonRef = useRef<HTMLButtonElement>(null);
   const hasRedirected = useRef(false);
 
@@ -605,6 +607,13 @@ export const CoachSignup: React.FC = () => {
                     </select>
                  </div>
 
+                 {/* Multiple Accreditations Info */}
+                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                   <p className="text-sm text-blue-800">
+                     💡 <strong>Have multiple accreditations?</strong> Select your primary accrediting body here. You can add additional certifications (EMCC, ICF, AC, ILM, etc.) in your dashboard under "Additional Certifications" after signup.
+                   </p>
+                 </div>
+
                  <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       {formData.body === 'EMCC' ? 'EMCC Profile URL' :
@@ -844,11 +853,39 @@ export const CoachSignup: React.FC = () => {
                    </div>
                  )}
 
+                 {/* Terms of Service Acceptance */}
+                 {!verified && (
+                   <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                     <label className="flex items-start gap-3 cursor-pointer">
+                       <input
+                         type="checkbox"
+                         checked={termsAccepted}
+                         onChange={(e) => setTermsAccepted(e.target.checked)}
+                         className="mt-1 h-5 w-5 text-brand-600 focus:ring-brand-500 border-slate-300 rounded"
+                       />
+                       <span className="text-sm text-slate-700 flex-1">
+                         I agree to the{' '}
+                         <button
+                           type="button"
+                           onClick={() => setShowTermsModal(true)}
+                           className="text-brand-600 hover:underline font-semibold"
+                         >
+                           Coach Terms of Service
+                         </button>
+                         {' '}and{' '}
+                         <Link to="/privacy" target="_blank" className="text-brand-600 hover:underline font-semibold">
+                           Privacy Policy
+                         </Link>
+                       </span>
+                     </label>
+                   </div>
+                 )}
+
                  {!verified ? (
                    <div className="space-y-2">
                      <button
                        onClick={handleVerification}
-                       disabled={loading || !formData.regNumber}
+                       disabled={loading || !formData.regNumber || !termsAccepted}
                        className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 disabled:opacity-50 transition-all flex justify-center items-center shadow-md"
                      >
                        {loading ? <Loader className="h-5 w-5 animate-spin mr-2" /> : <ShieldCheck className="h-5 w-5 mr-2" />}
@@ -957,6 +994,106 @@ export const CoachSignup: React.FC = () => {
 
         </div>
       </div>
+
+      {/* Terms of Service Modal */}
+      {showTermsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+              <h2 className="text-2xl font-display font-bold text-slate-900">
+                Coach Terms of Service
+              </h2>
+              <button
+                onClick={() => setShowTermsModal(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <XCircle className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Modal Content - Scrollable */}
+            <div className="px-6 py-4 overflow-y-auto flex-1">
+              <p className="text-sm text-slate-600 mb-4">
+                Last Updated: {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+
+              {/* Introduction */}
+              <section className="mb-6">
+                <p className="text-slate-700 mb-3 text-sm">
+                  Welcome to CoachDog. These Terms of Service ("Terms") govern your access to and use of our platform, which connects verified coaches with users seeking coaching services.
+                </p>
+                <p className="text-slate-700 text-sm">
+                  By accessing or using CoachDog, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use our platform.
+                </p>
+              </section>
+
+              {/* Key sections summary */}
+              <section className="mb-6 bg-slate-50 border border-slate-200 rounded-lg p-4">
+                <h3 className="font-bold text-slate-900 mb-3">Key Points:</h3>
+                <ul className="space-y-2 text-sm text-slate-700">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-4 w-4 text-brand-600 mt-0.5 flex-shrink-0" />
+                    <span>You must hold valid coaching credentials from a recognized accreditation body</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-4 w-4 text-brand-600 mt-0.5 flex-shrink-0" />
+                    <span>All profile information must be accurate and truthful</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-4 w-4 text-brand-600 mt-0.5 flex-shrink-0" />
+                    <span>30-day free trial included with all plans</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-4 w-4 text-brand-600 mt-0.5 flex-shrink-0" />
+                    <span>Cancel anytime - no long-term contracts</span>
+                  </li>
+                </ul>
+              </section>
+
+              {/* Link to full terms */}
+              <section className="mb-4">
+                <p className="text-sm text-slate-700 mb-3">
+                  This is a summary of the key terms. Please review the{' '}
+                  <Link
+                    to="/terms?tab=coaches"
+                    target="_blank"
+                    className="text-brand-600 hover:underline font-semibold inline-flex items-center gap-1"
+                  >
+                    full Coach Terms of Service
+                    <ExternalLink className="h-3 w-3" />
+                  </Link>
+                  {' '}for complete details on eligibility, verification, payments, cancellation, and liability.
+                </p>
+              </section>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50">
+              <div className="flex items-center justify-between gap-4">
+                <label className="flex items-start gap-3 cursor-pointer flex-1">
+                  <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                    className="mt-1 h-5 w-5 text-brand-600 focus:ring-brand-500 border-slate-300 rounded"
+                  />
+                  <span className="text-sm text-slate-700">
+                    I have read and agree to the Coach Terms of Service
+                  </span>
+                </label>
+                <button
+                  onClick={() => setShowTermsModal(false)}
+                  disabled={!termsAccepted}
+                  className="bg-brand-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
