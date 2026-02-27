@@ -10,7 +10,7 @@ export const CoachSubscriptionAgreement: React.FC = () => {
           COACHDOG COACH SUBSCRIPTION AGREEMENT
         </h2>
         <p className="text-slate-700 mb-4">
-          Last updated: XX February 2026
+          Last updated: 27 February 2026
         </p>
         <p className="text-slate-700">
           This Agreement forms a legally binding contract between CoachDog Ltd and the subscribing Coach, the 'Coach'.
@@ -25,7 +25,7 @@ export const CoachSubscriptionAgreement: React.FC = () => {
 
         <h3 className="text-xl font-bold text-slate-900 mb-3 mt-6">1.1. Subscription Fee</h3>
         <p className="text-slate-700 mb-4">
-          In consideration of the right to access and use the Services provided by CoachDog under this Agreement, the Coach shall pay CoachDog a monthly subscription fee of £15.00 (Fifteen Pounds Sterling) (hereinafter referred to as the "Subscription Fee").
+          In consideration of the right to access and use the Services provided by CoachDog under this Agreement, the Coach shall pay CoachDog a monthly or annual subscription fee as priced at the point of sale (hereinafter referred to as the "Subscription Fee"). For current pricing, please visit our pricing section.
         </p>
 
         <h3 className="text-xl font-bold text-slate-900 mb-3 mt-6">1.2. Payment Schedule</h3>
@@ -57,7 +57,7 @@ export const CoachSubscriptionAgreement: React.FC = () => {
 
         <h3 className="text-xl font-bold text-slate-900 mb-3 mt-6">2.1. Trial Period</h3>
         <p className="text-slate-700 mb-4">
-          CoachDog may, at its sole discretion, offer the Coach a one-time, non-renewable trial period of 30 (thirty) consecutive days (the "Trial Period") commencing on the date of account registration. The purpose of the Trial Period is to allow the Coach to evaluate the Services prior to entering into a paid subscription.
+          By registering, you are entering a one-time, non-renewable free trial period of 30 (thirty) consecutive days (the "Trial Period") commencing on the date of account registration. The purpose of the Trial Period is to allow the Coach to evaluate the Services prior to entering into a paid subscription. For ongoing pricing after the free trial, please visit our pricing section.
         </p>
 
         <h3 className="text-xl font-bold text-slate-900 mb-3 mt-6">2.2. Trial Activation</h3>
@@ -67,7 +67,7 @@ export const CoachSubscriptionAgreement: React.FC = () => {
 
         <h3 className="text-xl font-bold text-slate-900 mb-3 mt-6">2.3. Conversion to Paid Subscription</h3>
         <p className="text-slate-700 mb-4">
-          Following the conclusion of the Trial Period, continued access to and use of the Services shall require the Coach to enter into a paid subscription. To convert to a paid subscription, the Coach must provide valid and current payment card details via the account settings portal.
+          Following the conclusion of the Trial Period, continued access to and use of the Services shall require the Coach to enter into a paid subscription. To convert to a paid subscription, the Coach must provide valid and current payment card details via the account settings portal. Subscription pricing is as stated at the point of sale.
         </p>
 
         <h3 className="text-xl font-bold text-slate-900 mb-3 mt-6">2.4. Limitation to One Trial</h3>

@@ -1039,7 +1039,7 @@ export const CoachSignup: React.FC = () => {
                   CoachDog Coach Subscription Agreement
                 </p>
                 <p className="text-slate-700 text-sm">
-                  This Agreement forms a legally binding contract between CoachDog Ltd and you (the "Coach"). By subscribing, you agree to these terms.
+                  This Agreement forms a legally binding contract between CoachDog Ltd and you (the "Coach"). By registering, you are entering a free trial and agreeing to these terms.
                 </p>
               </section>
 
@@ -1049,11 +1049,11 @@ export const CoachSignup: React.FC = () => {
                 <ul className="space-y-2 text-sm text-slate-700">
                   <li className="flex items-start gap-2">
                     <CheckCircle className="h-4 w-4 text-brand-600 mt-0.5 flex-shrink-0" />
-                    <span><strong>Subscription:</strong> £15/month (excluding VAT), billed monthly in advance. Non-refundable.</span>
+                    <span><strong>Free Trial:</strong> You are entering a 30-day free trial (one per coach). No payment card required during trial.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="h-4 w-4 text-brand-600 mt-0.5 flex-shrink-0" />
-                    <span><strong>Trial Period:</strong> 30-day free trial (one per coach). No payment card required during trial.</span>
+                    <span><strong>Subscription:</strong> Monthly or annual subscription priced at point of sale. Visit our pricing section for current rates. Non-refundable.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="h-4 w-4 text-brand-600 mt-0.5 flex-shrink-0" />

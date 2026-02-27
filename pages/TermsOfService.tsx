@@ -15,12 +15,9 @@ export const TermsOfService: React.FC = () => {
       <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200 p-8 md:p-12">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-display font-bold text-slate-900 mb-4">
+          <h1 className="text-4xl font-display font-bold text-slate-900">
             Terms of Service
           </h1>
-          <p className="text-slate-600">
-            Last Updated: {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-          </p>
         </div>
 
         {/* Tabs */}
@@ -62,6 +59,9 @@ export const TermsOfService: React.FC = () => {
               <h2 className="text-3xl font-display font-bold text-slate-900 mb-6">
                 Client Terms of Use
               </h2>
+              <p className="text-slate-700 mb-4">
+                Last updated: 27 February 2026
+              </p>
               <p className="text-slate-700 mb-4">
                 These Client Terms of Use ("Client Terms") apply to individuals using CoachDog to identify and connect with accredited coaches ("Clients").
               </p>
