@@ -869,7 +869,7 @@ export const CoachSignup: React.FC = () => {
                            </p>
                          </div>
                          <p className="text-sm text-amber-800 mb-4">
-                           Before proceeding, you must review and accept our Coach Terms of Service.
+                           Before proceeding, you must review and accept our Coach Subscription Agreement.
                          </p>
                          <button
                            type="button"
@@ -877,7 +877,7 @@ export const CoachSignup: React.FC = () => {
                            className="w-full bg-amber-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-amber-700 transition-all shadow-md flex items-center justify-center gap-2"
                          >
                            <FileText className="h-5 w-5" />
-                           Review Coach Terms of Service
+                           Review Coach Subscription Agreement
                          </button>
                        </div>
                      ) : (
@@ -888,7 +888,7 @@ export const CoachSignup: React.FC = () => {
                              Terms Accepted
                            </p>
                            <p className="text-xs text-green-700">
-                             You have reviewed and accepted the Coach Terms of Service and Privacy Policy.
+                             You have reviewed and accepted the Coach Subscription Agreement and Privacy Policy.
                            </p>
                          </div>
                        </div>
@@ -1017,7 +1017,7 @@ export const CoachSignup: React.FC = () => {
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
               <h2 className="text-2xl font-display font-bold text-slate-900">
-                Coach Terms of Service
+                Coach Subscription Agreement
               </h2>
               <button
                 onClick={() => setShowTermsModal(false)}
@@ -1030,55 +1030,70 @@ export const CoachSignup: React.FC = () => {
             {/* Modal Content - Scrollable */}
             <div className="px-6 py-4 overflow-y-auto flex-1">
               <p className="text-sm text-slate-600 mb-4">
-                Last Updated: {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                Last Updated: February 2026
               </p>
 
               {/* Introduction */}
               <section className="mb-6">
-                <p className="text-slate-700 mb-3 text-sm">
-                  Welcome to CoachDog. These Terms of Service ("Terms") govern your access to and use of our platform, which connects verified coaches with users seeking coaching services.
+                <p className="text-slate-700 mb-3 text-sm font-semibold">
+                  CoachDog Coach Subscription Agreement
                 </p>
                 <p className="text-slate-700 text-sm">
-                  By accessing or using CoachDog, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use our platform.
+                  This Agreement forms a legally binding contract between CoachDog Ltd and you (the "Coach"). By subscribing, you agree to these terms.
                 </p>
               </section>
 
               {/* Key sections summary */}
               <section className="mb-6 bg-slate-50 border border-slate-200 rounded-lg p-4">
-                <h3 className="font-bold text-slate-900 mb-3">Key Points:</h3>
+                <h3 className="font-bold text-slate-900 mb-3">Key Terms Summary:</h3>
                 <ul className="space-y-2 text-sm text-slate-700">
                   <li className="flex items-start gap-2">
                     <CheckCircle className="h-4 w-4 text-brand-600 mt-0.5 flex-shrink-0" />
-                    <span>You must hold valid coaching credentials from a recognized accreditation body</span>
+                    <span><strong>Subscription:</strong> £15/month (excluding VAT), billed monthly in advance. Non-refundable.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="h-4 w-4 text-brand-600 mt-0.5 flex-shrink-0" />
-                    <span>All profile information must be accurate and truthful</span>
+                    <span><strong>Trial Period:</strong> 30-day free trial (one per coach). No payment card required during trial.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="h-4 w-4 text-brand-600 mt-0.5 flex-shrink-0" />
-                    <span>30-day free trial included with all plans</span>
+                    <span><strong>Accreditation:</strong> You must hold valid accreditation from EMCC, ICF, or Association for Coaching and notify us immediately if it lapses.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="h-4 w-4 text-brand-600 mt-0.5 flex-shrink-0" />
-                    <span>Cancel anytime - no long-term contracts</span>
+                    <span><strong>Our Service:</strong> We provide lead generation and marketing only. We do NOT process client payments or manage bookings. You retain all client relationships.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-4 w-4 text-brand-600 mt-0.5 flex-shrink-0" />
+                    <span><strong>Insurance:</strong> You must maintain professional indemnity insurance of at least £1,000,000 per claim.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-4 w-4 text-brand-600 mt-0.5 flex-shrink-0" />
+                    <span><strong>Independent Status:</strong> You are an independent professional, NOT our employee. You are solely responsible for your coaching services.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-4 w-4 text-brand-600 mt-0.5 flex-shrink-0" />
+                    <span><strong>Termination:</strong> Cancel anytime through your dashboard. Access continues until end of paid period. No refunds for unused time.</span>
                   </li>
                 </ul>
               </section>
 
               {/* Link to full terms */}
-              <section className="mb-4">
-                <p className="text-sm text-slate-700 mb-3">
-                  This is a summary of the key terms. Please review the{' '}
+              <section className="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <p className="text-sm text-amber-900 font-semibold mb-2">
+                  Please Review the Full Agreement
+                </p>
+                <p className="text-sm text-amber-800">
+                  This is a summary only. You must read the{' '}
                   <Link
                     to="/terms?tab=coaches"
                     target="_blank"
                     className="text-brand-600 hover:underline font-semibold inline-flex items-center gap-1"
                   >
-                    full Coach Terms of Service
+                    full Coach Subscription Agreement
                     <ExternalLink className="h-3 w-3" />
                   </Link>
-                  {' '}for complete details on eligibility, verification, payments, cancellation, and liability.
+                  {' '}for complete details on fees, trial period, payment processing, professional obligations, indemnity, limitation of liability, and termination rights.
                 </p>
               </section>
             </div>
@@ -1100,7 +1115,7 @@ export const CoachSignup: React.FC = () => {
                       target="_blank"
                       className="text-brand-600 hover:underline font-semibold"
                     >
-                      Coach Terms of Service
+                      Coach Subscription Agreement
                     </Link>
                     {' '}and{' '}
                     <Link
