@@ -145,21 +145,6 @@ serve(async (req) => {
       }
     }
 
-    // STEP 4: TEMPORARY - Skip URL verification, auto-approve for manual review
-    // When EMCC directory is restored, remove this block and uncomment the code below
-    console.log('[EMCC URL Verification] TEMPORARY: Auto-approving for manual review (directory unavailable)');
-
-    return new Response(JSON.stringify({
-      verified: false,
-      pendingManualReview: true,
-      confidence: 0,
-      reason: 'Due to EMCC recently updating their website, directories are temporarily unavailable. We are manually verifying all EMCC certificates. Please email your EMCC certificate to coachdogverify@gmail.com with your EIA number in the subject line.'
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-
-    /* ORIGINAL CODE - Restore when EMCC directory is available
     // STEP 4: Fetch URL and verify content
     const result = await verifyEMCCUrlContent(profileUrl, fullName, normalizedEIA);
 
@@ -199,7 +184,6 @@ serve(async (req) => {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
-    */
 
   } catch (error) {
     console.error('[EMCC URL Verification] Error:', error);
@@ -212,20 +196,8 @@ serve(async (req) => {
 
 /**
  * Validate EMCC URL format and extract EIA number
- * TEMPORARY: Also accepts plain EIA numbers due to EMCC directory unavailability
  */
 function validateEMCCUrl(url: string): { valid: boolean; eiaNumber?: string; reason?: string } {
-  // TEMPORARY: Check if input is a plain EIA number (not a URL)
-  const eiaPattern = /^EIA\d+$/i;
-  if (eiaPattern.test(url.trim())) {
-    console.log('[EMCC Validation] Detected plain EIA number format (temporary mode)');
-    return {
-      valid: true,
-      eiaNumber: url.trim().toUpperCase()
-    };
-  }
-
-  // Original URL validation logic
   try {
     const parsedUrl = new URL(url);
 
@@ -264,6 +236,7 @@ function validateEMCCUrl(url: string): { valid: boolean; eiaNumber?: string; rea
     }
 
     // Check 5: Reference must be in EIA format
+    const eiaPattern = /^EIA\d+$/i;
     if (!eiaPattern.test(reference.trim())) {
       return {
         valid: false,
@@ -279,14 +252,13 @@ function validateEMCCUrl(url: string): { valid: boolean; eiaNumber?: string; rea
   } catch (error) {
     return {
       valid: false,
-      reason: 'Invalid format. Please enter your EIA number (e.g., EIA20230480) or the complete URL from the EMCC directory.'
+      reason: 'Invalid URL format. Please copy the complete URL from your browser address bar.'
     };
   }
 }
 
 /**
  * Fetch URL and verify content matches expected name
- * TEMPORARY: Returns pendingManualReview if directory is unavailable
  */
 async function verifyEMCCUrlContent(
   url: string,
@@ -296,14 +268,7 @@ async function verifyEMCCUrlContent(
   try {
     console.log('[EMCC Content Verification] Fetching URL:', url);
 
-    // TEMPORARY: If URL is not a real URL (just EIA number), construct placeholder URL
-    let fetchUrl = url;
-    if (!url.startsWith('http')) {
-      fetchUrl = `https://www.emccglobal.org/accreditation/eia/eia-awards/?reference=${expectedEIA}&search=1`;
-      console.log('[EMCC Content Verification] Constructed URL from EIA number:', fetchUrl);
-    }
-
-    const response = await fetch(fetchUrl, {
+    const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       },
@@ -311,29 +276,15 @@ async function verifyEMCCUrlContent(
     });
 
     if (!response.ok) {
-      // TEMPORARY: Directory unavailable - trigger manual review
-      console.log('[EMCC Content Verification] Directory unavailable (HTTP error), triggering manual review');
       return {
         verified: false,
-        pendingManualReview: true,
         confidence: 0,
-        reason: 'Due to EMCC recently updating their website, directories are temporarily unavailable. We are manually verifying all EMCC certificates. Please email your EMCC certificate to coachdogverify@gmail.com with your EIA number in the subject line.'
+        reason: `Could not access EMCC profile (HTTP ${response.status}). Please verify the URL is correct.`
       };
     }
 
     const html = await response.text();
     console.log('[EMCC Content Verification] Fetched HTML length:', html.length);
-
-    // TEMPORARY: Check if directory page is unavailable or showing errors
-    if (html.length < 500 || html.includes('404') || html.includes('Not Found') || !html.includes('EMCC')) {
-      console.log('[EMCC Content Verification] Directory appears unavailable or empty, triggering manual review');
-      return {
-        verified: false,
-        pendingManualReview: true,
-        confidence: 0,
-        reason: 'Due to EMCC recently updating their website, directories are temporarily unavailable. We are manually verifying all EMCC certificates. Please email your EMCC certificate to coachdogverify@gmail.com with your EIA number in the subject line.'
-      };
-    }
 
     // Validate content
     let confidence = 0;

@@ -23,6 +23,7 @@ export const CoachSignup: React.FC = () => {
   const [showAccreditationInfo, setShowAccreditationInfo] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [pendingManualReview, setPendingManualReview] = useState(false);
   const infoButtonRef = useRef<HTMLButtonElement>(null);
   const hasRedirected = useRef(false);
 
@@ -203,12 +204,12 @@ export const CoachSignup: React.FC = () => {
 
       if (result.verified) {
         setVerified(true);
+        setPendingManualReview(false);
       } else if ((result as any).pendingManualReview) {
         // Allow signup to continue with pending verification
         setVerified(true); // Allow them to proceed
+        setPendingManualReview(true); // Track that this is pending manual review
         setSignupError(''); // Clear any errors
-        // Show info message instead
-        alert('✓ Credentials submitted! Your accreditation will be manually verified within 24 hours. You can complete your signup now.');
       } else {
         setSignupError(result.reason || "Could not verify your accreditation. Please check your details.");
       }
@@ -616,20 +617,22 @@ export const CoachSignup: React.FC = () => {
 
                  <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                      {formData.body === 'EMCC' ? 'EMCC Profile URL' :
+                      {formData.body === 'EMCC' ? 'EIA Number' :
                        formData.body === 'ICF' ? 'ICF Directory Search URL' :
                        'AC Member Profile URL'}
                     </label>
-                    <button
-                      ref={infoButtonRef}
-                      type="button"
-                      onClick={() => setShowAccreditationInfo(!showAccreditationInfo)}
-                      className="mb-2 inline-flex items-center gap-2 px-4 py-2 bg-brand-50 text-brand-700 rounded-lg hover:bg-brand-100 border-2 border-brand-200 transition-all font-semibold text-sm shadow-sm"
-                      title="Where to find your accreditation details"
-                    >
-                      <Info className="h-5 w-5" />
-                      <span>Need help finding your URL?</span>
-                    </button>
+                    {formData.body !== 'EMCC' && (
+                      <button
+                        ref={infoButtonRef}
+                        type="button"
+                        onClick={() => setShowAccreditationInfo(!showAccreditationInfo)}
+                        className="mb-2 inline-flex items-center gap-2 px-4 py-2 bg-brand-50 text-brand-700 rounded-lg hover:bg-brand-100 border-2 border-brand-200 transition-all font-semibold text-sm shadow-sm"
+                        title="Where to find your accreditation details"
+                      >
+                        <Info className="h-5 w-5" />
+                        <span>Need help finding your URL?</span>
+                      </button>
+                    )}
 
                     {/* Dynamic Info Popup - uses fixed positioning to overflow container */}
                     {showAccreditationInfo && infoButtonRef.current && (
@@ -797,12 +800,12 @@ export const CoachSignup: React.FC = () => {
 
                     <input
                       name="regNumber"
-                      type={formData.body === 'EMCC' || formData.body === 'ICF' || formData.body === 'AC' ? 'url' : 'text'}
+                      type={formData.body === 'ICF' || formData.body === 'AC' ? 'url' : 'text'}
                       value={formData.regNumber}
                       onChange={handleChange}
                       className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
                       placeholder={
-                        formData.body === 'EMCC' ? 'Paste your EMCC profile URL here' :
+                        formData.body === 'EMCC' ? 'Enter your EIA number (e.g., EIA20230480)' :
                         formData.body === 'ICF' ? 'Paste your ICF directory search URL here' :
                         formData.body === 'AC' ? 'Paste your AC member profile URL here' :
                         'e.g. 12345-AB'
@@ -850,6 +853,19 @@ export const CoachSignup: React.FC = () => {
                        <option value="MCC">MCC - Master Certified Coach</option>
                        <option value="ACTC">ACTC - Approved Coach Training Course</option>
                      </select>
+                   </div>
+                 )}
+
+                 {/* EMCC Temporary Manual Verification Disclaimer */}
+                 {formData.body === 'EMCC' && !verified && (
+                   <div className="bg-blue-50 border border-blue-300 rounded-lg p-4 mb-4">
+                     <p className="text-sm text-blue-800">
+                       <strong>Note:</strong> Due to EMCC recently updating their website, directories are temporarily unavailable. We are manually verifying all EMCC certificates whilst we await further updates.
+                     </p>
+                     <p className="text-xs text-blue-700 mt-2">
+                       After signup, please email your EMCC certificate to{' '}
+                       <strong>coachdogverify@gmail.com</strong> with your EIA number in the subject line.
+                     </p>
                    </div>
                  )}
 
@@ -924,6 +940,18 @@ export const CoachSignup: React.FC = () => {
                          </div>
                        </div>
                      )}
+                   </div>
+                 ) : pendingManualReview ? (
+                   <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 animate-fade-in shadow-sm">
+                     <div className="flex items-start gap-3">
+                       <AlertTriangle className="h-6 w-6 text-amber-600 flex-shrink-0" />
+                       <div>
+                         <p className="font-bold text-amber-900">Credentials Submitted</p>
+                         <p className="text-sm text-amber-800 mt-1">
+                           Please email your EMCC certificate to <strong>coachdogverify@gmail.com</strong> with your EIA number in the subject line. You can complete your signup now.
+                         </p>
+                       </div>
+                     </div>
                    </div>
                  ) : (
                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-center text-green-700 animate-fade-in shadow-sm">
