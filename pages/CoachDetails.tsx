@@ -649,7 +649,7 @@ export const CoachDetails: React.FC = () => {
 
       {/* Main Content - White Card */}
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-xl" style={{ overflow: 'visible' }}>
 
           {/* Banner Image - Full Width at Top (like LinkedIn/X) */}
           <div className="w-full h-40 sm:h-48 md:h-64 bg-gradient-to-br from-slate-100 to-slate-200 relative overflow-hidden">
