@@ -551,8 +551,12 @@ export const CoachDetails: React.FC = () => {
       platform.includes('schedule') ||
       platform.includes('calendly') ||
       platform.includes('cal.com') ||
+      (platform.includes('google') && platform.includes('calendar')) ||
+      (platform.includes('calendar') && platform.includes('appointment')) ||
       url.includes('calendly.com') ||
-      url.includes('cal.com')
+      url.includes('cal.com') ||
+      url.includes('calendar.google.com') ||
+      url.includes('calendar.app.google')
     );
   });
 
@@ -750,7 +754,8 @@ export const CoachDetails: React.FC = () => {
                     const hasProfile = !!(coach.bio && coach.bio.trim().length > 20 && coach.mainCoachingCategories && coach.mainCoachingCategories.length > 0);
                     const hasScheduling = !!(coach.socialLinks?.some(l => {
                       const lbl = (l.platform || '').toLowerCase();
-                      return lbl.includes('booking') || lbl.includes('schedule') || lbl.includes('calendly') || lbl.includes('cal.com');
+                      const url = (l.url || '').toLowerCase();
+                      return lbl.includes('booking') || lbl.includes('schedule') || lbl.includes('calendly') || lbl.includes('cal.com') || (lbl.includes('google') && lbl.includes('calendar')) || (lbl.includes('calendar') && lbl.includes('appointment')) || url.includes('calendar.google.com') || url.includes('calendar.app.google');
                     }));
                     const hasReviews = totalReviews >= 1;
                     const hasSocial = !!(coach.socialLinks?.some(l => {
@@ -871,7 +876,7 @@ export const CoachDetails: React.FC = () => {
                   // Filter out email, phone, and booking links
                   const isEmail = url.startsWith('mailto:') || url.includes('@') || platform.includes('email');
                   const isPhone = url.startsWith('tel:') || url.startsWith('+') || platform.includes('phone') || platform.includes('tel') || platform.includes('mobile');
-                  const isBooking = platform.includes('booking') || platform.includes('appointment') || platform.includes('schedule') || platform.includes('calendly') || platform.includes('cal.com') || url.includes('calendly.com') || url.includes('cal.com');
+                  const isBooking = platform.includes('booking') || platform.includes('appointment') || platform.includes('schedule') || platform.includes('calendly') || platform.includes('cal.com') || (platform.includes('google') && platform.includes('calendar')) || (platform.includes('calendar') && platform.includes('appointment')) || url.includes('calendly.com') || url.includes('cal.com') || url.includes('calendar.google.com') || url.includes('calendar.app.google');
                   return !isEmail && !isPhone && !isBooking;
                 }).map((socialLink) => {
                   // Determine click type from platform
@@ -935,8 +940,11 @@ export const CoachDetails: React.FC = () => {
                 const platform = link.platform?.toLowerCase() || '';
                 return platform.includes('booking') || platform.includes('appointment') ||
                        platform.includes('schedule') || platform.includes('calendly') ||
-                       platform.includes('cal.com') || url.includes('calendly.com') ||
-                       url.includes('cal.com');
+                       platform.includes('cal.com') ||
+                       (platform.includes('google') && platform.includes('calendar')) ||
+                       (platform.includes('calendar') && platform.includes('appointment')) ||
+                       url.includes('calendly.com') || url.includes('cal.com') ||
+                       url.includes('calendar.google.com') || url.includes('calendar.app.google');
               });
 
               // Get primary email for contact button
