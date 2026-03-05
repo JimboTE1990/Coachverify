@@ -1471,9 +1471,9 @@ export const CoachDetails: React.FC = () => {
           )}
 
           {/* Action Buttons */}
-          <div className="px-6 pb-8 space-y-4">
+          <div className="px-6 pb-8 space-y-4 overflow-visible">
             {/* Schedule a Call / Contact Coach Button */}
-            <div className="relative">
+            <div className="relative z-50">
               {bookingLink ? (
                 // If booking link exists, show "Schedule a Call" button with direct link
                 <a
@@ -1496,7 +1496,7 @@ export const CoachDetails: React.FC = () => {
 
               {/* Contact Options Dropdown - Only show if no booking link */}
               {!bookingLink && showContactOptions && (emailContacts.length > 0 || phoneContacts.length > 0) && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border-2 border-cyan-500 shadow-2xl z-50 animate-fade-in max-h-96 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border-2 border-cyan-500 shadow-2xl z-[60] animate-fade-in max-h-96 overflow-y-auto">
                   {/* Email Options */}
                   {emailContacts.length > 0 && (
                     <div className="border-b border-slate-200">
@@ -1547,7 +1547,7 @@ export const CoachDetails: React.FC = () => {
 
               {/* No Contact Info Available - Only show if no booking link */}
               {!bookingLink && showContactOptions && emailContacts.length === 0 && phoneContacts.length === 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border-2 border-slate-300 shadow-2xl z-50 p-6 text-center animate-fade-in">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border-2 border-slate-300 shadow-2xl z-[60] p-6 text-center animate-fade-in">
                   <p className="text-slate-600">No contact information available yet.</p>
                 </div>
               )}
