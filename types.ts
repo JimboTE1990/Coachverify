@@ -344,6 +344,7 @@ export interface Coach {
   gender?: Gender; // Coach's gender identity
   referralSource?: string | null; // Partner referral source (e.g. 'emcc', 'icf', 'ac')
 
+
   // Subscription & Billing
   subscriptionStatus: SubscriptionStatus;
   trialEndsAt?: string;

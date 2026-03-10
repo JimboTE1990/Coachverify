@@ -27,7 +27,7 @@ import {
   AlertTriangle, Mail, Smartphone, RefreshCw, Eye, EyeOff,
   Tag, Monitor, LayoutDashboard, Sparkles, BarChart, TrendingUp, Calendar,
   Award, GraduationCap, Trophy, Star, Flag, MessageCircle, Send, Info, ExternalLink,
-  ClipboardCheck, Phone, Linkedin, Instagram, Facebook, Youtube, Twitter, Globe
+  ClipboardCheck, Phone, Linkedin, Instagram, Facebook, Youtube, Twitter, Globe, FileText
 } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
 import { useAuth } from '../hooks/useAuth';
@@ -41,6 +41,7 @@ import { useTrialStatus } from '../hooks/useTrialStatus';
 import { ImageUploadWithCrop } from '../components/ImageUploadWithCrop';
 import { MultiSelect } from '../components/forms/MultiSelect';
 import { CollapsibleSection } from '../components/forms/CollapsibleSection';
+import { RichTextEditor } from '../components/forms/RichTextEditor';
 import { LOCATION_RADIUS_OPTIONS } from '../constants/locations';
 import { SearchableLocationSelect } from '../components/forms/SearchableLocationSelect';
 
@@ -204,7 +205,7 @@ export const CoachDashboard: React.FC = () => {
         locationIsCustom: currentCoach.locationIsCustom,
         country: currentCoach.country || 'United Kingdom',
         customUrl: currentCoach.customUrl || '',
-        introVideoUrl: currentCoach.introVideoUrl || ''
+        introVideoUrl: currentCoach.introVideoUrl || '',
       });
     }
   }, [currentCoach, localProfile]);
@@ -1304,7 +1305,7 @@ export const CoachDashboard: React.FC = () => {
                         </span>
                       )}
                       <button
-                        onClick={() => navigate(`/coach/${currentCoach?.id}`)}
+                        onClick={() => window.open(`/coach/${currentCoach?.id}`, '_blank')}
                         className="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all flex items-center justify-center"
                       >
                         <Eye className="h-4 w-4 mr-2" />
@@ -1377,12 +1378,12 @@ export const CoachDashboard: React.FC = () => {
                       {/* Bio */}
                       <div className="mb-6">
                         <label className="block text-sm font-bold text-slate-700 mb-2">Bio</label>
-                        <textarea
-                          rows={4}
+                        <RichTextEditor
                           value={localProfile?.bio || ''}
-                          onChange={(e) => updateLocalProfile({bio: e.target.value})}
-                          className="w-full border border-slate-200 bg-slate-50 rounded-xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
+                          onChange={(html) => updateLocalProfile({bio: html})}
+                          placeholder="Tell clients about yourself, your background, and your coaching approach..."
                         />
+                        <p className="text-xs text-slate-500 mt-1">Use the toolbar to format your bio with headings, bold, bullet points, and colour.</p>
                       </div>
 
                       {/* Intro Video URL */}
@@ -1430,6 +1431,35 @@ export const CoachDashboard: React.FC = () => {
                           searchPlaceholder="Search languages..."
                           maxHeight="400px"
                         />
+                      </div>
+
+                      {/* Gender */}
+                      <div className="mb-6">
+                        <label className="block text-sm font-bold text-slate-700 mb-3">Gender</label>
+                        <div className="space-y-2">
+                          {['Male', 'Female', 'Non-binary', 'Prefer not to say'].map((g) => (
+                            <label key={g} className="flex items-center cursor-pointer p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                              <input
+                                type="radio"
+                                name="gender"
+                                value={g}
+                                checked={localProfile?.gender === g}
+                                onChange={(e) => updateLocalProfile({gender: e.target.value})}
+                                className="h-5 w-5 text-brand-600 focus:ring-brand-500 border-gray-300"
+                              />
+                              <span className="ml-3 text-sm font-medium text-slate-800">{g}</span>
+                            </label>
+                          ))}
+                          <div className="pl-7">
+                            <input
+                              type="text"
+                              placeholder="Prefer to self-describe (optional)"
+                              value={localProfile?.gender && !['Male', 'Female', 'Non-binary', 'Prefer not to say'].includes(localProfile.gender) ? localProfile.gender : ''}
+                              onChange={(e) => updateLocalProfile({gender: e.target.value})}
+                              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                            />
+                          </div>
+                        </div>
                       </div>
 
                       {/* Location Selection */}
@@ -1618,7 +1648,7 @@ export const CoachDashboard: React.FC = () => {
                     iconTextColor="text-slate-600"
                   >
                     {/* Booking Calendar Tip */}
-                    <div className="bg-cyan-50 border border-cyan-200 rounded-xl p-4 mb-4">
+                    <div className="bg-cyan-50 border border-cyan-200 rounded-xl p-4 mb-3">
                       <div className="flex items-start gap-3">
                         <div className="bg-cyan-100 rounded-lg p-2 flex-shrink-0">
                           <Calendar className="h-5 w-5 text-cyan-600" />
@@ -1626,10 +1656,28 @@ export const CoachDashboard: React.FC = () => {
                         <div className="flex-1">
                           <p className="font-bold text-cyan-900 text-sm mb-1">💡 Add Your Booking Calendar</p>
                           <p className="text-xs text-cyan-800 leading-relaxed">
-                            Add your Calendly, Cal.com, or Google Calendar booking link here! Use label "Booking" or "Schedule" and it will appear as a <strong>"Schedule a Call"</strong> button on your profile.
+                            Add your Calendly, Cal.com, or Google Calendar booking link here! Use label "Booking" or "Schedule" and it will appear as a <strong>"Book a Call"</strong> button on your profile.
                           </p>
                           <p className="text-xs text-cyan-700 mt-2 italic">
                             Example: Label = "Calendly Booking", URL = "https://calendly.com/yourname"
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Enquiry Form Tip */}
+                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-4">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-purple-100 rounded-lg p-2 flex-shrink-0">
+                          <FileText className="h-5 w-5 text-purple-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-bold text-purple-900 text-sm mb-1">📋 Add a Contact Enquiry Form</p>
+                          <p className="text-xs text-purple-800 leading-relaxed">
+                            Add a Google Form, Typeform, or Jotform link here and it will appear as a <strong>"Send Enquiry"</strong> button on your profile. Great for capturing client details before an intro call.
+                          </p>
+                          <p className="text-xs text-purple-700 mt-2 italic">
+                            Example: Label = "Enquiry Form", URL = "https://forms.gle/yourformlink"
                           </p>
                         </div>
                       </div>
@@ -1718,7 +1766,7 @@ export const CoachDashboard: React.FC = () => {
                            <Tag className="h-4 w-4 mr-2 text-slate-400" /> Coaching Categories
                         </label>
                         <p className="text-xs text-slate-500 mb-3">
-                          Select the broad categories you coach in. These are used for matching you with clients. You can add specific expertise areas within each category below.
+                          Select the broad categories you coach in. These appear on your public profile card and are used to match you with clients. You can add specific expertise areas within each category below.
                         </p>
                         <div className="flex flex-wrap gap-2">
                            {MAIN_COACHING_CATEGORIES.map(category => {
@@ -1808,34 +1856,6 @@ export const CoachDashboard: React.FC = () => {
                             <p className="text-xs text-slate-500 mt-2">Used to match with client budget ranges.</p>
                           </div>
 
-                          {/* Gender */}
-                          <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-3">Gender</label>
-                            <div className="space-y-2">
-                              {['Male', 'Female', 'Non-binary', 'Prefer not to say'].map((g) => (
-                                <label key={g} className="flex items-center cursor-pointer p-2 rounded-lg hover:bg-white/50 transition-colors">
-                                  <input
-                                    type="radio"
-                                    name="gender"
-                                    value={g}
-                                    checked={localProfile?.gender === g}
-                                    onChange={(e) => updateLocalProfile({gender: e.target.value})}
-                                    className="h-5 w-5 text-brand-600 focus:ring-brand-500 border-gray-300"
-                                  />
-                                  <span className="ml-3 text-sm font-medium text-slate-800">{g}</span>
-                                </label>
-                              ))}
-                              <div className="pl-7">
-                                <input
-                                  type="text"
-                                  placeholder="Prefer to self-describe (optional)"
-                                  value={localProfile?.gender && !['Male', 'Female', 'Non-binary', 'Prefer not to say'].includes(localProfile.gender) ? localProfile.gender : ''}
-                                  onChange={(e) => updateLocalProfile({gender: e.target.value})}
-                                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
-                                />
-                              </div>
-                            </div>
-                          </div>
                       </div>
                       </div>
                   </CollapsibleSection>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import DOMPurify from 'dompurify';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getCoachById, trackProfileView, trackContactClick, getCoaches, addReview, addCoachReply, deleteReview, updateReview, addReviewComment, getReviewComments, flagReviewAsSpam } from '../services/supabaseService';
 import { storeReviewToken, getReviewToken, canManageReview, removeReviewToken } from '../utils/reviewTokens';
@@ -11,7 +12,7 @@ import {
   ArrowLeft, Star, Mail, Instagram, MessageCircle, Linkedin,
   MapPin, CheckCircle, Share2, ChevronLeft, ChevronRight, Clock, X,
   Facebook, Globe, Youtube, Phone, Copy, Flag, Reply, Edit, Trash2, Send, AlertTriangle, ExternalLink,
-  Calendar, Award
+  Calendar, Award, FileText
 } from 'lucide-react';
 
 export const CoachDetails: React.FC = () => {
@@ -25,7 +26,6 @@ export const CoachDetails: React.FC = () => {
   const [showRecentlyViewed, setShowRecentlyViewed] = useState(false);
   const [recentlyViewedCoaches, setRecentlyViewedCoaches] = useState<Coach[]>([]);
   const [questionnaireData, setQuestionnaireData] = useState<QuestionnaireAnswers | null>(null);
-  const [showContactOptions, setShowContactOptions] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [copiedContact, setCopiedContact] = useState<string | null>(null);
   const [reviewFormData, setReviewFormData] = useState({
@@ -560,6 +560,24 @@ export const CoachDetails: React.FC = () => {
     );
   });
 
+  // Find enquiry/contact form link
+  const enquiryFormLink = coach?.socialLinks?.find(link => {
+    const platform = link.platform?.toLowerCase() || '';
+    const url = link.url?.toLowerCase() || '';
+    return (
+      platform.includes('form') ||
+      platform.includes('enquiry') ||
+      platform.includes('contact form') ||
+      platform.includes('typeform') ||
+      platform.includes('jotform') ||
+      platform.includes('tally') ||
+      url.includes('forms.gle') ||
+      url.includes('typeform.com') ||
+      url.includes('jotform.com') ||
+      url.includes('tally.so')
+    );
+  });
+
   const nextReview = () => {
     if (coach.reviews && currentReviewIndex < coach.reviews.length - 1) {
       setCurrentReviewIndex(currentReviewIndex + 1);
@@ -624,14 +642,18 @@ export const CoachDetails: React.FC = () => {
         </svg>
       );
     } else if (lowerPlatform.includes('tiktok')) {
-      // TikTok icon
       return (
         <svg className="h-6 w-6 text-slate-700" viewBox="0 0 24 24" fill="currentColor">
           <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
         </svg>
       );
+    } else if (lowerPlatform.includes('whatsapp')) {
+      return <MessageCircle className="h-6 w-6 text-green-600" />;
+    } else if (lowerPlatform.includes('email') || lowerPlatform.includes('mail')) {
+      return <Mail className="h-6 w-6 text-brand-600" />;
+    } else if (lowerPlatform.includes('phone') || lowerPlatform.includes('tel') || lowerPlatform.includes('mobile')) {
+      return <Phone className="h-6 w-6 text-brand-600" />;
     } else {
-      // Default to globe icon for unknown platforms
       return <Globe className="h-6 w-6 text-slate-700" />;
     }
   };
@@ -816,68 +838,14 @@ export const CoachDetails: React.FC = () => {
                 </span>
               </button>
 
-              {/* Social Links - Directly below star rating */}
+              {/* Social icon links — booking/forms handled by buttons below; email/phone shown as icons here */}
               <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
-                {/* Contact Button */}
-                {(emailContacts.length > 0 || phoneContacts.length > 0) && (
-                  <div className="relative group">
-                    {emailContacts.length === 1 && phoneContacts.length === 0 ? (
-                      // Single email - direct mailto link
-                      <a
-                        href={emailContacts[0].url.startsWith('mailto:') ? emailContacts[0].url : `mailto:${emailContacts[0].url}`}
-                        onClick={() => coach?.id && trackContactClick(coach.id, 'email')}
-                        className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
-                      >
-                        <Mail className="h-6 w-6 text-slate-700" />
-                      </a>
-                    ) : (
-                      // Multiple contacts - show dropdown
-                      <button
-                        onClick={() => setShowContactOptions(true)}
-                        className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
-                      >
-                        <Mail className="h-6 w-6 text-slate-700" />
-                      </button>
-                    )}
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                      <div className="bg-white border border-slate-200 rounded-xl shadow-lg px-3 py-2 text-center whitespace-nowrap">
-                        <p className="text-xs font-bold text-slate-900">Contact</p>
-                        <p className="text-xs text-slate-500">{emailContacts.length === 1 && phoneContacts.length === 0 ? stripProtocol(emailContacts[0].url) : 'Email or message'}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* WhatsApp Button - Direct link (for UK coaches with numbers) */}
-                {phoneContacts.length > 0 && phoneContacts[0].url && (
-                  <div className="relative group">
-                    <a
-                      href={`https://wa.me/${phoneContacts[0].url.replace(/\D/g, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => coach?.id && trackContactClick(coach.id, 'whatsapp')}
-                      className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
-                    >
-                      <MessageCircle className="h-6 w-6 text-slate-700" />
-                    </a>
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                      <div className="bg-white border border-slate-200 rounded-xl shadow-lg px-3 py-2 text-center whitespace-nowrap">
-                        <p className="text-xs font-bold text-slate-900">WhatsApp</p>
-                        <p className="text-xs text-slate-500">{phoneContacts[0].url}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Dynamically render social links (filter out email, phone, booking) */}
                 {coach.socialLinks?.filter(link => {
                   const url = link.url?.toLowerCase() || '';
                   const platform = link.platform?.toLowerCase() || '';
-                  // Filter out email, phone, and booking links
-                  const isEmail = url.startsWith('mailto:') || url.includes('@') || platform.includes('email');
-                  const isPhone = url.startsWith('tel:') || url.startsWith('+') || platform.includes('phone') || platform.includes('tel') || platform.includes('mobile');
                   const isBooking = platform.includes('booking') || platform.includes('appointment') || platform.includes('schedule') || platform.includes('calendly') || platform.includes('cal.com') || (platform.includes('google') && platform.includes('calendar')) || (platform.includes('calendar') && platform.includes('appointment')) || url.includes('calendly.com') || url.includes('cal.com') || url.includes('calendar.google.com') || url.includes('calendar.app.google');
-                  return !isEmail && !isPhone && !isBooking;
+                  const isForm = platform.includes('form') || platform.includes('enquiry') || platform.includes('typeform') || platform.includes('jotform') || platform.includes('tally') || url.includes('forms.gle') || url.includes('typeform.com') || url.includes('jotform.com') || url.includes('tally.so');
+                  return !isBooking && !isForm;
                 }).map((socialLink) => {
                   // Determine click type from platform
                   const getPlatformType = (platform: string): 'linkedin' | 'instagram' | 'facebook' | 'youtube' | 'twitter' | 'website' => {
@@ -890,11 +858,24 @@ export const CoachDetails: React.FC = () => {
                     return 'website';
                   };
 
+                  const lp = socialLink.platform?.toLowerCase() || '';
+                  const lu = socialLink.url?.toLowerCase() || '';
+                  const isEmailLink = lu.startsWith('mailto:') || lu.includes('@') || lp.includes('email') || lp.includes('mail');
+                  const isPhoneLink = lu.startsWith('tel:') || lu.startsWith('+') || lp.includes('phone') || lp.includes('tel') || lp.includes('mobile');
+                  const isWhatsApp = lp.includes('whatsapp');
+                  const linkHref = isWhatsApp
+                    ? `https://wa.me/${socialLink.url.replace(/\D/g, '')}`
+                    : isEmailLink
+                    ? (socialLink.url.startsWith('mailto:') ? socialLink.url : `mailto:${socialLink.url}`)
+                    : isPhoneLink
+                    ? (socialLink.url.startsWith('tel:') ? socialLink.url : `tel:${socialLink.url}`)
+                    : socialLink.url;
+
                   return (
                   <div key={socialLink.id || socialLink.platform} className="relative group">
                     <a
-                      href={socialLink.url}
-                      target="_blank"
+                      href={linkHref}
+                      target={isEmailLink || isPhoneLink ? undefined : '_blank'}
                       rel="noopener noreferrer"
                       onClick={() => trackContactClick(id!, getPlatformType(socialLink.platform))}
                       className="w-14 h-14 rounded-2xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 hover:border-brand-500 transition-all shadow-sm"
@@ -932,46 +913,35 @@ export const CoachDetails: React.FC = () => {
               </div>
             </div>
 
-            {/* Schedule Call / Contact Button */}
-            {(() => {
-              // Look for booking/calendar link first
-              const bookingLink = coach.socialLinks?.find(link => {
-                const url = link.url?.toLowerCase() || '';
-                const platform = link.platform?.toLowerCase() || '';
-                return platform.includes('booking') || platform.includes('appointment') ||
-                       platform.includes('schedule') || platform.includes('calendly') ||
-                       platform.includes('cal.com') ||
-                       (platform.includes('google') && platform.includes('calendar')) ||
-                       (platform.includes('calendar') && platform.includes('appointment')) ||
-                       url.includes('calendly.com') || url.includes('cal.com') ||
-                       url.includes('calendar.google.com') || url.includes('calendar.app.google');
-              });
-
-              // Get primary email for contact button
-              const emailContacts = coach.socialLinks?.filter(link => link.type === 'email') || [];
-              const primaryEmail = emailContacts[0]?.url;
-
-              return (
-                <div className="space-y-3 mb-6">
-                  {/* Schedule Call Button - if booking link exists */}
-                  {bookingLink && (
-                    <div className="flex justify-center">
-                      <a
-                        href={bookingLink.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => coach?.id && trackContactClick(coach.id, 'booking')}
-                        className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-                      >
-                        <Calendar className="h-5 w-5" />
-                        Schedule Call
-                      </a>
-                    </div>
-                  )}
-
-                </div>
-              );
-            })()}
+            {/* Contact Action Buttons — auto-width pills, centred like price badge */}
+            {(bookingLink || enquiryFormLink) && (
+              <div className="flex justify-center gap-3 mt-5 mb-6">
+                {bookingLink && (
+                  <a
+                    href={bookingLink.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => coach?.id && trackContactClick(coach.id, 'booking')}
+                    className="inline-flex items-center gap-2 px-7 py-3 bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all text-sm"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    Book a Call
+                  </a>
+                )}
+                {enquiryFormLink && (
+                  <a
+                    href={enquiryFormLink.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => coach?.id && trackContactClick(coach.id, 'website')}
+                    className="inline-flex items-center gap-2 px-7 py-3 bg-white border-2 border-brand-500 text-brand-700 font-bold rounded-full shadow-md hover:bg-brand-50 hover:-translate-y-0.5 transition-all text-sm"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Send Enquiry
+                  </a>
+                )}
+              </div>
+            )}
 
             {/* Intro Video Embed - RIGHT AFTER BUTTONS */}
             {(() => {
@@ -1100,11 +1070,43 @@ export const CoachDetails: React.FC = () => {
               </div>
             )}
 
-            {/* Bio - MOVED TO TOP */}
+            {/* Bio */}
             {coach.bio && (
               <div className="bg-slate-50 px-5 py-5 rounded-2xl">
                 <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Coach Bio:</h3>
-                <p className="text-slate-900 leading-relaxed font-medium text-base whitespace-pre-line">{coach.bio}</p>
+                {coach.bio.trim().startsWith('<') ? (
+                  <div
+                    className="text-slate-900 leading-relaxed font-medium text-base prose prose-sm max-w-none prose-headings:text-slate-900 prose-p:my-1"
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(coach.bio) }}
+                  />
+                ) : (
+                  <p className="text-slate-900 leading-relaxed font-medium text-base whitespace-pre-line">{coach.bio}</p>
+                )}
+              </div>
+            )}
+
+            {/* Coaching Languages — directly below bio */}
+            {coach.coachingLanguages && coach.coachingLanguages.length > 0 && (
+              <div>
+                <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Coaching Languages:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {coach.coachingLanguages.map((lang, idx) => (
+                    <span
+                      key={idx}
+                      className="bg-green-100 text-green-900 px-4 py-2 rounded-full text-sm font-bold border border-green-300"
+                    >
+                      {lang}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Gender — directly below languages */}
+            {coach.gender && (
+              <div>
+                <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Gender:</h3>
+                <p className="text-slate-900 font-bold text-base">{coach.gender}</p>
               </div>
             )}
 
@@ -1218,30 +1220,6 @@ export const CoachDetails: React.FC = () => {
               </div>
             )}
 
-            {/* Coaching Languages */}
-            {coach.coachingLanguages && coach.coachingLanguages.length > 0 && (
-              <div>
-                <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Coaching Languages:</h3>
-                <div className="flex flex-wrap gap-2">
-                  {coach.coachingLanguages.map((lang, idx) => (
-                    <span
-                      key={idx}
-                      className="bg-green-100 text-green-900 px-4 py-2 rounded-full text-sm font-bold border border-green-300"
-                    >
-                      {lang}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Gender */}
-            {coach.gender && (
-              <div>
-                <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Gender:</h3>
-                <p className="text-slate-900 font-bold text-base">{coach.gender}</p>
-              </div>
-            )}
 
             {/* Method of Coaching */}
             {coach.formats && coach.formats.length > 0 && (
@@ -1480,87 +1458,6 @@ export const CoachDetails: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="px-6 pb-8 space-y-4 overflow-visible">
-            {/* Schedule a Call / Contact Coach Button */}
-            <div className="relative z-50">
-              {bookingLink ? (
-                // If booking link exists, show "Schedule a Call" button with direct link
-                <a
-                  href={bookingLink.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 text-black font-black py-5 rounded-2xl text-xl shadow-xl hover:shadow-2xl hover:from-cyan-600 hover:to-cyan-700 transition-all transform hover:-translate-y-0.5 flex items-center justify-center"
-                >
-                  Schedule a Call
-                </a>
-              ) : (
-                // If no booking link, show "Contact Coach" button with dropdown
-                <button
-                  onClick={() => setShowContactOptions(!showContactOptions)}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 text-black font-black py-5 rounded-2xl text-xl shadow-xl hover:shadow-2xl hover:from-cyan-600 hover:to-cyan-700 transition-all transform hover:-translate-y-0.5"
-                >
-                  Schedule a Call
-                </button>
-              )}
-
-              {/* Contact Options Dropdown - Only show if no booking link */}
-              {!bookingLink && showContactOptions && (emailContacts.length > 0 || phoneContacts.length > 0) && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border-2 border-cyan-500 shadow-2xl z-[60] animate-fade-in max-h-96 overflow-y-auto">
-                  {/* Email Options */}
-                  {emailContacts.length > 0 && (
-                    <div className="border-b border-slate-200">
-                      <div className="px-4 py-2 bg-slate-50 font-bold text-xs text-slate-600 uppercase tracking-wide">
-                        Email
-                      </div>
-                      {emailContacts.map((contact, idx) => (
-                        <a
-                          key={idx}
-                          href={contact.url.startsWith('mailto:') ? contact.url : `mailto:${contact.url}`}
-                          onClick={() => coach?.id && trackContactClick(coach.id, 'email')}
-                          className="w-full px-4 py-3 text-left hover:bg-cyan-50 transition-colors flex items-center justify-between group block"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <p className="font-bold text-slate-900">{contact.platform}</p>
-                            <p className="text-sm text-slate-600 break-all">{stripProtocol(contact.url)}</p>
-                          </div>
-                          <Mail className="h-5 w-5 flex-shrink-0 ml-3 text-slate-400 group-hover:text-cyan-600" />
-                        </a>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Phone Options */}
-                  {phoneContacts.length > 0 && (
-                    <div>
-                      <div className="px-4 py-2 bg-slate-50 font-bold text-xs text-slate-600 uppercase tracking-wide">
-                        Telephone
-                      </div>
-                      {phoneContacts.map((contact, idx) => (
-                        <a
-                          key={idx}
-                          href={contact.url.startsWith('tel:') ? contact.url : `tel:${contact.url}`}
-                          onClick={() => coach?.id && trackContactClick(coach.id, 'phone')}
-                          className="w-full px-4 py-3 text-left hover:bg-cyan-50 transition-colors flex items-center justify-between group block"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <p className="font-bold text-slate-900">{contact.platform}</p>
-                            <p className="text-sm text-slate-600 break-all">{stripProtocol(contact.url)}</p>
-                          </div>
-                          <Phone className="h-5 w-5 flex-shrink-0 ml-3 text-slate-400 group-hover:text-cyan-600" />
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* No Contact Info Available - Only show if no booking link */}
-              {!bookingLink && showContactOptions && emailContacts.length === 0 && phoneContacts.length === 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border-2 border-slate-300 shadow-2xl z-[60] p-6 text-center animate-fade-in">
-                  <p className="text-slate-600">No contact information available yet.</p>
-                </div>
-              )}
-            </div>
-
             {/* Leave a Review Button - Hide if viewing own profile */}
             {!(currentUserCoach && coach && currentUserCoach.id === coach.id) && (
               <button

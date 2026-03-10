@@ -23,24 +23,36 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0, openUpward: false });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
 
-  // Calculate dropdown position when opened
+  // Calculate dropdown position, flipping upward if not enough space below
+  const calculatePosition = () => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const maxHeightNum = parseInt(maxHeight, 10) || 300;
+    const dropdownHeight = maxHeightNum + 100; // account for search bar + footer
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const openUpward = spaceBelow < dropdownHeight && rect.top > spaceBelow;
+    const top = openUpward
+      ? rect.top - Math.min(dropdownHeight, rect.top) - 8
+      : rect.bottom + 8;
+    setDropdownPosition({ top, left: rect.left, width: rect.width, openUpward });
+  };
+
   useEffect(() => {
-    if (isOpen && triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      const position = {
-        top: rect.bottom + 8, // Use fixed positioning, no need for scrollY
-        left: rect.left,
-        width: rect.width
-      };
-      setDropdownPosition(position);
-    } else if (!isOpen) {
-      // Reset position when closed to ensure fresh calculation on next open
-      setDropdownPosition({ top: 0, left: 0, width: 0 });
+    if (isOpen) {
+      calculatePosition();
+      window.addEventListener('scroll', calculatePosition, true);
+      window.addEventListener('resize', calculatePosition);
+    } else {
+      setDropdownPosition({ top: 0, left: 0, width: 0, openUpward: false });
     }
+    return () => {
+      window.removeEventListener('scroll', calculatePosition, true);
+      window.removeEventListener('resize', calculatePosition);
+    };
   }, [isOpen]);
 
   // Close dropdown when clicking outside
@@ -81,7 +93,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     onChange([]);
   };
 
-  const dropdownContent = isOpen && dropdownPosition.width > 0 && (
+  const dropdownContent = isOpen && dropdownPosition.width > 0 && dropdownPosition.top > 0 && (
     <div
       ref={dropdownRef}
       className="fixed z-[9999] bg-white border-4 border-brand-600 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] ring-8 ring-brand-500/30 backdrop-blur-sm"

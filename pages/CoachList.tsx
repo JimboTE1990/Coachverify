@@ -6,6 +6,7 @@ import { Coach, QuestionnaireAnswers, Specialty, Format, CoachingExpertise, Coac
 import { CoachCard } from '../components/CoachCard';
 import { FilterSidebar } from '../components/filters/FilterSidebar';
 import { calculateMatchScore, getMatchReason as getEnhancedMatchReason } from '../utils/matchCalculator';
+import { EXPERTISE_CATEGORIES } from '../constants/filterOptions';
 
 export const CoachList: React.FC = () => {
   const location = useLocation();
@@ -18,8 +19,6 @@ export const CoachList: React.FC = () => {
   const [formatFilter, setFormatFilter] = useState<Format[]>([]);
   const [minPrice, setMinPrice] = useState<number>(30);
   const [maxPrice, setMaxPrice] = useState<number>(500);
-  const [minExperience, setMinExperience] = useState<number>(0);
-
   // Location filters
   const [locationCityFilter, setLocationCityFilter] = useState<string>('');
   const [locationRadiusFilter, setLocationRadiusFilter] = useState<string>('');
@@ -29,6 +28,8 @@ export const CoachList: React.FC = () => {
   const [expertiseFilter, setExpertiseFilter] = useState<CoachingExpertise[]>([]);
   const [cpdFilter, setCpdFilter] = useState<CPDQualification[]>([]);
   const [genderFilter, setGenderFilter] = useState<string[]>([]);
+
+  // Availability filter
 
   // Mobile filter sidebar state
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
@@ -76,7 +77,6 @@ export const CoachList: React.FC = () => {
     setFormatFilter([]);
     setMinPrice(30);
     setMaxPrice(500);
-    setMinExperience(0);
     setLocationCityFilter('');
     setLocationRadiusFilter('');
     setLanguageFilter([]);
@@ -117,10 +117,14 @@ export const CoachList: React.FC = () => {
       }
     }
 
-    // 2. Specialty Filter
+    // 2. Specialty Filter — matches old specialties field OR coachingExpertise sub-categories
     if (specialtyFilter) {
       criteria.push('Specialty');
-      if (coach.specialties && coach.specialties.includes(specialtyFilter as any)) {
+      const category = EXPERTISE_CATEGORIES.find(c => c.name === specialtyFilter);
+      const categoryItems = category?.items || [];
+      const matchesSpecialty = coach.specialties && coach.specialties.includes(specialtyFilter as any);
+      const matchesExpertise = categoryItems.length > 0 && coach.coachingExpertise?.some(exp => categoryItems.includes(exp as any));
+      if (matchesSpecialty || matchesExpertise) {
         matched.push('Specialty');
       }
     }
@@ -142,15 +146,7 @@ export const CoachList: React.FC = () => {
       }
     }
 
-    // 5. Experience Filter
-    if (minExperience > 0) {
-      criteria.push('Experience');
-      if ((coach.yearsExperience || 0) >= minExperience) {
-        matched.push('Experience');
-      }
-    }
-
-    // 6. Language Filter
+    // 5. Language Filter
     if (languageFilter.length > 0) {
       criteria.push('Languages');
       if (languageFilter.some(lang => coach.coachingLanguages?.includes(lang as any))) {
@@ -236,7 +232,7 @@ export const CoachList: React.FC = () => {
     }
 
     return result.map(r => r.coach);
-  }, [coaches, searchTerm, specialtyFilter, formatFilter, minPrice, maxPrice, minExperience,
+  }, [coaches, searchTerm, specialtyFilter, formatFilter, minPrice, maxPrice,
       locationCityFilter, locationRadiusFilter, languageFilter, expertiseFilter, cpdFilter, genderFilter, matchData, showPartialMatches, minMatchPercentage]);
 
   // Calculate counts for perfect and partial matches
@@ -247,7 +243,7 @@ export const CoachList: React.FC = () => {
       return coaches.filter(coach => calculateMatchScore(coach, matchData) === 100).length;
     }
     return coaches.filter(coach => calculateFilterMatchPercentage(coach).percentage === 100).length;
-  }, [coaches, searchTerm, specialtyFilter, formatFilter, minPrice, maxPrice, minExperience,
+  }, [coaches, searchTerm, specialtyFilter, formatFilter, minPrice, maxPrice,
       locationCityFilter, locationRadiusFilter, languageFilter, expertiseFilter, cpdFilter, genderFilter, matchData]);
 
   const partialMatchCount = useMemo(() => {
@@ -263,7 +259,7 @@ export const CoachList: React.FC = () => {
       const match = calculateFilterMatchPercentage(coach);
       return match.percentage >= minMatchPercentage && match.percentage < 100;
     }).length;
-  }, [coaches, searchTerm, specialtyFilter, formatFilter, minPrice, maxPrice, minExperience,
+  }, [coaches, searchTerm, specialtyFilter, formatFilter, minPrice, maxPrice,
       locationCityFilter, locationRadiusFilter, languageFilter, expertiseFilter, cpdFilter, genderFilter, minMatchPercentage, matchData]);
 
   // Calculate very close match count (75%+)
@@ -279,7 +275,7 @@ export const CoachList: React.FC = () => {
       const match = calculateFilterMatchPercentage(coach);
       return match.percentage >= 75 && match.percentage < 100;
     }).length;
-  }, [coaches, searchTerm, specialtyFilter, formatFilter, minPrice, maxPrice, minExperience,
+  }, [coaches, searchTerm, specialtyFilter, formatFilter, minPrice, maxPrice,
       locationCityFilter, locationRadiusFilter, languageFilter, expertiseFilter, cpdFilter, genderFilter, matchData]);
 
   // Calculate close match count (51-74%)
@@ -295,7 +291,7 @@ export const CoachList: React.FC = () => {
       const match = calculateFilterMatchPercentage(coach);
       return match.percentage >= 51 && match.percentage < 75;
     }).length;
-  }, [coaches, searchTerm, specialtyFilter, formatFilter, minPrice, maxPrice, minExperience,
+  }, [coaches, searchTerm, specialtyFilter, formatFilter, minPrice, maxPrice,
       locationCityFilter, locationRadiusFilter, languageFilter, expertiseFilter, cpdFilter, genderFilter, matchData]);
 
   return (
@@ -381,8 +377,6 @@ export const CoachList: React.FC = () => {
               onMinPriceChange={setMinPrice}
               maxPrice={maxPrice}
               onMaxPriceChange={setMaxPrice}
-              minExperience={minExperience}
-              onMinExperienceChange={setMinExperience}
               locationCityFilter={locationCityFilter}
               onLocationCityChange={setLocationCityFilter}
               locationRadiusFilter={locationRadiusFilter}
@@ -410,8 +404,6 @@ export const CoachList: React.FC = () => {
             onMinPriceChange={setMinPrice}
             maxPrice={maxPrice}
             onMaxPriceChange={setMaxPrice}
-            minExperience={minExperience}
-            onMinExperienceChange={setMinExperience}
             locationCityFilter={locationCityFilter}
             onLocationCityChange={setLocationCityFilter}
             locationRadiusFilter={locationRadiusFilter}
@@ -443,11 +435,11 @@ export const CoachList: React.FC = () => {
                     className="lg:hidden flex items-center justify-center px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 transition-colors"
                   >
                     <SlidersHorizontal className="h-5 w-5 text-slate-600" />
-                    {(specialtyFilter || formatFilter.length > 0 || minPrice > 30 || maxPrice < 500 || minExperience > 0 ||
+                    {(specialtyFilter || formatFilter.length > 0 || minPrice > 30 || maxPrice < 500 ||
                       locationCityFilter || locationRadiusFilter || languageFilter.length > 0 || expertiseFilter.length > 0 || cpdFilter.length > 0 || genderFilter.length > 0) && (
                       <span className="ml-2 bg-brand-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                         {(specialtyFilter ? 1 : 0) + formatFilter.length + (minPrice > 30 ? 1 : 0) + (maxPrice < 500 ? 1 : 0) +
-                         (minExperience > 0 ? 1 : 0) + (locationCityFilter ? 1 : 0) + (locationRadiusFilter ? 1 : 0) +
+                         (locationCityFilter ? 1 : 0) + (locationRadiusFilter ? 1 : 0) +
                          languageFilter.length + expertiseFilter.length + cpdFilter.length + genderFilter.length}
                       </span>
                     )}
@@ -466,6 +458,7 @@ export const CoachList: React.FC = () => {
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
+
                 </div>
               </div>
             </div>
@@ -625,12 +618,6 @@ export const CoachList: React.FC = () => {
                           <li className="flex items-start">
                             <span className="mr-2">•</span>
                             <span><strong>Increase your budget</strong> - Try raising the max price to £{maxPrice + 50}</span>
-                          </li>
-                        )}
-                        {minExperience > 5 && (
-                          <li className="flex items-start">
-                            <span className="mr-2">•</span>
-                            <span><strong>Lower experience requirement</strong> - Try {minExperience - 2} years instead</span>
                           </li>
                         )}
                         {languageFilter.length > 1 && (

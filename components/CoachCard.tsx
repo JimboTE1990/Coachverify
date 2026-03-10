@@ -4,6 +4,7 @@ import { Coach, CURRENCIES } from '../types';
 import { BadgeCheck, Star, MapPin, ArrowRight, Sparkles } from 'lucide-react';
 import { AccreditationBadge } from './AccreditationBadge';
 import { hasAccreditationBadge } from '../utils/accreditationBadges';
+import { EXPERTISE_CATEGORIES } from '../constants/filterOptions';
 
 interface CoachCardProps {
   coach: Coach;
@@ -15,6 +16,26 @@ interface CoachCardProps {
 export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchPercentage, filterMatchPercentage }) => {
   const navigate = useNavigate();
   const totalReviews = coach.totalReviews || coach.reviews?.length || 0;
+
+  // Derive up to 2 category labels — priority: mainCoachingCategories → volume-based coachingExpertise → legacy specialties
+  const expertiseCategories = (() => {
+    if (coach.mainCoachingCategories && coach.mainCoachingCategories.length > 0) {
+      return coach.mainCoachingCategories.slice(0, 2);
+    }
+    if (coach.coachingExpertise && coach.coachingExpertise.length > 0) {
+      const ranked = EXPERTISE_CATEGORIES
+        .map(cat => ({
+          name: cat.name,
+          count: cat.items.filter(item => coach.coachingExpertise!.includes(item as any)).length
+        }))
+        .filter(c => c.count > 0)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 2)
+        .map(c => c.name);
+      if (ranked.length > 0) return ranked;
+    }
+    return coach.specialties?.length ? coach.specialties.slice(0, 2).map(s => String(s)) : null;
+  })();
   const avgRating = coach.averageRating || (coach.reviews?.length
     ? (coach.reviews.reduce((acc, r) => acc + r.rating, 0) / coach.reviews.length)
     : 0);
@@ -59,7 +80,13 @@ export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchP
                 </span>
               )}
             </div>
-            <p className="text-brand-600 font-bold text-xs uppercase tracking-wide mb-2">{coach.specialties?.[0] || 'General'}</p>
+            {expertiseCategories && expertiseCategories.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {expertiseCategories.map(cat => (
+                  <span key={cat} className="text-brand-600 font-bold text-xs uppercase tracking-wide">{cat}</span>
+                )).reduce((acc: React.ReactNode[], el, i) => i === 0 ? [el] : [...acc, <span key={`sep-${i}`} className="text-slate-300 text-xs font-bold">·</span>, el], [])}
+              </div>
+            )}
           </div>
           <div className="text-right">
               <span className="text-xl font-bold text-slate-900">
@@ -83,7 +110,9 @@ export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchP
            )}
         </div>
         
-        <p className="text-slate-600 text-sm line-clamp-2 mb-4 leading-relaxed">{coach.bio}</p>
+        <p className="text-slate-600 text-sm line-clamp-2 mb-3 leading-relaxed">
+          {coach.bio?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}
+        </p>
 
         <div className="flex justify-between items-end">
             {matchReason ? (

@@ -21,9 +21,6 @@ interface FilterSidebarProps {
   maxPrice: number;
   onMaxPriceChange: (value: number) => void;
 
-  minExperience: number;
-  onMinExperienceChange: (value: number) => void;
-
   // Location filters
   locationCityFilter: string;
   onLocationCityChange: (value: string) => void;
@@ -62,8 +59,6 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   onMinPriceChange,
   maxPrice,
   onMaxPriceChange,
-  minExperience,
-  onMinExperienceChange,
   locationCityFilter,
   onLocationCityChange,
   locationRadiusFilter,
@@ -89,7 +84,6 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
     specialty: true,
     format: false,
     price: false,
-    experience: false,
     location: false
   });
 
@@ -107,7 +101,6 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
     formatFilter.length +
     (minPrice > 30 ? 1 : 0) +
     (maxPrice < 500 ? 1 : 0) +
-    (minExperience > 0 ? 1 : 0) +
     (locationCityFilter ? 1 : 0) +
     (locationRadiusFilter ? 1 : 0) +
     languageFilter.length +
@@ -285,42 +278,6 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                   <span>£250</span>
                   <span>£500+</span>
                 </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Min Years Experience */}
-        <div className="border border-slate-200 rounded-xl overflow-hidden">
-          <button
-            type="button"
-            onClick={() => toggleSection('experience')}
-            className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
-          >
-            <span className="text-sm font-bold text-slate-700">
-              Min Years Experience: {minExperience} {minExperience === 1 ? 'year' : 'years'}
-            </span>
-            {expandedSections.experience ? (
-              <Minus className="h-4 w-4 text-slate-600" />
-            ) : (
-              <Plus className="h-4 w-4 text-slate-600" />
-            )}
-          </button>
-          {expandedSections.experience && (
-            <div className="px-4 pb-4">
-              <input
-                type="range"
-                min="0"
-                max="20"
-                step="1"
-                value={minExperience}
-                onChange={(e) => onMinExperienceChange(Number(e.target.value))}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
-              />
-              <div className="flex justify-between text-xs text-slate-400 mt-2">
-                <span>Any</span>
-                <span>10 yrs</span>
-                <span>20+ yrs</span>
               </div>
             </div>
           )}
