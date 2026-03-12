@@ -217,8 +217,14 @@ export const CoachDashboard: React.FC = () => {
     }
   }, [currentCoach?.customUrl]);
 
-  // New Link State
+  // New Link State (legacy — kept for backwards compat with addLink fn)
   const [newLink, setNewLink] = useState<{ platform: string; url: string; type: 'url' | 'email' | 'tel' }>({ platform: '', url: '', type: 'url' });
+
+  // Structured link input state
+  const [linkInputSection, setLinkInputSection] = useState<string | null>(null);
+  const [linkInputPlatform, setLinkInputPlatform] = useState('');
+  const [linkInputUrl, setLinkInputUrl] = useState('');
+  const [linkInputLabel, setLinkInputLabel] = useState('');
   const [newQualification, setNewQualification] = useState<{ degree: string; institution?: string; year?: number }>({ degree: '', institution: '', year: undefined });
   const [newAcknowledgement, setNewAcknowledgement] = useState<{ title: string; icon?: string; year?: number }>({ title: '', icon: '', year: undefined });
 
@@ -266,6 +272,19 @@ export const CoachDashboard: React.FC = () => {
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000); // Auto-dismiss after 4 seconds
+  };
+
+  // Classify a social link into its UI section for the structured layout
+  const classifyLink = (link: { platform?: string; url?: string; type?: string }): 'booking' | 'enquiry' | 'social' | 'website' | 'email' | 'phone' | 'other' => {
+    const p = (link.platform || '').toLowerCase();
+    const u = (link.url || '').toLowerCase();
+    if (link.type === 'email' || p.includes('email') || u.startsWith('mailto:')) return 'email';
+    if (link.type === 'tel' || p.includes('phone') || p.includes('mobile') || u.startsWith('tel:')) return 'phone';
+    if (p.includes('booking') || p.includes('appointment') || p.includes('schedule') || p.includes('calendly') || p.includes('cal.com') || p.includes('google calendar') || u.includes('calendly.com') || u.includes('cal.com') || u.includes('calendar.google.com') || u.includes('calendar.app.google')) return 'booking';
+    if (p.includes('form') || p.includes('enquiry') || p.includes('typeform') || p.includes('jotform') || p.includes('tally') || u.includes('forms.gle') || u.includes('typeform.com') || u.includes('jotform.com') || u.includes('tally.so')) return 'enquiry';
+    if (['linkedin', 'instagram', 'x / twitter', 'twitter', 'facebook'].some(s => p.includes(s))) return 'social';
+    if (p === 'website' || p.includes('website')) return 'website';
+    return 'other';
   };
 
   // Helper function to strip mailto: and tel: prefixes for display
@@ -807,6 +826,38 @@ export const CoachDashboard: React.FC = () => {
     const updatedLinks = [...(localProfile?.socialLinks || [])];
     updatedLinks.splice(index, 1);
     updateLocalProfile({ socialLinks: updatedLinks });
+  };
+
+  const saveStructuredLink = () => {
+    const trimmedUrl = linkInputUrl.trim();
+    if (!trimmedUrl) { alert('Please enter a value.'); return; }
+
+    let finalUrl = trimmedUrl;
+    let finalType: 'url' | 'email' | 'tel' = 'url';
+
+    if (linkInputSection === 'email') {
+      const emailToValidate = trimmedUrl.replace('mailto:', '');
+      if (!validateEmail(emailToValidate)) { alert('Please enter a valid email address (e.g., coach@example.com)'); return; }
+      finalUrl = trimmedUrl.startsWith('mailto:') ? trimmedUrl : `mailto:${emailToValidate}`;
+      finalType = 'email';
+    } else if (linkInputSection === 'phone') {
+      const phoneToValidate = trimmedUrl.replace('tel:', '');
+      if (!validatePhone(phoneToValidate)) { alert('Please enter a valid phone number with at least 10 digits (e.g., +44 7700 900000)'); return; }
+      finalUrl = trimmedUrl.startsWith('tel:') ? trimmedUrl : `tel:${phoneToValidate}`;
+      finalType = 'tel';
+    } else {
+      if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) { alert('Please enter a valid URL starting with https://'); return; }
+    }
+
+    const platform = linkInputSection === 'other' ? linkInputLabel.trim() : linkInputPlatform;
+    if (!platform) { alert('Please enter a label for this link.'); return; }
+
+    const updatedLinks = [...(localProfile?.socialLinks || []), { platform, url: finalUrl, type: finalType, id: `link_${Date.now()}` }];
+    updateLocalProfile({ socialLinks: updatedLinks });
+    setLinkInputSection(null);
+    setLinkInputPlatform('');
+    setLinkInputUrl('');
+    setLinkInputLabel('');
   };
 
   const toggleSpecialty = (s: Specialty) => {
@@ -1647,104 +1698,304 @@ export const CoachDashboard: React.FC = () => {
                     iconBgColor="bg-slate-100"
                     iconTextColor="text-slate-600"
                   >
-                    {/* Booking Calendar Tip */}
-                    <div className="bg-cyan-50 border border-cyan-200 rounded-xl p-4 mb-3">
-                      <div className="flex items-start gap-3">
-                        <div className="bg-cyan-100 rounded-lg p-2 flex-shrink-0">
-                          <Calendar className="h-5 w-5 text-cyan-600" />
+                    {/* ── BOOK A CALL ── */}
+                    <div className="mb-5 pb-5 border-b border-slate-100">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="bg-cyan-100 rounded-lg p-1.5 flex-shrink-0">
+                          <Calendar className="h-4 w-4 text-cyan-600" />
                         </div>
-                        <div className="flex-1">
-                          <p className="font-bold text-cyan-900 text-sm mb-1">💡 Add Your Booking Calendar</p>
-                          <p className="text-xs text-cyan-800 leading-relaxed">
-                            Add your Calendly, Cal.com, or Google Calendar booking link here! Use label "Booking" or "Schedule" and it will appear as a <strong>"Book a Call"</strong> button on your profile.
-                          </p>
-                          <p className="text-xs text-cyan-700 mt-2 italic">
-                            Example: Label = "Calendly Booking", URL = "https://calendly.com/yourname"
-                          </p>
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">Book a Call</p>
+                          <p className="text-xs text-slate-500">Appears as a "Book a Call" button on your profile</p>
                         </div>
                       </div>
-                    </div>
-
-                    {/* Enquiry Form Tip */}
-                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-4">
-                      <div className="flex items-start gap-3">
-                        <div className="bg-purple-100 rounded-lg p-2 flex-shrink-0">
-                          <FileText className="h-5 w-5 text-purple-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-bold text-purple-900 text-sm mb-1">📋 Add a Contact Enquiry Form</p>
-                          <p className="text-xs text-purple-800 leading-relaxed">
-                            Add a Google Form, Typeform, or Jotform link here and it will appear as a <strong>"Send Enquiry"</strong> button on your profile. Great for capturing client details before an intro call.
-                          </p>
-                          <p className="text-xs text-purple-700 mt-2 italic">
-                            Example: Label = "Enquiry Form", URL = "https://forms.gle/yourformlink"
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 mb-4">
-                        {localProfile?.socialLinks?.map((link, idx) => (
-                            <div key={idx} className="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
-                                <div className="flex-grow">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">{link.platform}</p>
-                                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                                        link.type === 'email' ? 'bg-blue-100 text-blue-700' :
-                                        link.type === 'tel' ? 'bg-green-100 text-green-700' :
-                                        'bg-slate-100 text-slate-600'
-                                      }`}>
-                                        {link.type === 'email' ? 'EMAIL' : link.type === 'tel' ? 'PHONE' : 'URL'}
-                                      </span>
-                                    </div>
-                                    <p className="text-sm text-brand-700 font-medium truncate">{stripProtocol(link.url)}</p>
-                                </div>
-                                <button onClick={() => removeLink(idx)} className="text-slate-400 hover:text-red-500 p-2 transition-colors">
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
+                      {(localProfile?.socialLinks || []).filter(l => classifyLink(l) === 'booking').map((link) => {
+                        const idx = (localProfile?.socialLinks || []).indexOf(link);
+                        return (
+                          <div key={idx} className="flex items-center gap-3 p-3 bg-cyan-50 rounded-xl border border-cyan-200 mb-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-cyan-700">{link.platform}</p>
+                              <p className="text-sm text-slate-700 truncate">{link.url}</p>
                             </div>
-                        ))}
+                            <button onClick={() => removeLink(idx)} className="text-slate-400 hover:text-red-500 p-1 flex-shrink-0 transition-colors">
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                      {(localProfile?.socialLinks || []).filter(l => classifyLink(l) === 'booking').length === 0 && (
+                        linkInputSection === 'booking' ? (
+                          <div className="flex gap-2 items-center bg-cyan-50 border border-cyan-200 rounded-xl p-3">
+                            <span className="text-xs font-bold text-cyan-800 whitespace-nowrap">{linkInputPlatform}</span>
+                            <input type="url" autoFocus placeholder="https://calendly.com/yourname"
+                              className="flex-1 border border-cyan-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-400 outline-none"
+                              value={linkInputUrl} onChange={e => setLinkInputUrl(e.target.value)}
+                              onKeyDown={e => e.key === 'Enter' && saveStructuredLink()} />
+                            <button onClick={saveStructuredLink} className="bg-cyan-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-cyan-700 whitespace-nowrap">Add</button>
+                            <button onClick={() => { setLinkInputSection(null); setLinkInputUrl(''); }} className="text-slate-400 hover:text-slate-600 text-xs px-1 py-2 whitespace-nowrap">Cancel</button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {['Calendly', 'Cal.com', 'Google Calendar'].map(p => (
+                              <button key={p} type="button"
+                                onClick={() => { setLinkInputSection('booking'); setLinkInputPlatform(p); setLinkInputUrl(''); }}
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-cyan-300 hover:text-cyan-700 hover:bg-cyan-50 transition-colors">
+                                <Plus className="h-3 w-3" /> {p}
+                              </button>
+                            ))}
+                          </div>
+                        )
+                      )}
                     </div>
 
-                    <div className="flex flex-col gap-3">
-                        <div className="flex gap-3">
-                          <select
-                            value={newLink.type}
-                            onChange={(e) => setNewLink({...newLink, type: e.target.value as 'url' | 'email' | 'tel'})}
-                            className="border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none bg-white font-bold text-slate-700"
-                          >
-                            <option value="url">Website/Social</option>
-                            <option value="email">Email</option>
-                            <option value="tel">Telephone</option>
-                          </select>
-                          <input
-                              type="text"
-                              placeholder="Label (e.g. LinkedIn, Contact Email, Mobile)"
-                              className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
-                              value={newLink.platform}
-                              onChange={(e) => setNewLink({...newLink, platform: e.target.value})}
-                          />
+                    {/* ── ENQUIRY FORM ── */}
+                    <div className="mb-5 pb-5 border-b border-slate-100">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="bg-purple-100 rounded-lg p-1.5 flex-shrink-0">
+                          <FileText className="h-4 w-4 text-purple-600" />
                         </div>
-                        <div className="flex gap-3">
-                          <input
-                              type="text"
-                              placeholder={
-                                newLink.type === 'email' ? 'Email address (e.g., coach@example.com)' :
-                                newLink.type === 'tel' ? 'Phone number (e.g., +44 7700 900000)' :
-                                'URL (https://...)'
-                              }
-                              className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand-500 outline-none"
-                              value={newLink.url}
-                              onChange={(e) => setNewLink({...newLink, url: e.target.value})}
-                          />
-                          <button
-                              onClick={addLink}
-                              disabled={!newLink.platform || !newLink.url}
-                              className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center shadow-md"
-                          >
-                              <Plus className="h-4 w-4 mr-1" /> Add
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">Enquiry Form</p>
+                          <p className="text-xs text-slate-500">Appears as a "Send Enquiry" button on your profile</p>
+                        </div>
+                      </div>
+                      {(localProfile?.socialLinks || []).filter(l => classifyLink(l) === 'enquiry').map((link) => {
+                        const idx = (localProfile?.socialLinks || []).indexOf(link);
+                        return (
+                          <div key={idx} className="flex items-center gap-3 p-3 bg-purple-50 rounded-xl border border-purple-200 mb-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-purple-700">{link.platform}</p>
+                              <p className="text-sm text-slate-700 truncate">{link.url}</p>
+                            </div>
+                            <button onClick={() => removeLink(idx)} className="text-slate-400 hover:text-red-500 p-1 flex-shrink-0 transition-colors">
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                      {(localProfile?.socialLinks || []).filter(l => classifyLink(l) === 'enquiry').length === 0 && (
+                        linkInputSection === 'enquiry' ? (
+                          <div className="flex gap-2 items-center bg-purple-50 border border-purple-200 rounded-xl p-3">
+                            <span className="text-xs font-bold text-purple-800 whitespace-nowrap">{linkInputPlatform}</span>
+                            <input type="url" autoFocus placeholder="https://forms.gle/yourformlink"
+                              className="flex-1 border border-purple-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-400 outline-none"
+                              value={linkInputUrl} onChange={e => setLinkInputUrl(e.target.value)}
+                              onKeyDown={e => e.key === 'Enter' && saveStructuredLink()} />
+                            <button onClick={saveStructuredLink} className="bg-purple-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-purple-700 whitespace-nowrap">Add</button>
+                            <button onClick={() => { setLinkInputSection(null); setLinkInputUrl(''); }} className="text-slate-400 hover:text-slate-600 text-xs px-1 py-2 whitespace-nowrap">Cancel</button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {['Google Form', 'Typeform', 'Jotform', 'Tally'].map(p => (
+                              <button key={p} type="button"
+                                onClick={() => { setLinkInputSection('enquiry'); setLinkInputPlatform(p); setLinkInputUrl(''); }}
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-purple-300 hover:text-purple-700 hover:bg-purple-50 transition-colors">
+                                <Plus className="h-3 w-3" /> {p}
+                              </button>
+                            ))}
+                          </div>
+                        )
+                      )}
+                    </div>
+
+                    {/* ── SOCIAL MEDIA ── */}
+                    <div className="mb-5 pb-5 border-b border-slate-100">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="bg-blue-100 rounded-lg p-1.5 flex-shrink-0">
+                          <Globe className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">Social Media</p>
+                          <p className="text-xs text-slate-500">Links to your social profiles</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2 mb-3">
+                        {(localProfile?.socialLinks || []).filter(l => classifyLink(l) === 'social').map((link) => {
+                          const idx = (localProfile?.socialLinks || []).indexOf(link);
+                          return (
+                            <div key={idx} className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-bold text-blue-700">{link.platform}</p>
+                                <p className="text-sm text-slate-700 truncate">{link.url}</p>
+                              </div>
+                              <button onClick={() => removeLink(idx)} className="text-slate-400 hover:text-red-500 p-1 flex-shrink-0 transition-colors">
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {linkInputSection === 'social' ? (
+                        <div className="flex gap-2 items-center bg-blue-50 border border-blue-200 rounded-xl p-3">
+                          <span className="text-xs font-bold text-blue-800 whitespace-nowrap">{linkInputPlatform}</span>
+                          <input type="url" autoFocus placeholder="https://linkedin.com/in/yourname"
+                            className="flex-1 border border-blue-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
+                            value={linkInputUrl} onChange={e => setLinkInputUrl(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && saveStructuredLink()} />
+                          <button onClick={saveStructuredLink} className="bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 whitespace-nowrap">Add</button>
+                          <button onClick={() => { setLinkInputSection(null); setLinkInputUrl(''); }} className="text-slate-400 hover:text-slate-600 text-xs px-1 py-2 whitespace-nowrap">Cancel</button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {['LinkedIn', 'Instagram', 'X / Twitter', 'Facebook'].map(p => (
+                            <button key={p} type="button"
+                              onClick={() => { setLinkInputSection('social'); setLinkInputPlatform(p); setLinkInputUrl(''); }}
+                              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50 transition-colors">
+                              <Plus className="h-3 w-3" /> {p}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* ── WEBSITE ── */}
+                    <div className="mb-5 pb-5 border-b border-slate-100">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="bg-emerald-100 rounded-lg p-1.5 flex-shrink-0">
+                          <Globe className="h-4 w-4 text-emerald-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">Website</p>
+                          <p className="text-xs text-slate-500">Your coaching website or portfolio</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2 mb-3">
+                        {(localProfile?.socialLinks || []).filter(l => classifyLink(l) === 'website').map((link) => {
+                          const idx = (localProfile?.socialLinks || []).indexOf(link);
+                          return (
+                            <div key={idx} className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-bold text-emerald-700">{link.platform}</p>
+                                <p className="text-sm text-slate-700 truncate">{link.url}</p>
+                              </div>
+                              <button onClick={() => removeLink(idx)} className="text-slate-400 hover:text-red-500 p-1 flex-shrink-0 transition-colors">
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {linkInputSection === 'website' ? (
+                        <div className="flex gap-2 items-center bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                          <input type="url" autoFocus placeholder="https://yourcoachingwebsite.com"
+                            className="flex-1 border border-emerald-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-400 outline-none"
+                            value={linkInputUrl} onChange={e => setLinkInputUrl(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && saveStructuredLink()} />
+                          <button onClick={saveStructuredLink} className="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700 whitespace-nowrap">Add</button>
+                          <button onClick={() => { setLinkInputSection(null); setLinkInputUrl(''); }} className="text-slate-400 hover:text-slate-600 text-xs px-1 py-2 whitespace-nowrap">Cancel</button>
+                        </div>
+                      ) : (
+                        <button type="button"
+                          onClick={() => { setLinkInputSection('website'); setLinkInputPlatform('Website'); setLinkInputUrl(''); }}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">
+                          <Plus className="h-3 w-3" /> Add Website URL
+                        </button>
+                      )}
+                    </div>
+
+                    {/* ── CONTACT ── */}
+                    <div className="mb-5 pb-5 border-b border-slate-100">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="bg-orange-100 rounded-lg p-1.5 flex-shrink-0">
+                          <Phone className="h-4 w-4 text-orange-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">Contact</p>
+                          <p className="text-xs text-slate-500">Email address or phone number</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2 mb-3">
+                        {(localProfile?.socialLinks || []).filter(l => classifyLink(l) === 'email' || classifyLink(l) === 'phone').map((link) => {
+                          const idx = (localProfile?.socialLinks || []).indexOf(link);
+                          const isEmail = classifyLink(link) === 'email';
+                          return (
+                            <div key={idx} className="flex items-center gap-3 p-3 bg-orange-50 rounded-xl border border-orange-200">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-bold text-orange-700">{isEmail ? 'Email' : 'Phone'}</p>
+                                <p className="text-sm text-slate-700 truncate">{stripProtocol(link.url)}</p>
+                              </div>
+                              <button onClick={() => removeLink(idx)} className="text-slate-400 hover:text-red-500 p-1 flex-shrink-0 transition-colors">
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {linkInputSection === 'email' || linkInputSection === 'phone' ? (
+                        <div className="flex gap-2 items-center bg-orange-50 border border-orange-200 rounded-xl p-3">
+                          <span className="text-xs font-bold text-orange-800 whitespace-nowrap">{linkInputSection === 'email' ? 'Email' : 'Phone'}</span>
+                          <input type={linkInputSection === 'email' ? 'email' : 'tel'} autoFocus
+                            placeholder={linkInputSection === 'email' ? 'coach@example.com' : '+44 7700 900000'}
+                            className="flex-1 border border-orange-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-400 outline-none"
+                            value={linkInputUrl} onChange={e => setLinkInputUrl(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && saveStructuredLink()} />
+                          <button onClick={saveStructuredLink} className="bg-orange-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-orange-700 whitespace-nowrap">Add</button>
+                          <button onClick={() => { setLinkInputSection(null); setLinkInputUrl(''); }} className="text-slate-400 hover:text-slate-600 text-xs px-1 py-2 whitespace-nowrap">Cancel</button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          <button type="button"
+                            onClick={() => { setLinkInputSection('email'); setLinkInputPlatform('Email'); setLinkInputUrl(''); }}
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700 hover:bg-orange-50 transition-colors">
+                            <Plus className="h-3 w-3" /> Add Email
+                          </button>
+                          <button type="button"
+                            onClick={() => { setLinkInputSection('phone'); setLinkInputPlatform('Phone'); setLinkInputUrl(''); }}
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700 hover:bg-orange-50 transition-colors">
+                            <Plus className="h-3 w-3" /> Add Phone Number
                           </button>
                         </div>
+                      )}
+                    </div>
+
+                    {/* ── OTHER ── */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="bg-slate-100 rounded-lg p-1.5 flex-shrink-0">
+                          <LinkIcon className="h-4 w-4 text-slate-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">Other</p>
+                          <p className="text-xs text-slate-500">Any other links with a custom label</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2 mb-3">
+                        {(localProfile?.socialLinks || []).filter(l => classifyLink(l) === 'other').map((link) => {
+                          const idx = (localProfile?.socialLinks || []).indexOf(link);
+                          return (
+                            <div key={idx} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-bold text-slate-600">{link.platform}</p>
+                                <p className="text-sm text-slate-700 truncate">{stripProtocol(link.url)}</p>
+                              </div>
+                              <button onClick={() => removeLink(idx)} className="text-slate-400 hover:text-red-500 p-1 flex-shrink-0 transition-colors">
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {linkInputSection === 'other' ? (
+                        <div className="flex flex-col gap-2 bg-slate-50 border border-slate-200 rounded-xl p-3">
+                          <input type="text" autoFocus placeholder="Label (e.g. Podcast, YouTube, Substack)"
+                            className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-slate-400 outline-none"
+                            value={linkInputLabel} onChange={e => setLinkInputLabel(e.target.value)} />
+                          <div className="flex gap-2">
+                            <input type="url" placeholder="https://..."
+                              className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-slate-400 outline-none"
+                              value={linkInputUrl} onChange={e => setLinkInputUrl(e.target.value)}
+                              onKeyDown={e => e.key === 'Enter' && saveStructuredLink()} />
+                            <button onClick={saveStructuredLink} className="bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-900 whitespace-nowrap">Add</button>
+                            <button onClick={() => { setLinkInputSection(null); setLinkInputUrl(''); setLinkInputLabel(''); }} className="text-slate-400 hover:text-slate-600 text-xs px-1 py-2 whitespace-nowrap">Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button type="button"
+                          onClick={() => { setLinkInputSection('other'); setLinkInputPlatform(''); setLinkInputUrl(''); setLinkInputLabel(''); }}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition-colors">
+                          <Plus className="h-3 w-3" /> Add Custom Link
+                        </button>
+                      )}
                     </div>
                   </CollapsibleSection>
 

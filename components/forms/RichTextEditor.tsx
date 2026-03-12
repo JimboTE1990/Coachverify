@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Color } from '@tiptap/extension-color';
@@ -48,6 +48,13 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
       },
     },
   });
+
+  // Populate editor when profile data loads after mount (editor initialises before data arrives)
+  useEffect(() => {
+    if (editor && value && editor.isEmpty) {
+      editor.commands.setContent(value);
+    }
+  }, [value, editor]);
 
   if (!editor) return null;
 
