@@ -1565,7 +1565,7 @@ export const verifyEmccCertificate = async (
   imageBase64: string,
   imageMediaType = 'image/jpeg'
 ): Promise<EmccCertOcrResult> => {
-  const { data, error } = await supabase.functions.invoke('verify-emcc-certificate', {
+  const { data, error } = await supabase.functions.invoke('verify-emcc-certificate-ocr', {
     body: { coachId, fullName, eiaNumber, accreditationLevel, imageBase64, imageMediaType },
   });
 
