@@ -1539,3 +1539,47 @@ export const restoreAccount = async (coachId: string): Promise<boolean> => {
     throw error;
   }
 };
+
+// ---------------------------------------------------------------------------
+// EMCC Certificate OCR Verification (DEV / PREVIEW only)
+// ---------------------------------------------------------------------------
+export interface EmccCertOcrResult {
+  verified: boolean;
+  confidence: number;
+  extractedData: {
+    eiaNumber: string | null;
+    fullName: string | null;
+    accreditationLevel: string | null;
+    expiryDate: string | null;
+  };
+  matchDetails: { nameMatch: boolean; eiaMatch: boolean; levelMatch: boolean };
+  reason: string;
+  pendingManualReview?: boolean;
+}
+
+export const verifyEmccCertificate = async (
+  coachId: string,
+  fullName: string,
+  eiaNumber: string,
+  accreditationLevel: string | undefined,
+  imageBase64: string,
+  imageMediaType = 'image/jpeg'
+): Promise<EmccCertOcrResult> => {
+  const { data, error } = await supabase.functions.invoke('verify-emcc-certificate', {
+    body: { coachId, fullName, eiaNumber, accreditationLevel, imageBase64, imageMediaType },
+  });
+
+  if (error) {
+    console.error('[verifyEmccCertificate] Edge function error:', error);
+    return {
+      verified: false,
+      confidence: 0,
+      extractedData: { eiaNumber: null, fullName: null, accreditationLevel: null, expiryDate: null },
+      matchDetails: { nameMatch: false, eiaMatch: false, levelMatch: false },
+      reason: error.message || 'Certificate verification failed',
+      pendingManualReview: true,
+    };
+  }
+
+  return data as EmccCertOcrResult;
+};

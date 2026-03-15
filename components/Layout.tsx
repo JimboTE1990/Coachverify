@@ -220,7 +220,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 {isAuthenticated && coach && coach.subscriptionStatus === 'trial' && (
                   <Link
                     to="/pricing"
-                    className="relative flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-black hover:from-brand-700 hover:to-indigo-700 transition-all hover:-translate-y-0.5 border-2 border-orange-400/50"
+                    className="relative hidden lg:flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-black hover:from-brand-700 hover:to-indigo-700 transition-all hover:-translate-y-0.5 border-2 border-orange-400/50"
                     style={{
                       boxShadow: '0 0 20px rgba(249, 115, 22, 0.4), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
                     }}
