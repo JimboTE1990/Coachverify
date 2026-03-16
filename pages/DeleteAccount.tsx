@@ -5,21 +5,21 @@ import { useAuth } from '../hooks/useAuth';
 import { PasswordVerificationModal } from '../components/PasswordVerificationModal';
 
 export const DeleteAccount: React.FC = () => {
-  const { currentCoach } = useAuth();
+  const { currentCoach, loading } = useAuth();
   const navigate = useNavigate();
   const [isPasswordVerified, setIsPasswordVerified] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(true);
   const [deleteReason, setDeleteReason] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Redirect if no coach
+  // Only redirect once auth has finished loading — avoids premature redirect race condition
   useEffect(() => {
-    if (!currentCoach) {
+    if (!loading && !currentCoach) {
       navigate('/dashboard');
     }
-  }, [currentCoach, navigate]);
+  }, [currentCoach, loading, navigate]);
 
-  if (!currentCoach) return null;
+  if (loading || !currentCoach) return null;
 
   // Calculate deletion timeline
   const calculateDeletionDates = () => {
