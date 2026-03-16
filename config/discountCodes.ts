@@ -124,7 +124,7 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     displayName: 'Beta Exclusive Offer',
     description: '£100 off - Pay only £49 for lifetime access',
     stripeCouponId: 'E7g5S88d',
-    // stripePromotionCodeId: 'promo_1TBanXDye3rmKJ...' // TODO: add full ID from Stripe dashboard to enforce 15-use limit in Stripe
+    stripePromotionCodeId: 'promo_1TBanXDye3rmKJaDlq8eKosB',
   },
 
   // Legacy code — kept disabled, superseded by BETA49
