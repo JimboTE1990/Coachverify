@@ -1116,6 +1116,7 @@ const mapCoachProfile = (data: any): Coach => {
     cancelFeedback: data.cancel_feedback,
     dataRetentionPreference: data.data_retention_preference,
     scheduledDeletionAt: data.scheduled_deletion_at,
+    deletionRequestedAt: data.deletion_requested_at,
 
     // Profile visibility & access (Phase 2)
     profileVisible: data.profile_visible,

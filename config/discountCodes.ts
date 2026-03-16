@@ -109,20 +109,35 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
   // LIFETIME PLAN DISCOUNTS
   // ============================================================================
 
-  // Beta Tester Exclusive - Limited to 10 uses
-  // Lifetime plan: £149 → £49 with BETA100
-  'BETA100': {
-    code: 'BETA100',
+  // Beta Tester Exclusive — £100 off lifetime, limited to 15 uses, expires 19 Apr 2026
+  // Stripe coupon ID: E7g5S88d | Promo code: BETA49 | API ID: promo_1TBanXDye3rmKJ... (update with full ID)
+  'BETA49': {
+    code: 'BETA49',
     type: 'lifetime_fixed',
     value: 100, // £100 off the £149 lifetime price = £49 final
     enabled: true,
     planRestrictions: ['lifetime'],
-    maxUses: 10,
-    usesRemaining: 10, // NOTE: Update this in production to track actual uses
+    maxUses: 15,
+    usesRemaining: 15,
+    expiryDate: '2026-04-19',
+    source: 'beta_tester_exclusive',
+    displayName: 'Beta Exclusive Offer',
+    description: '£100 off - Pay only £49 for lifetime access',
+    stripeCouponId: 'E7g5S88d',
+    // stripePromotionCodeId: 'promo_1TBanXDye3rmKJ...' // TODO: add full ID from Stripe dashboard to enforce 15-use limit in Stripe
+  },
+
+  // Legacy code — kept disabled, superseded by BETA49
+  'BETA100': {
+    code: 'BETA100',
+    type: 'lifetime_fixed',
+    value: 100,
+    enabled: false,
+    planRestrictions: ['lifetime'],
     source: 'beta_tester_exclusive',
     displayName: 'Beta Tester Exclusive',
     description: '£100 off - Pay only £49 for lifetime access',
-    stripeCouponId: 'BETA100_LIFETIME', // Create this in Stripe production
+    stripeCouponId: 'E7g5S88d',
   },
 
   // Limited Time Offer - £89 lifetime (to be enabled later)

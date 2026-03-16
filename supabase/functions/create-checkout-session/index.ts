@@ -28,7 +28,7 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { priceId, coachId, coachEmail, billingCycle, trialEndsAt, discountCode } = await req.json();
+    const { priceId, coachId, coachEmail, billingCycle, trialEndsAt, discountCode, stripePromotionCodeId } = await req.json();
 
     // Validate required fields
     if (!priceId || !coachId || !coachEmail || !billingCycle) {
@@ -93,27 +93,31 @@ serve(async (req) => {
       }
     }
 
-    // Apply discount code if provided
-    if (discountCode) {
-      // Map discount codes to Stripe coupon IDs
-      const discountCodes: Record<string, string> = {
+    // Apply discount if provided
+    // Prefer stripePromotionCodeId (enforces Stripe-side use limits) over coupon ID
+    if (stripePromotionCodeId) {
+      sessionParams['discounts[0][promotion_code]'] = stripePromotionCodeId;
+      console.log('[Supabase Edge] Applying Stripe promotion code:', stripePromotionCodeId);
+    } else if (discountCode) {
+      // Map discount codes to Stripe coupon IDs (fallback when no promotion code ID available)
+      const couponMap: Record<string, string> = {
+        'BETA49':    'E7g5S88d',
+        'EMCC15':    'NStyLey1',
         'PARTNER2026': 'partner_30_off',
-        'FLASH50': 'flash_50_annual',
+        'FLASH50':   'flash_50_annual',
         'EXTRATRIAL': 'trial_extension_14',
-        'WELCOME3': 'welcome_3mo_free',
-        'BETA100': 'BETA100_LIFETIME',
+        'WELCOME3':  'welcome_3mo_free',
         'LIMITED60': 'LIMITED60_LIFETIME',
       };
 
-      const stripeCouponId = discountCodes[discountCode.toUpperCase()];
+      const stripeCouponId = couponMap[discountCode.toUpperCase()];
 
       if (stripeCouponId) {
         sessionParams['discounts[0][coupon]'] = stripeCouponId;
-        // Only add to subscription_data if it's a subscription
         if (!isLifetime) {
           sessionParams['subscription_data[metadata][discountCode]'] = discountCode;
         }
-        console.log('[Supabase Edge] Applying discount code:', discountCode, '→', stripeCouponId);
+        console.log('[Supabase Edge] Applying coupon:', discountCode, '→', stripeCouponId);
       } else {
         console.warn('[Supabase Edge] Unknown discount code:', discountCode);
       }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { updateCoach, getCoachAnalytics, getCoachById, verifyReview, flagReview, resetReviewVerification, addReviewComment, getReviewComments, flagReviewAsSpam, checkCustomUrlAvailability, type CoachAnalytics } from '../services/supabaseService';
+import { updateCoach, getCoachAnalytics, getCoachById, verifyReview, flagReview, resetReviewVerification, addReviewComment, getReviewComments, flagReviewAsSpam, checkCustomUrlAvailability, verifyEmccCertificate, type EmccCertOcrResult, type CoachAnalytics } from '../services/supabaseService';
 import { verifyEMCCAccreditation, needsEMCCVerification, getVerificationStatusMessage } from '../services/emccVerificationService';
 import {
   Coach,
@@ -27,7 +27,7 @@ import {
   AlertTriangle, Mail, Smartphone, RefreshCw, Eye, EyeOff,
   Tag, Monitor, LayoutDashboard, Sparkles, BarChart, TrendingUp, Calendar,
   Award, GraduationCap, Trophy, Star, Flag, MessageCircle, Send, Info, ExternalLink,
-  ClipboardCheck, Phone, Linkedin, Instagram, Facebook, Youtube, Twitter, Globe, FileText
+  ClipboardCheck, Phone, Linkedin, Instagram, Facebook, Youtube, Twitter, Globe, FileText, Upload
 } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
 import { useAuth } from '../hooks/useAuth';
@@ -252,6 +252,10 @@ export const CoachDashboard: React.FC = () => {
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [showEiaInfoPopup, setShowEiaInfoPopup] = useState(false);
   const eiaInfoButtonRef = useRef<HTMLButtonElement>(null);
+  // DEV-only: EMCC certificate OCR self-serve
+  const [dashCertOcrLoading, setDashCertOcrLoading] = useState(false);
+  const [dashCertOcrResult, setDashCertOcrResult] = useState<EmccCertOcrResult | null>(null);
+  const [dashCertFileName, setDashCertFileName] = useState('');
   const trialStatus = useTrialStatus(currentCoach);
 
   // Toast Notification State
@@ -642,6 +646,45 @@ export const CoachDashboard: React.FC = () => {
       );
     } finally {
       setIsVerifying(false);
+    }
+  };
+
+  // DEV-only: EMCC certificate OCR self-serve from dashboard
+  const handleDashboardCertUpload = async (file: File) => {
+    if (!currentCoach) return;
+    setDashCertFileName(file.name);
+    setDashCertOcrResult(null);
+    setDashCertOcrLoading(true);
+    try {
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      bytes.forEach(b => (binary += String.fromCharCode(b)));
+      const imageBase64 = btoa(binary);
+      const result = await verifyEmccCertificate(
+        currentCoach.id,
+        currentCoach.name || '',
+        localProfile?.emccProfileUrl || '',
+        localProfile?.accreditationLevel || undefined,
+        imageBase64,
+        file.type || 'image/jpeg'
+      );
+      setDashCertOcrResult(result);
+      if (result.verified || result.pendingManualReview) {
+        await refreshCoach();
+        showToast(result.verified ? 'Certificate verified successfully' : 'Certificate submitted — pending manual review', result.verified ? 'success' : 'success');
+      }
+    } catch (err) {
+      console.error('[DashboardCertUpload] Error:', err);
+      setDashCertOcrResult({
+        verified: false, confidence: 0,
+        extractedData: { eiaNumber: null, fullName: null, accreditationLevel: null, expiryDate: null },
+        matchDetails: { nameMatch: false, eiaMatch: false, levelMatch: false },
+        reason: 'Upload failed — please try again',
+        pendingManualReview: true,
+      });
+    } finally {
+      setDashCertOcrLoading(false);
     }
   };
 
@@ -2150,6 +2193,7 @@ export const CoachDashboard: React.FC = () => {
                                     <CheckCircle className="h-3 w-3" /> Verified
                                   </span>
                                 ) : (
+                                  <>
                                   <div className="mt-1 flex items-center gap-2">
                                     <span className="flex items-center gap-1 text-amber-600 text-xs font-semibold">
                                       <AlertTriangle className="h-3 w-3" /> Not yet verified
@@ -2166,6 +2210,56 @@ export const CoachDashboard: React.FC = () => {
                                       Verify now
                                     </button>
                                   </div>
+                                  {/* DEV-only: certificate OCR self-serve */}
+                                  {import.meta.env.DEV && (
+                                    <div className="mt-3 bg-violet-50 border border-violet-200 rounded-xl p-3 space-y-2">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs font-bold bg-violet-200 text-violet-800 px-2 py-0.5 rounded-full uppercase tracking-wide">Dev Preview</span>
+                                        <span className="text-xs font-semibold text-violet-900">Upload EMCC Certificate</span>
+                                      </div>
+                                      <p className="text-xs text-violet-700">
+                                        Upload your certificate to verify via OCR. Enter your EIA number in "Verify now" first, or it will be extracted from the certificate.
+                                      </p>
+                                      <label className={`flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-lg border-2 border-dashed cursor-pointer transition-all ${
+                                        dashCertOcrLoading ? 'opacity-50 cursor-not-allowed' : 'border-violet-300 bg-white hover:bg-violet-50'
+                                      }`}>
+                                        <Upload className="h-3.5 w-3.5 text-violet-600" />
+                                        <span className="text-xs font-medium text-violet-700">
+                                          {dashCertFileName || 'Choose certificate (JPG, PNG, PDF)…'}
+                                        </span>
+                                        <input
+                                          type="file"
+                                          accept="image/jpeg,image/png,image/webp,application/pdf"
+                                          className="hidden"
+                                          disabled={dashCertOcrLoading}
+                                          onChange={e => {
+                                            const file = e.target.files?.[0];
+                                            if (file) handleDashboardCertUpload(file);
+                                          }}
+                                        />
+                                      </label>
+                                      {dashCertOcrLoading && (
+                                        <div className="flex items-center gap-2 text-xs text-violet-700">
+                                          <RefreshCw className="h-3 w-3 animate-spin" /> Reading certificate…
+                                        </div>
+                                      )}
+                                      {dashCertOcrResult && (
+                                        <div className={`rounded-lg p-2.5 text-xs space-y-1 ${dashCertOcrResult.verified ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}`}>
+                                          <p className={`font-semibold ${dashCertOcrResult.verified ? 'text-green-800' : 'text-amber-800'}`}>
+                                            {dashCertOcrResult.verified ? '✓ Verified' : dashCertOcrResult.pendingManualReview ? '⏳ Pending manual review' : '✗ Could not verify'}
+                                          </p>
+                                          <p className="text-slate-600">{dashCertOcrResult.reason}</p>
+                                          {dashCertOcrResult.extractedData.eiaNumber && (
+                                            <p className="text-slate-500">
+                                              Extracted: <strong>{dashCertOcrResult.extractedData.fullName}</strong> · {dashCertOcrResult.extractedData.eiaNumber} · {dashCertOcrResult.extractedData.accreditationLevel}
+                                            </p>
+                                          )}
+                                          <p className="text-slate-400">Confidence: {dashCertOcrResult.confidence}%</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                  </>
                                 )
                               )}
                               {localProfile?.accreditationBody === 'ICF' && localProfile?.icfVerified && (
@@ -3344,7 +3438,30 @@ export const CoachDashboard: React.FC = () => {
                                 )}
                             </div>
 
+                            {/* Deletion Pending Notice */}
+                            {currentCoach.deletionRequestedAt && (
+                                <div className="border-t border-slate-100 pt-8">
+                                    <div className="bg-red-50 border-2 border-red-200 rounded-xl p-5">
+                                        <div className="flex items-start gap-3">
+                                            <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                            <div>
+                                                <p className="text-sm font-bold text-red-900 mb-1">Account Deletion Scheduled</p>
+                                                <p className="text-xs text-red-800 mb-1">
+                                                    Deletion requested on {new Date(currentCoach.deletionRequestedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}.
+                                                </p>
+                                                {currentCoach.scheduledDeletionAt && (
+                                                    <p className="text-xs text-red-800">
+                                                        Your data will be permanently deleted on <span className="font-bold">{new Date(currentCoach.scheduledDeletionAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>. To cancel, contact <a href="mailto:support@coachdog.com" className="underline font-bold">support@coachdog.com</a>.
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Delete Account Link */}
+                            {!currentCoach.deletionRequestedAt && (
                             <div className="border-t border-slate-100 pt-8">
                                 <div className="text-center">
                                     <p className="text-sm text-slate-600 mb-3">
@@ -3358,6 +3475,7 @@ export const CoachDashboard: React.FC = () => {
                                     </button>
                                 </div>
                             </div>
+                            )}
                         </div>
                     </div>
                 </div>
