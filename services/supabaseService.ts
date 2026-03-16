@@ -1435,11 +1435,6 @@ export const requestAccountDeletion = async (
       return false;
     }
 
-    // Deletion only allowed if subscription is cancelled or expired
-    if (coach.subscription_status === 'active' && !coach.cancelled_at) {
-      throw new Error('Please cancel your subscription before deleting account');
-    }
-
     // Calculate deletion dates
     const now = new Date();
     let effectiveDate: Date;

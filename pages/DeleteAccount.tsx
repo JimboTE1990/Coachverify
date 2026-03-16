@@ -52,14 +52,10 @@ export const DeleteAccount: React.FC = () => {
     });
   };
 
-  // Check if deletion is blocked
-  const isDeletionBlocked = currentCoach.subscriptionStatus === 'active' && !currentCoach.cancelledAt;
+  // Warn (but don't block) if subscription is active and not yet cancelled
+  const hasActiveSubscription = currentCoach.subscriptionStatus === 'active' && !currentCoach.cancelledAt;
 
   const handleDeleteRequest = async () => {
-    if (isDeletionBlocked) {
-      alert('Please cancel your subscription before requesting account deletion.');
-      return;
-    }
 
     // Confirmation dialog
     const confirmed = window.confirm(
@@ -153,25 +149,20 @@ export const DeleteAccount: React.FC = () => {
 
           {/* Content */}
           <div className="p-8">
-            {/* Subscription Warning */}
-            {isDeletionBlocked && (
+            {/* Active subscription notice — informational only, does not block deletion */}
+            {hasActiveSubscription && (
               <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6 mb-8">
                 <div className="flex items-start gap-4">
                   <AlertTriangle className="h-6 w-6 text-yellow-600 flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="text-lg font-bold text-yellow-900 mb-2">
-                      Active Subscription Detected
+                      Active Subscription
                     </h3>
-                    <p className="text-sm text-yellow-800 mb-4">
-                      You must cancel your subscription before you can delete your account.
-                      Your subscription is currently active{currentCoach.subscriptionEndsAt && ` until ${formatDate(new Date(currentCoach.subscriptionEndsAt))}`}.
+                    <p className="text-sm text-yellow-800">
+                      You have an active subscription
+                      {currentCoach.subscriptionEndsAt && ` paid until ${formatDate(new Date(currentCoach.subscriptionEndsAt))}`}.
+                      You can still delete your account — your profile will remain visible until the end of your billing period, then be permanently removed. No further charges will be made.
                     </p>
-                    <button
-                      onClick={() => navigate('/dashboard')}
-                      className="px-4 py-2 bg-yellow-600 text-white rounded-lg text-sm font-bold hover:bg-yellow-700 transition-colors"
-                    >
-                      Go to Subscription Settings
-                    </button>
                   </div>
                 </div>
               </div>
