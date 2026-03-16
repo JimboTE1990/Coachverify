@@ -8,7 +8,6 @@ export const DeleteAccount: React.FC = () => {
   const { coach, loading } = useAuth();
   const navigate = useNavigate();
   const [isPasswordVerified, setIsPasswordVerified] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(true);
   const [deleteReason, setDeleteReason] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -108,7 +107,7 @@ export const DeleteAccount: React.FC = () => {
   if (!isPasswordVerified) {
     return (
       <PasswordVerificationModal
-        isOpen={showPasswordModal}
+        isOpen={true}
         onClose={() => navigate('/dashboard')}
         onVerified={() => setIsPasswordVerified(true)}
         title="Delete Account - Password Required"
@@ -296,12 +295,8 @@ export const DeleteAccount: React.FC = () => {
               </button>
               <button
                 onClick={handleDeleteRequest}
-                disabled={isDeletionBlocked || isProcessing}
-                className={`flex-1 px-6 py-3 rounded-lg text-sm font-bold transition-colors ${
-                  isDeletionBlocked
-                    ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                    : 'bg-red-600 text-white hover:bg-red-700'
-                }`}
+                disabled={isProcessing}
+                className="flex-1 px-6 py-3 rounded-lg text-sm font-bold transition-colors bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isProcessing ? 'Processing...' : 'Request Account Deletion'}
               </button>
