@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { PasswordVerificationModal } from '../components/PasswordVerificationModal';
 
 export const DeleteAccount: React.FC = () => {
-  const { currentCoach, loading } = useAuth();
+  const { coach, loading } = useAuth();
   const navigate = useNavigate();
   const [isPasswordVerified, setIsPasswordVerified] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(true);
@@ -14,12 +14,12 @@ export const DeleteAccount: React.FC = () => {
 
   // Only redirect once auth has finished loading — avoids premature redirect race condition
   useEffect(() => {
-    if (!loading && !currentCoach) {
+    if (!loading && !coach) {
       navigate('/dashboard');
     }
-  }, [currentCoach, loading, navigate]);
+  }, [coach, loading, navigate]);
 
-  if (loading || !currentCoach) return null;
+  if (loading || !coach) return null;
 
   // Calculate deletion timeline
   const calculateDeletionDates = () => {
@@ -27,10 +27,10 @@ export const DeleteAccount: React.FC = () => {
 
     // Effective date is end of subscription (or tomorrow if already cancelled/expired)
     let effectiveDate: Date;
-    if (currentCoach.subscriptionEndsAt) {
-      effectiveDate = new Date(currentCoach.subscriptionEndsAt);
-    } else if (currentCoach.subscriptionStatus === 'trial' && currentCoach.trialEndsAt) {
-      effectiveDate = new Date(currentCoach.trialEndsAt);
+    if (coach.subscriptionEndsAt) {
+      effectiveDate = new Date(coach.subscriptionEndsAt);
+    } else if (coach.subscriptionStatus === 'trial' && coach.trialEndsAt) {
+      effectiveDate = new Date(coach.trialEndsAt);
     } else {
       // No active subscription - effective tomorrow
       effectiveDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
@@ -53,7 +53,7 @@ export const DeleteAccount: React.FC = () => {
   };
 
   // Warn (but don't block) if subscription is active and not yet cancelled
-  const hasActiveSubscription = currentCoach.subscriptionStatus === 'active' && !currentCoach.cancelledAt;
+  const hasActiveSubscription = coach.subscriptionStatus === 'active' && !coach.cancelledAt;
 
   const handleDeleteRequest = async () => {
 
@@ -81,7 +81,7 @@ export const DeleteAccount: React.FC = () => {
     try {
       // Call delete account service function
       const { requestAccountDeletion } = await import('../services/supabaseService');
-      const success = await requestAccountDeletion(currentCoach.id, deleteReason);
+      const success = await requestAccountDeletion(coach.id, deleteReason);
 
       if (success) {
         alert(
@@ -113,7 +113,7 @@ export const DeleteAccount: React.FC = () => {
         onVerified={() => setIsPasswordVerified(true)}
         title="Delete Account - Password Required"
         message="For your security, please verify your password before accessing account deletion."
-        email={currentCoach.email}
+        email={coach.email}
       />
     );
   }
@@ -160,7 +160,7 @@ export const DeleteAccount: React.FC = () => {
                     </h3>
                     <p className="text-sm text-yellow-800">
                       You have an active subscription
-                      {currentCoach.subscriptionEndsAt && ` paid until ${formatDate(new Date(currentCoach.subscriptionEndsAt))}`}.
+                      {coach.subscriptionEndsAt && ` paid until ${formatDate(new Date(coach.subscriptionEndsAt))}`}.
                       You can still delete your account — your profile will remain visible until the end of your billing period, then be permanently removed. No further charges will be made.
                     </p>
                   </div>
