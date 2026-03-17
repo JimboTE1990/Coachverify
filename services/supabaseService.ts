@@ -1571,7 +1571,7 @@ export const verifyEmccCertificate = async (
       confidence: 0,
       extractedData: { eiaNumber: null, fullName: null, accreditationLevel: null, expiryDate: null },
       matchDetails: { nameMatch: false, eiaMatch: false, levelMatch: false },
-      reason: error.message || 'Certificate verification failed — please try again',
+      reason: 'Certificate verification is currently unavailable — please try again or contact support',
     };
   }
 
