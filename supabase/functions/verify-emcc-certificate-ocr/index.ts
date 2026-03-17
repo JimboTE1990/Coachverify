@@ -124,8 +124,8 @@ serve(async (req) => {
     const prompt = `This is an EMCC (European Mentoring and Coaching Council) accreditation certificate.
 
 Extract the following fields exactly as they appear on the certificate:
-1. EIA Number — format is "EIA" followed by digits (e.g. EIA20230480). May be labelled "Reference", "Membership Number", or "EIA Ref".
-2. Full name of the accredited individual
+1. EIA Number — format is "EIA" followed by digits (e.g. EIA20230480, EIA20251840). IMPORTANT: On many EMCC certificates the EIA number is printed VERTICALLY along the right-hand border/spine of the certificate, rotated 90 degrees. Look carefully at all edges and borders of the image for this number. It may also be labelled "Reference", "Membership Number", or "EIA Ref".
+2. Full name of the accredited individual (usually printed prominently in the centre of the certificate)
 3. Accreditation level — must be one of: Foundation, Practitioner, Senior Practitioner, Master Practitioner
 4. Expiry or valid-until date (if present)
 
