@@ -197,6 +197,18 @@ export const CoachSignup: React.FC = () => {
       bytes.forEach(b => (binary += String.fromCharCode(b)));
       const imageBase64 = btoa(binary);
 
+      // Claude Vision only supports image formats — reject PDFs at this point
+      if (file.type === 'application/pdf') {
+        setOcrResult({
+          verified: false,
+          confidence: 0,
+          extractedData: { eiaNumber: null, fullName: null, accreditationLevel: null, expiryDate: null },
+          matchDetails: { nameMatch: false, eiaMatch: false, levelMatch: false },
+          reason: 'PDF files are not supported — please take a screenshot or photo of your certificate and upload as JPG or PNG',
+        });
+        setOcrLoading(false);
+        return;
+      }
       const mediaType = file.type || 'image/jpeg';
       const fullName = `${formData.first_name} ${formData.last_name}`.trim();
       const tempCoachId = `temp_${Date.now()}`;
@@ -916,7 +928,8 @@ export const CoachSignup: React.FC = () => {
                         <p className="text-sm font-semibold text-violet-900">EMCC Certificate OCR Verification</p>
                       </div>
                       <p className="text-xs text-violet-700">
-                        Upload your EMCC certificate to verify automatically. Supported: JPG, PNG, PDF (first page).
+                        Upload your EMCC certificate to verify automatically. Supported: JPG, PNG.
+                        If you have a PDF, take a screenshot of the full certificate first.
                         Your EIA number above must be filled in first.
                       </p>
 
@@ -929,7 +942,7 @@ export const CoachSignup: React.FC = () => {
                         </span>
                         <input
                           type="file"
-                          accept="image/jpeg,image/png,image/webp,application/pdf"
+                          accept="image/jpeg,image/png,image/webp"
                           className="hidden"
                           disabled={ocrLoading || !formData.regNumber}
                           onChange={e => {
