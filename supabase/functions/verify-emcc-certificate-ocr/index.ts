@@ -40,7 +40,6 @@ interface VerificationResult {
     levelMatch: boolean;
   };
   reason: string;
-  pendingManualReview?: boolean;
 }
 
 // Normalise a name for fuzzy comparison
@@ -196,8 +195,7 @@ If a field cannot be found, use null for that field.`;
           confidence: 0,
           extractedData: extracted,
           matchDetails: { nameMatch: false, eiaMatch: false, levelMatch: false },
-          reason: 'Could not read certificate — please ensure the image is clear and try again',
-          pendingManualReview: true,
+          reason: 'Could not read certificate — please upload a clear image of your EMCC certificate and try again',
         } as VerificationResult),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -246,10 +244,11 @@ If a field cannot be found, use null for that field.`;
       matchDetails: { nameMatch, eiaMatch, levelMatch },
       reason: verified
         ? 'Certificate verified successfully'
-        : eiaMatch
-          ? 'EIA number matched but name could not be confirmed — pending manual review'
-          : 'EIA number on certificate does not match — please check your entry and try again',
-      pendingManualReview: !verified && eiaMatch,
+        : eiaMatch && !nameMatch
+          ? 'Name on certificate does not match your account name — please ensure the name on your certificate matches exactly and try again'
+          : !eiaMatch
+            ? 'EIA number on certificate does not match your entry — please check your EIA number and try again'
+            : 'Certificate could not be verified — please upload a clear image of your EMCC certificate',
     };
 
     return new Response(JSON.stringify(result), {

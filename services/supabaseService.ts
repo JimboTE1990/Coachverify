@@ -1550,7 +1550,6 @@ export interface EmccCertOcrResult {
   };
   matchDetails: { nameMatch: boolean; eiaMatch: boolean; levelMatch: boolean };
   reason: string;
-  pendingManualReview?: boolean;
 }
 
 export const verifyEmccCertificate = async (
@@ -1572,8 +1571,7 @@ export const verifyEmccCertificate = async (
       confidence: 0,
       extractedData: { eiaNumber: null, fullName: null, accreditationLevel: null, expiryDate: null },
       matchDetails: { nameMatch: false, eiaMatch: false, levelMatch: false },
-      reason: error.message || 'Certificate verification failed',
-      pendingManualReview: true,
+      reason: error.message || 'Certificate verification failed — please try again',
     };
   }
 

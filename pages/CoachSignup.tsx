@@ -216,10 +216,6 @@ export const CoachSignup: React.FC = () => {
         setVerified(true);
         setPendingManualReview(false);
         setSignupError('');
-      } else if (result.pendingManualReview) {
-        setVerified(true);
-        setPendingManualReview(true);
-        setSignupError('');
       }
     } catch (err) {
       console.error('[handleCertificateUpload] Error:', err);
@@ -229,7 +225,6 @@ export const CoachSignup: React.FC = () => {
         extractedData: { eiaNumber: null, fullName: null, accreditationLevel: null, expiryDate: null },
         matchDetails: { nameMatch: false, eiaMatch: false, levelMatch: false },
         reason: 'Upload failed — please try again',
-        pendingManualReview: true,
       });
     } finally {
       setOcrLoading(false);
@@ -952,11 +947,11 @@ export const CoachSignup: React.FC = () => {
                       )}
 
                       {ocrResult && (
-                        <div className={`rounded-lg p-3 text-sm space-y-1 ${ocrResult.verified ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}`}>
-                          <p className={`font-semibold ${ocrResult.verified ? 'text-green-800' : 'text-amber-800'}`}>
-                            {ocrResult.verified ? '✓ Verified' : ocrResult.pendingManualReview ? '⏳ Pending manual review' : '✗ Could not verify'}
+                        <div className={`rounded-lg p-3 text-sm space-y-1 ${ocrResult.verified ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                          <p className={`font-semibold ${ocrResult.verified ? 'text-green-800' : 'text-red-800'}`}>
+                            {ocrResult.verified ? '✓ Verified' : '✗ Could not verify'}
                           </p>
-                          <p className="text-xs text-slate-600">{ocrResult.reason}</p>
+                          <p className={`text-xs ${ocrResult.verified ? 'text-slate-600' : 'text-red-700'}`}>{ocrResult.reason}</p>
                           {ocrResult.extractedData.eiaNumber && (
                             <p className="text-xs text-slate-500">
                               Extracted: <strong>{ocrResult.extractedData.fullName}</strong> · {ocrResult.extractedData.eiaNumber} · {ocrResult.extractedData.accreditationLevel}
