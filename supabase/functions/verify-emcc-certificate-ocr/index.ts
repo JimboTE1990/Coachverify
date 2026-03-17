@@ -121,17 +121,20 @@ serve(async (req) => {
     }
 
     // Step 2 — Call Claude Vision API to extract certificate data
-    const prompt = `This is an EMCC (European Mentoring and Coaching Council) accreditation certificate.
+    const prompt = `This is an EMCC (European Mentoring and Coaching Council) accreditation certificate. It may be an EIA (Individual Accreditation) or ESIA (Senior Individual Accreditation) certificate. The layout is as follows:
+- TOP SECTION: The accredited person's full name appears below the text "This Certificate is awarded to"
+- MIDDLE SECTION: The accreditation level (e.g. "Practitioner", "Senior Practitioner")
+- RIGHT BORDER: The accreditation reference number is printed VERTICALLY (rotated 90 degrees clockwise) along the right-hand edge of the certificate. It starts with "EIA" or "ESIA" followed by digits (e.g. EIA20230480, EIA20251840, ESIA20230123). Look carefully at the right edge of the image for this rotated text — it is the most important field to extract.
 
-Extract the following fields exactly as they appear on the certificate:
-1. EIA Number — format is "EIA" followed by digits (e.g. EIA20230480, EIA20251840). IMPORTANT: On many EMCC certificates the EIA number is printed VERTICALLY along the right-hand border/spine of the certificate, rotated 90 degrees. Look carefully at all edges and borders of the image for this number. It may also be labelled "Reference", "Membership Number", or "EIA Ref".
-2. Full name of the accredited individual (usually printed prominently in the centre of the certificate)
-3. Accreditation level — must be one of: Foundation, Practitioner, Senior Practitioner, Master Practitioner
+Extract the following fields:
+1. Accreditation number — starts with "EIA" or "ESIA" followed by digits, printed vertically on the right border. Return it exactly as it appears including the prefix.
+2. Full name of the accredited individual — below "This Certificate is awarded to" near the top
+3. Accreditation level — one of: Foundation, Practitioner, Senior Practitioner, Master Practitioner
 4. Expiry or valid-until date (if present)
 
 Return ONLY valid JSON in this exact format (no markdown, no explanation):
 {
-  "eiaNumber": "EIA...",
+  "eiaNumber": "EIA... or ESIA...",
   "fullName": "...",
   "accreditationLevel": "...",
   "expiryDate": "..."
