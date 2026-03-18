@@ -95,7 +95,7 @@ serve(async (req) => {
       'mode': mode,
       'line_items[0][price]': priceId,
       'line_items[0][quantity]': '1',
-      'success_url': `${appUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      'success_url': `${appUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&plan=${billingCycle}`,
       'cancel_url': `${appUrl}/checkout/${billingCycle}`,
       'client_reference_id': coachId,
       'customer_email': coachEmail,

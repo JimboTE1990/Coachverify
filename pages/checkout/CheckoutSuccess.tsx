@@ -10,6 +10,7 @@ export const CheckoutSuccess: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   const sessionId = searchParams.get('session_id');
+  const planParam = searchParams.get('plan');
 
   useEffect(() => {
     // Wait for auth to load
@@ -34,8 +35,9 @@ export const CheckoutSuccess: React.FC = () => {
     return null;
   }
 
-  // Use coach data to determine subscription details
-  const billingCycle = coach?.billingCycle || 'monthly';
+  // Use URL param first (set by checkout session) to avoid race condition
+  // where webhook hasn't updated the DB before this page loads
+  const billingCycle = planParam || coach?.billingCycle || 'monthly';
   const isLifetime = billingCycle === 'lifetime';
   const amount = isLifetime ? 149 : (billingCycle === 'monthly' ? 15 : 150);
   const hasActiveTrial = coach?.subscriptionStatus === 'trial' && coach?.trialEndsAt;
