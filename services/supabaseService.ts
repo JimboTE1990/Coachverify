@@ -163,7 +163,10 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
     return false;
   }
 
-  // Build update object with only defined fields
+  // Build update object with only defined fields.
+  // NOTE: is_verified, subscription_status, billing_cycle, emcc_verified, icf_verified,
+  // verification_status are intentionally excluded — they must only be written by
+  // server-side edge functions (Stripe webhook, verification functions) via the service role.
   const updateData: any = {
     name: coach.name,
     email: coach.email,
@@ -174,10 +177,7 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
     location: coach.location,
     hourly_rate: coach.hourlyRate,
     years_experience: coach.yearsExperience,
-    is_verified: coach.isVerified,
     documents_submitted: coach.documentsSubmitted,
-    subscription_status: coach.subscriptionStatus,
-    billing_cycle: coach.billingCycle,
     two_factor_enabled: coach.twoFactorEnabled,
   };
 
@@ -188,11 +188,8 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   // Enhanced profile fields (only add if defined)
   if (coach.accreditationBody !== undefined) updateData.accreditation_body = coach.accreditationBody;
   if (coach.accreditationLevel !== undefined) updateData.accreditation_level = coach.accreditationLevel;
-  if (coach.emccVerified !== undefined) updateData.emcc_verified = coach.emccVerified;
-  if (coach.emccVerifiedAt !== undefined) updateData.emcc_verified_at = coach.emccVerifiedAt;
+  // emcc_verified, emcc_verified_at, icf_verified, icf_verified_at are server-only — omitted
   if (coach.emccProfileUrl !== undefined) updateData.emcc_profile_url = coach.emccProfileUrl;
-  if (coach.icfVerified !== undefined) updateData.icf_verified = coach.icfVerified;
-  if (coach.icfVerifiedAt !== undefined) updateData.icf_verified_at = coach.icfVerifiedAt;
   if (coach.icfAccreditationLevel !== undefined) updateData.icf_accreditation_level = coach.icfAccreditationLevel;
   if (coach.icfProfileUrl !== undefined) updateData.icf_profile_url = coach.icfProfileUrl;
   if (coach.additionalCertifications !== undefined) updateData.additional_certifications = coach.additionalCertifications;
@@ -335,28 +332,6 @@ export const registerCoach = async (
   return await getCoachById(coach.id);
 };
 
-export const toggleVerifyCoach = async (coachId: string): Promise<boolean> => {
-  const coach = await getCoachById(coachId);
-  if (!coach) return false;
-
-  const newVerifiedStatus = !coach.isVerified;
-
-  const { error } = await supabase
-    .from('coaches')
-    .update({
-      is_verified: newVerifiedStatus,
-      verified_at: newVerifiedStatus ? new Date().toISOString() : null,
-      documents_submitted: newVerifiedStatus ? true : coach.documentsSubmitted,
-    })
-    .eq('id', coachId);
-
-  if (error) {
-    console.error('Error toggling verification:', error);
-    return false;
-  }
-
-  return true;
-};
 
 export const verifyCoachLicense = async (
   body: string,

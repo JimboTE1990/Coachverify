@@ -5,7 +5,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('APP_URL') ?? 'https://coachverify.vercel.app',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -73,7 +73,7 @@ serve(async (req) => {
 
     // STEP 2: Check if URL is already used by another coach
     const { data: existingCoaches } = await supabase
-      .from('coach_profiles')
+      .from('coaches')
       .select('id, name')
       .eq('emcc_profile_url', profileUrl)
       .neq('id', coachId);
@@ -110,7 +110,7 @@ serve(async (req) => {
       if (nameSimilarity >= 0.85) {
         const isTempId = coachId.startsWith('temp_');
         if (!isTempId) {
-          await supabase.from('coach_profiles').update({
+          await supabase.from('coaches').update({
             emcc_verified: true,
             emcc_verified_at: new Date().toISOString(),
             emcc_profile_url: profileUrl,
@@ -169,7 +169,7 @@ serve(async (req) => {
     const isTempId = coachId.startsWith('temp_');
 
     if (result.verified && result.matchDetails && !isTempId) {
-      await supabase.from('coach_profiles').update({
+      await supabase.from('coaches').update({
         emcc_verified: true,
         emcc_verified_at: new Date().toISOString(),
         emcc_profile_url: profileUrl,
@@ -189,7 +189,7 @@ serve(async (req) => {
 
       console.log('[EMCC URL Verification] Coach verified and cached');
     } else if (!result.verified && !isTempId) {
-      await supabase.from('coach_profiles').update({
+      await supabase.from('coaches').update({
         emcc_verified: false,
         verification_status: 'rejected',
       }).eq('id', coachId);

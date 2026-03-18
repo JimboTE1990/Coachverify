@@ -324,20 +324,40 @@ export const CoachDetails: React.FC = () => {
       setReviewFormData({ rating: 5, author: '', coachingPeriod: '', location: '', text: '' });
       setShowReviewForm(false);
 
-      // Show vibrant success message with custom styling
+      // Show vibrant success message with safe DOM construction (no innerHTML)
       const successDiv = document.createElement('div');
       successDiv.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-fade-in-up';
-      successDiv.innerHTML = `
-        <div class="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-3xl shadow-2xl p-8 max-w-md">
-          <div class="flex items-center justify-center mb-4">
-            <svg class="h-16 w-16 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-          </div>
-          <h3 class="text-2xl font-bold text-center mb-2">Review Submitted! 🎉</h3>
-          <p class="text-center text-green-50">Thank you for sharing your experience! Your review helps others find great coaches.</p>
-        </div>
-      `;
+
+      const card = document.createElement('div');
+      card.className = 'bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-3xl shadow-2xl p-8 max-w-md';
+
+      const iconWrap = document.createElement('div');
+      iconWrap.className = 'flex items-center justify-center mb-4';
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'h-16 w-16 animate-bounce');
+      svg.setAttribute('fill', 'none');
+      svg.setAttribute('stroke', 'currentColor');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('stroke-linejoin', 'round');
+      path.setAttribute('stroke-width', '2');
+      path.setAttribute('d', 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z');
+      svg.appendChild(path);
+      iconWrap.appendChild(svg);
+
+      const heading = document.createElement('h3');
+      heading.className = 'text-2xl font-bold text-center mb-2';
+      heading.textContent = 'Review Submitted!';
+
+      const body = document.createElement('p');
+      body.className = 'text-center text-green-50';
+      body.textContent = 'Thank you for sharing your experience! Your review helps others find great coaches.';
+
+      card.appendChild(iconWrap);
+      card.appendChild(heading);
+      card.appendChild(body);
+      successDiv.appendChild(card);
       document.body.appendChild(successDiv);
       setTimeout(() => {
         successDiv.remove();

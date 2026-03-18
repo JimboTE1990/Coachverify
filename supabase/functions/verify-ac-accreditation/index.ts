@@ -13,7 +13,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 
 // CORS headers for edge function responses
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('APP_URL') ?? 'https://coachverify.vercel.app',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
@@ -34,6 +34,27 @@ serve(async (req) => {
           verified: false,
           errorMessage: 'Profile URL and coach name are required'
         }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
+    // ── SSRF protection: only allow HTTPS URLs on the AC domain ───────────────
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(profileUrl);
+    } catch {
+      return new Response(
+        JSON.stringify({ verified: false, errorMessage: 'Invalid profile URL' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+    if (
+      parsedUrl.protocol !== 'https:' ||
+      !parsedUrl.hostname.endsWith('associationforcoaching.com')
+    ) {
+      console.warn('[AC Verification] Blocked non-AC URL:', profileUrl);
+      return new Response(
+        JSON.stringify({ verified: false, errorMessage: 'Profile URL must be an associationforcoaching.com address' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCoaches, toggleVerifyCoach, toggleFlagReview } from '../services/supabaseService';
+import { getCoaches, toggleFlagReview } from '../services/supabaseService';
 import { Coach } from '../types';
 import { Lock, FileText, CheckCircle, XCircle, Flag, AlertTriangle } from 'lucide-react';
 
@@ -27,14 +27,7 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleVerify = async (id: string) => {
-    await toggleVerifyCoach(id);
-    // Reload coaches after update
-    const updated = await getCoaches();
-    setCoaches(updated);
-  };
-
-  const handleFlag = async (coachId: string, reviewId: string) => {
+const handleFlag = async (coachId: string, reviewId: string) => {
     await toggleFlagReview(coachId, reviewId);
     // Reload coaches after update
     const updated = await getCoaches();
@@ -100,20 +93,18 @@ export const AdminDashboard: React.FC = () => {
                            {coach.documentsSubmitted ? 'Docs Submitted' : 'Missing Docs'}
                         </span>
                      </div>
-                     <button 
-                       onClick={() => handleVerify(coach.id)}
-                       className={`flex items-center px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                         coach.isVerified 
-                         ? 'bg-red-50 text-red-600 hover:bg-red-100' 
-                         : 'bg-green-50 text-green-600 hover:bg-green-100'
+                     <span className={`flex items-center px-3 py-1.5 rounded-lg text-sm font-medium ${
+                         coach.isVerified
+                         ? 'bg-green-50 text-green-600'
+                         : 'bg-slate-50 text-slate-500'
                        }`}
                      >
                         {coach.isVerified ? (
-                            <> <XCircle className="h-4 w-4 mr-1" /> Revoke </>
+                            <> <CheckCircle className="h-4 w-4 mr-1" /> Verified </>
                         ) : (
-                            <> <CheckCircle className="h-4 w-4 mr-1" /> Verify </>
+                            <> <XCircle className="h-4 w-4 mr-1" /> Unverified </>
                         )}
-                     </button>
+                     </span>
                   </div>
                 </div>
               ))}

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import * as pdfjsLib from 'pdfjs-dist';
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).toString();
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { ShieldCheck, CheckCircle, ArrowRight, Loader, Mail, AlertTriangle, Eye, EyeOff, XCircle, Info, ExternalLink, FileText, Upload } from 'lucide-react';
 import { verifyCoachLicense, verifyEmccCertificate, EmccCertOcrResult } from '../services/supabaseService';
@@ -30,6 +32,7 @@ export const CoachSignup: React.FC = () => {
   const [certFileName, setCertFileName] = useState('');
   const infoButtonRef = useRef<HTMLButtonElement>(null);
   const hasRedirected = useRef(false);
+  const certFileInputRef = useRef<HTMLInputElement>(null);
 
   // Close popup when clicking outside
   useEffect(() => {
@@ -191,25 +194,33 @@ export const CoachSignup: React.FC = () => {
     setOcrLoading(true);
 
     try {
-      const buffer = await file.arrayBuffer();
-      const bytes = new Uint8Array(buffer);
-      let binary = '';
-      bytes.forEach(b => (binary += String.fromCharCode(b)));
-      const imageBase64 = btoa(binary);
+      let imageBase64: string;
+      let mediaType: string;
 
-      // Claude Vision only supports image formats — reject PDFs at this point
       if (file.type === 'application/pdf') {
-        setOcrResult({
-          verified: false,
-          confidence: 0,
-          extractedData: { eiaNumber: null, fullName: null, accreditationLevel: null, expiryDate: null },
-          matchDetails: { nameMatch: false, eiaMatch: false, levelMatch: false },
-          reason: 'PDF files are not supported — please take a screenshot or photo of your certificate and upload as JPG or PNG',
-        });
-        setOcrLoading(false);
-        return;
+        // Convert first page of PDF to PNG using PDF.js
+        const buffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+        const page = await pdf.getPage(1);
+        const scale = 2; // 2x for readability
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d')!;
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        // Export as PNG base64 (strip data URL prefix)
+        const dataUrl = canvas.toDataURL('image/png');
+        imageBase64 = dataUrl.split(',')[1];
+        mediaType = 'image/png';
+      } else {
+        const buffer = await file.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        bytes.forEach(b => (binary += String.fromCharCode(b)));
+        imageBase64 = btoa(binary);
+        mediaType = file.type || 'image/jpeg';
       }
-      const mediaType = file.type || 'image/jpeg';
       const fullName = `${formData.first_name} ${formData.last_name}`.trim();
       const tempCoachId = `temp_${Date.now()}`;
 
@@ -941,8 +952,9 @@ export const CoachSignup: React.FC = () => {
                           {certFileName || 'Choose certificate file…'}
                         </span>
                         <input
+                          ref={certFileInputRef}
                           type="file"
-                          accept="image/jpeg,image/png,image/webp"
+                          accept="image/jpeg,image/png,image/webp,application/pdf"
                           className="hidden"
                           disabled={ocrLoading || !formData.regNumber}
                           onChange={e => {
@@ -970,7 +982,15 @@ export const CoachSignup: React.FC = () => {
                               Extracted: <strong>{ocrResult.extractedData.fullName}</strong> · {ocrResult.extractedData.eiaNumber} · {ocrResult.extractedData.accreditationLevel}
                             </p>
                           )}
-                          <p className="text-xs text-slate-400">Confidence: {ocrResult.confidence}%</p>
+                          {!ocrResult.verified && (
+                            <button
+                              type="button"
+                              onClick={() => { setOcrResult(null); setCertFileName(''); if (certFileInputRef.current) certFileInputRef.current.value = ''; }}
+                              className="mt-1 text-xs font-semibold text-red-700 underline hover:text-red-900"
+                            >
+                              Try again
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>

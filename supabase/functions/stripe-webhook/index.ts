@@ -36,11 +36,16 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'No signature' }), { status: 400 });
     }
 
+    if (!STRIPE_WEBHOOK_SECRET) {
+      console.error('[Stripe Webhook] STRIPE_WEBHOOK_SECRET is not set');
+      return new Response(JSON.stringify({ error: 'Webhook secret not configured' }), { status: 500 });
+    }
+
     // Get raw body for signature verification
     const body = await req.text();
 
-    // Verify webhook signature
-    const event = await verifyStripeSignature(body, signature);
+    // Verify webhook signature using HMAC-SHA256
+    const event = await verifyStripeSignature(body, signature, STRIPE_WEBHOOK_SECRET);
 
     console.log('[Stripe Webhook] Event received:', event.type);
 
@@ -73,21 +78,59 @@ serve(async (req) => {
   } catch (error) {
     console.error('[Stripe Webhook] Error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Webhook processing failed' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
 
-async function verifyStripeSignature(body: string, signature: string) {
-  // For now, we'll parse the event without verification in development
-  // In production, you should verify the signature properly
-  const event = JSON.parse(body);
+async function verifyStripeSignature(body: string, signature: string, secret: string) {
+  // Parse the stripe-signature header: t=<timestamp>,v1=<sig>[,v1=<sig>...]
+  const parts = signature.split(',');
+  let timestamp: string | null = null;
+  const v1Signatures: string[] = [];
 
-  // TODO: Add proper signature verification with Stripe library
-  // This requires: crypto.subtle.sign() which is available in Deno
+  for (const part of parts) {
+    const [key, value] = part.split('=');
+    if (key === 't') timestamp = value;
+    if (key === 'v1') v1Signatures.push(value);
+  }
 
-  return event;
+  if (!timestamp || v1Signatures.length === 0) {
+    throw new Error('Invalid stripe-signature header format');
+  }
+
+  // Reject webhooks older than 5 minutes (replay attack prevention)
+  const ageSeconds = Math.floor(Date.now() / 1000) - parseInt(timestamp, 10);
+  if (ageSeconds > 300) {
+    throw new Error('Webhook timestamp too old — possible replay attack');
+  }
+
+  // Compute HMAC-SHA256 of "<timestamp>.<body>" using the webhook secret
+  const signedPayload = `${timestamp}.${body}`;
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signatureBytes = await crypto.subtle.sign(
+    'HMAC',
+    cryptoKey,
+    new TextEncoder().encode(signedPayload)
+  );
+  const expectedSig = Array.from(new Uint8Array(signatureBytes))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  // Stripe may rotate secrets — check all v1 signatures provided
+  const isValid = v1Signatures.some(sig => sig === expectedSig);
+  if (!isValid) {
+    throw new Error('Webhook signature verification failed');
+  }
+
+  return JSON.parse(body);
 }
 
 async function handleCheckoutCompleted(session: any, supabase: any) {

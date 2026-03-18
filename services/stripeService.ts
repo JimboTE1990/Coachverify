@@ -4,6 +4,7 @@
  */
 
 import { getStripe, STRIPE_PRICES, isStripeConfigured } from '../lib/stripe';
+import { supabase } from '../lib/supabase';
 
 export interface CreateCheckoutSessionParams {
   priceId: string;
@@ -43,10 +44,15 @@ export const createCheckoutSession = async (params: CreateCheckoutSessionParams)
 
     console.log('[StripeService] API URL:', apiUrl);
 
+    // Attach the user's JWT so the edge function can verify the caller
+    const { data: { session } } = await supabase.auth.getSession();
+    const authHeader = session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+
     const response = await fetch(`${apiUrl}/create-checkout-session`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeader,
       },
       body: JSON.stringify({
         priceId,
@@ -55,7 +61,7 @@ export const createCheckoutSession = async (params: CreateCheckoutSessionParams)
         billingCycle,
         trialEndsAt,
         discountCode,
-        stripePromotionCodeId, // Pass Stripe promo code ID to apply at checkout
+        stripePromotionCodeId,
       }),
     });
 
