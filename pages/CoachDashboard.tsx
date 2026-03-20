@@ -214,6 +214,7 @@ export const CoachDashboard: React.FC = () => {
   useEffect(() => {
     if (currentCoach?.customUrl && !customUrlInput) {
       setCustomUrlInput(currentCoach.customUrl);
+      setCustomUrlStatus('available');
     }
   }, [currentCoach?.customUrl]);
 
@@ -284,7 +285,7 @@ export const CoachDashboard: React.FC = () => {
     const u = (link.url || '').toLowerCase();
     if (link.type === 'email' || p.includes('email') || u.startsWith('mailto:')) return 'email';
     if (link.type === 'tel' || p.includes('phone') || p.includes('mobile') || u.startsWith('tel:')) return 'phone';
-    if (p.includes('booking') || p.includes('appointment') || p.includes('schedule') || p.includes('calendly') || p.includes('cal.com') || p.includes('google calendar') || u.includes('calendly.com') || u.includes('cal.com') || u.includes('calendar.google.com') || u.includes('calendar.app.google')) return 'booking';
+    if (p.includes('booking') || p.includes('appointment') || p.includes('schedule') || p.includes('calendly') || p.includes('cal.com') || p.includes('google calendar') || p.includes('microsoft bookings') || u.includes('calendly.com') || u.includes('cal.com') || u.includes('calendar.google.com') || u.includes('calendar.app.google') || u.includes('bookings.microsoft.com')) return 'booking';
     if (p.includes('form') || p.includes('enquiry') || p.includes('typeform') || p.includes('jotform') || p.includes('tally') || u.includes('forms.gle') || u.includes('typeform.com') || u.includes('jotform.com') || u.includes('tally.so')) return 'enquiry';
     if (['linkedin', 'instagram', 'x / twitter', 'twitter', 'facebook'].some(s => p.includes(s))) return 'social';
     if (p === 'website' || p.includes('website')) return 'website';
@@ -1264,7 +1265,7 @@ export const CoachDashboard: React.FC = () => {
                   const hasCompletedProfile = !!(currentCoach.bio && currentCoach.bio.trim().length > 20 && currentCoach.mainCoachingCategories && currentCoach.mainCoachingCategories.length > 0);
                   const hasSchedulingLink = !!(currentCoach.socialLinks && currentCoach.socialLinks.some(l => {
                     const label = (l.platform || '').toLowerCase();
-                    return label.includes('booking') || label.includes('schedule') || label.includes('calendly') || label.includes('cal.com');
+                    return label.includes('booking') || label.includes('schedule') || label.includes('calendly') || label.includes('cal.com') || label.includes('microsoft');
                   }));
                   const hasReviews = (currentCoach.totalReviews ?? currentCoach.reviews?.length ?? 0) >= 1;
                   const hasSocialLinks = !!(currentCoach.socialLinks && currentCoach.socialLinks.some(l => {
@@ -1779,7 +1780,7 @@ export const CoachDashboard: React.FC = () => {
                           </div>
                         ) : (
                           <div className="flex flex-wrap gap-2">
-                            {['Calendly', 'Cal.com', 'Google Calendar'].map(p => (
+                            {['Calendly', 'Cal.com', 'Google Calendar', 'Microsoft Bookings'].map(p => (
                               <button key={p} type="button"
                                 onClick={() => { setLinkInputSection('booking'); setLinkInputPlatform(p); setLinkInputUrl(''); }}
                                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-cyan-300 hover:text-cyan-700 hover:bg-cyan-50 transition-colors">
