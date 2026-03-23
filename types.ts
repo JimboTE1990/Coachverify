@@ -83,7 +83,8 @@ export type HealthWellnessExpertise =
   | 'Mental Health & Wellbeing'
   | 'Addiction Recovery'
   | 'Grief & Loss'
-  | 'Burnout Recovery';
+  | 'Burnout Recovery'
+  | 'Menopause & Hormonal Health';
 
 export type PersonalLifeExpertise =
   | 'Life Purpose & Meaning'
@@ -116,7 +117,8 @@ export type NicheDemographicExpertise =
   | 'Veterans & Military Transition'
   | 'Expats & Relocation'
   | 'Artists & Creatives'
-  | 'Athletes & Sports Performance';
+  | 'Athletes & Sports Performance'
+  | 'Late-Diagnosed Neurodivergent Adults';
 
 export type MethodologyModalityExpertise =
   | 'Cognitive Behavioral Coaching (CBC)'
@@ -162,6 +164,7 @@ export type CPDQualification =
   | 'ADHD Coaching Certification'
   | 'Nutrition Coaching Certification'
   | 'Neuro-affirmed Coaching Certification'
+  | 'Menopause Coaching Certification'
   | 'Certified in Ethical Application of AI';
 
 // New: Coaching Languages

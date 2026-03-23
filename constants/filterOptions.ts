@@ -83,6 +83,7 @@ export const CPD_QUALIFICATIONS: CPDQualification[] = [
   'ADHD Coaching Certification',
   'Nutrition Coaching Certification',
   'Neuro-affirmed Coaching Certification',
+  'Menopause Coaching Certification',
   'Certified in Ethical Application of AI',
 ];
 
@@ -136,7 +137,8 @@ export const HEALTH_WELLNESS: HealthWellnessExpertise[] = [
   'Mental Health & Wellbeing',
   'Addiction Recovery',
   'Grief & Loss',
-  'Burnout Recovery'
+  'Burnout Recovery',
+  'Menopause & Hormonal Health'
 ];
 
 export const PERSONAL_LIFE: PersonalLifeExpertise[] = [
@@ -172,7 +174,8 @@ export const NICHE_DEMOGRAPHIC: NicheDemographicExpertise[] = [
   'Veterans & Military Transition',
   'Expats & Relocation',
   'Artists & Creatives',
-  'Athletes & Sports Performance'
+  'Athletes & Sports Performance',
+  'Late-Diagnosed Neurodivergent Adults'
 ];
 
 export const METHODOLOGY_MODALITY: MethodologyModalityExpertise[] = [

@@ -111,9 +111,10 @@ async function verifyStripeSignature(body: string, signature: string, secret: st
     throw new Error('Invalid stripe-signature header format');
   }
 
-  // Reject webhooks older than 5 minutes (replay attack prevention)
+  // Reject webhooks older than 24 hours — prevents replay attacks while allowing
+  // Stripe's retry schedule (retries reuse the original timestamp, up to 3 days)
   const ageSeconds = Math.floor(Date.now() / 1000) - parseInt(timestamp, 10);
-  if (ageSeconds > 300) {
+  if (ageSeconds > 86400) {
     throw new Error('Webhook timestamp too old — possible replay attack');
   }
 
