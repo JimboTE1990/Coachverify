@@ -173,7 +173,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 <option value="Health & Wellness">Health & Wellness</option>
                 <option value="Personal & Life">Personal & Life</option>
                 <option value="Financial">Financial</option>
-                <option value="Niche & Demographic">Niche & Demographic</option>
+                <option value="Specialist Coaching">Specialist Coaching</option>
                 <option value="Methodology & Modality">Methodology & Modality</option>
               </select>
             </div>

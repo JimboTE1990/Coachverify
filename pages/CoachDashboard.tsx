@@ -60,7 +60,7 @@ const MAIN_COACHING_CATEGORIES: CoachingExpertiseCategory[] = [
   'Health & Wellness',
   'Personal & Life',
   'Financial',
-  'Niche & Demographic',
+  'Specialist Coaching',
   'Methodology & Modality'
 ];
 
@@ -96,7 +96,7 @@ const COACHING_EXPERTISE_BY_CATEGORY: Record<CoachingExpertiseCategory, Coaching
     'Financial Planning & Budgeting', 'Debt Management', 'Investment Coaching',
     'Retirement Planning (Financial)', 'Money Mindset'
   ] as FinancialExpertise[],
-  'Niche & Demographic': [
+  'Specialist Coaching': [
     'LGBTQ+ Coaching', 'Neurodiversity (ADHD, Autism, etc.)',
     'Youth & Students (Ages 16-25)', 'Mid-Career Professionals',
     'Senior Professionals (50+)', 'Women in Leadership',

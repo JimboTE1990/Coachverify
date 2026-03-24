@@ -227,7 +227,7 @@ export const EXPERTISE_CATEGORIES: ExpertiseCategory[] = [
     items: FINANCIAL
   },
   {
-    name: 'Niche & Demographic',
+    name: 'Specialist Coaching',
     icon: '👥',
     description: 'Specialized coaching for specific groups',
     items: NICHE_DEMOGRAPHIC

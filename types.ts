@@ -1,5 +1,5 @@
 
-export type Specialty = 'Career & Professional Development' | 'Business & Entrepreneurship' | 'Health & Wellness' | 'Personal & Life' | 'Financial' | 'Niche & Demographic' | 'Methodology & Modality' | 'General';
+export type Specialty = 'Career & Professional Development' | 'Business & Entrepreneurship' | 'Health & Wellness' | 'Personal & Life' | 'Financial' | 'Specialist Coaching' | 'Methodology & Modality' | 'General';
 
 export type Format = 'In-Person' | 'Online';
 
@@ -43,7 +43,7 @@ export type CoachingExpertiseCategory =
   | 'Health & Wellness'
   | 'Personal & Life'
   | 'Financial'
-  | 'Niche & Demographic'
+  | 'Specialist Coaching'
   | 'Methodology & Modality';
 
 export type CareerProfessionalExpertise =
