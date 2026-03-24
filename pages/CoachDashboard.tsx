@@ -84,7 +84,7 @@ const COACHING_EXPERTISE_BY_CATEGORY: Record<CoachingExpertiseCategory, Coaching
     'Stress Management', 'Mindfulness & Meditation', 'Sleep Improvement',
     'Nutrition & Healthy Eating', 'Fitness & Exercise', 'Weight Management',
     'Chronic Illness Management', 'Mental Health & Wellbeing',
-    'Addiction Recovery', 'Grief & Loss', 'Burnout Recovery'
+    'Addiction Recovery', 'Grief & Loss', 'Burnout Recovery', 'Menopause & Hormonal Health'
   ] as HealthWellnessExpertise[],
   'Personal & Life': [
     'Life Purpose & Meaning', 'Goal Setting & Achievement', 'Relationship Coaching',
@@ -101,7 +101,7 @@ const COACHING_EXPERTISE_BY_CATEGORY: Record<CoachingExpertiseCategory, Coaching
     'Youth & Students (Ages 16-25)', 'Mid-Career Professionals',
     'Senior Professionals (50+)', 'Women in Leadership',
     'Veterans & Military Transition', 'Expats & Relocation',
-    'Artists & Creatives', 'Athletes & Sports Performance'
+    'Artists & Creatives', 'Athletes & Sports Performance', 'Late-Diagnosed Neurodivergent Adults'
   ] as NicheDemographicExpertise[],
   'Methodology & Modality': [
     'Cognitive Behavioral Coaching (CBC)', 'Neuro-Linguistic Programming (NLP)',
@@ -122,7 +122,8 @@ const CPD_QUALIFICATIONS: CPDQualification[] = [
   'Leadership Coaching Certification', 'Performance Coaching Certification',
   'Business Coaching Certification', 'Parenting Coach Certification',
   'ADHD Coaching Certification', 'Nutrition Coaching Certification',
-  'Neuro-affirmed Coaching Certification', 'Certified in Ethical Application of AI',
+  'Neuro-affirmed Coaching Certification', 'Menopause Coaching Certification',
+  'Certified in Ethical Application of AI',
 ];
 
 // Coaching Languages
@@ -2197,19 +2198,8 @@ export const CoachDashboard: React.FC = () => {
                                   <>
                                   <div className="mt-1 flex items-center gap-2">
                                     <span className="flex items-center gap-1 text-amber-600 text-xs font-semibold">
-                                      <AlertTriangle className="h-3 w-3" /> Not yet verified
+                                      <AlertTriangle className="h-3 w-3" /> Not yet verified - contact support
                                     </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setVerificationData({ eiaNumber: '', fullName: currentCoach?.name || '' });
-                                        setVerificationError(null);
-                                        setShowVerificationModal(true);
-                                      }}
-                                      className="text-xs text-brand-600 hover:text-brand-700 font-bold underline"
-                                    >
-                                      Verify now
-                                    </button>
                                   </div>
                                   {/* DEV-only: certificate OCR self-serve */}
                                   {import.meta.env.DEV && (
@@ -2311,7 +2301,7 @@ export const CoachDashboard: React.FC = () => {
                           </div>
                         </div>
                         <p className="text-xs text-slate-500 mt-3 italic">
-                          Your accreditation details appear on your public profile. If your EMCC accreditation shows as unverified, click "Verify now" to complete verification with your EIA number.
+                          Your accreditation details appear on your public profile. If your accreditation shows as unverified, please contact support and we'll verify it for you.
                         </p>
                       </div>
 
