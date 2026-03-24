@@ -2196,11 +2196,6 @@ export const CoachDashboard: React.FC = () => {
                                   </span>
                                 ) : (
                                   <>
-                                  <div className="mt-1 flex items-center gap-2">
-                                    <span className="flex items-center gap-1 text-amber-600 text-xs font-semibold">
-                                      <AlertTriangle className="h-3 w-3" /> Not yet verified - contact support
-                                    </span>
-                                  </div>
                                   {/* DEV-only: certificate OCR self-serve */}
                                   {import.meta.env.DEV && (
                                     <div className="mt-3 bg-violet-50 border border-violet-200 rounded-xl p-3 space-y-2">
@@ -2301,7 +2296,7 @@ export const CoachDashboard: React.FC = () => {
                           </div>
                         </div>
                         <p className="text-xs text-slate-500 mt-3 italic">
-                          Your accreditation details appear on your public profile. If your accreditation shows as unverified, please contact support and we'll verify it for you.
+                          Your accreditation details appear on your public profile.
                         </p>
                       </div>
 
