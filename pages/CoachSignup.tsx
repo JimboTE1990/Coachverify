@@ -26,7 +26,6 @@ export const CoachSignup: React.FC = () => {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [pendingManualReview, setPendingManualReview] = useState(false);
-  // DEV-only: EMCC certificate OCR
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrResult, setOcrResult] = useState<EmccCertOcrResult | null>(null);
   const [certFileName, setCertFileName] = useState('');
@@ -930,81 +929,70 @@ export const CoachSignup: React.FC = () => {
                    </div>
                  )}
 
-                 {/* EMCC Verification — OCR upload (DEV) or manual email (PROD) */}
+                 {/* EMCC Verification — OCR certificate upload */}
                 {formData.body === 'EMCC' && !verified && (
-                  import.meta.env.DEV ? (
-                    <div className="bg-violet-50 border border-violet-300 rounded-xl p-4 mb-4 space-y-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold bg-violet-200 text-violet-800 px-2 py-0.5 rounded-full uppercase tracking-wide">Dev Preview</span>
-                        <p className="text-sm font-semibold text-violet-900">EMCC Certificate OCR Verification</p>
+                  <div className="bg-violet-50 border border-violet-300 rounded-xl p-4 mb-4 space-y-3">
+                    <p className="text-sm font-semibold text-violet-900">Upload your EMCC Certificate</p>
+                    <p className="text-xs text-violet-700">
+                      Upload a photo or screenshot of your EMCC certificate to verify automatically. Supported formats: JPG, PNG.
+                      If you have a PDF, take a screenshot of the full certificate first.
+                      Your EIA number above must be filled in first.
+                    </p>
+
+                    <label className={`flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl border-2 border-dashed cursor-pointer transition-all ${
+                      ocrLoading ? 'opacity-50 cursor-not-allowed border-violet-300 bg-violet-50' : 'border-violet-400 bg-white hover:bg-violet-50'
+                    }`}>
+                      <Upload className="h-4 w-4 text-violet-600" />
+                      <span className="text-sm font-medium text-violet-700">
+                        {certFileName || 'Choose certificate file…'}
+                      </span>
+                      <input
+                        ref={certFileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,application/pdf"
+                        className="hidden"
+                        disabled={ocrLoading || !formData.regNumber}
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (file) handleCertificateUpload(file);
+                        }}
+                      />
+                    </label>
+
+                    {ocrLoading && (
+                      <div className="flex items-center gap-2 text-sm text-violet-700">
+                        <Loader className="h-4 w-4 animate-spin" />
+                        Reading certificate…
                       </div>
-                      <p className="text-xs text-violet-700">
-                        Upload your EMCC certificate to verify automatically. Supported: JPG, PNG.
-                        If you have a PDF, take a screenshot of the full certificate first.
-                        Your EIA number above must be filled in first.
-                      </p>
+                    )}
 
-                      <label className={`flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl border-2 border-dashed cursor-pointer transition-all ${
-                        ocrLoading ? 'opacity-50 cursor-not-allowed border-violet-300 bg-violet-50' : 'border-violet-400 bg-white hover:bg-violet-50'
-                      }`}>
-                        <Upload className="h-4 w-4 text-violet-600" />
-                        <span className="text-sm font-medium text-violet-700">
-                          {certFileName || 'Choose certificate file…'}
-                        </span>
-                        <input
-                          ref={certFileInputRef}
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp,application/pdf"
-                          className="hidden"
-                          disabled={ocrLoading || !formData.regNumber}
-                          onChange={e => {
-                            const file = e.target.files?.[0];
-                            if (file) handleCertificateUpload(file);
-                          }}
-                        />
-                      </label>
-
-                      {ocrLoading && (
-                        <div className="flex items-center gap-2 text-sm text-violet-700">
-                          <Loader className="h-4 w-4 animate-spin" />
-                          Reading certificate…
-                        </div>
-                      )}
-
-                      {ocrResult && (
-                        <div className={`rounded-lg p-3 text-sm space-y-1 ${ocrResult.verified ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-                          <p className={`font-semibold ${ocrResult.verified ? 'text-green-800' : 'text-red-800'}`}>
-                            {ocrResult.verified ? '✓ Verified' : '✗ Could not verify'}
+                    {ocrResult && (
+                      <div className={`rounded-lg p-3 text-sm space-y-1 ${ocrResult.verified ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                        <p className={`font-semibold ${ocrResult.verified ? 'text-green-800' : 'text-red-800'}`}>
+                          {ocrResult.verified ? '✓ Verified' : '✗ Could not verify'}
+                        </p>
+                        <p className={`text-xs ${ocrResult.verified ? 'text-slate-600' : 'text-red-700'}`}>{ocrResult.reason}</p>
+                        {ocrResult.extractedData.eiaNumber && (
+                          <p className="text-xs text-slate-500">
+                            Extracted: <strong>{ocrResult.extractedData.fullName}</strong> · {ocrResult.extractedData.eiaNumber} · {ocrResult.extractedData.accreditationLevel}
                           </p>
-                          <p className={`text-xs ${ocrResult.verified ? 'text-slate-600' : 'text-red-700'}`}>{ocrResult.reason}</p>
-                          {ocrResult.extractedData.eiaNumber && (
-                            <p className="text-xs text-slate-500">
-                              Extracted: <strong>{ocrResult.extractedData.fullName}</strong> · {ocrResult.extractedData.eiaNumber} · {ocrResult.extractedData.accreditationLevel}
-                            </p>
-                          )}
-                          {!ocrResult.verified && (
-                            <button
-                              type="button"
-                              onClick={() => { setOcrResult(null); setCertFileName(''); if (certFileInputRef.current) certFileInputRef.current.value = ''; }}
-                              className="mt-1 text-xs font-semibold text-red-700 underline hover:text-red-900"
-                            >
-                              Try again
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="bg-blue-50 border border-blue-300 rounded-lg p-4 mb-4">
-                      <p className="text-sm text-blue-800">
-                        <strong>Note:</strong> Due to EMCC recently updating their website, directories are temporarily unavailable. We are manually verifying all EMCC certificates whilst we await further updates.
-                      </p>
-                      <p className="text-xs text-blue-700 mt-2">
-                        After signup, please email your EMCC certificate to{' '}
-                        <strong>coachdogverify@gmail.com</strong> with your EIA number in the subject line.
-                      </p>
-                    </div>
-                  )
+                        )}
+                        {!ocrResult.verified && (
+                          <button
+                            type="button"
+                            onClick={() => { setOcrResult(null); setCertFileName(''); if (certFileInputRef.current) certFileInputRef.current.value = ''; }}
+                            className="mt-1 text-xs font-semibold text-red-700 underline hover:text-red-900"
+                          >
+                            Try again
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    <p className="text-xs text-violet-600">
+                      Having trouble? Email your certificate to <strong>coachdogverify@gmail.com</strong> with your EIA number in the subject line and we'll verify you manually.
+                    </p>
+                  </div>
                 )}
 
                  {/* Terms of Service Acceptance - Hard Stop */}
@@ -1086,7 +1074,7 @@ export const CoachSignup: React.FC = () => {
                        <div>
                          <p className="font-bold text-amber-900">Credentials Submitted</p>
                          <p className="text-sm text-amber-800 mt-1">
-                           Please email your EMCC certificate to <strong>coachdogverify@gmail.com</strong> with your EIA number in the subject line. You can complete your signup now.
+                           Your credentials are under review. We'll verify your accreditation and update your profile within 1 business day. You can complete your signup now.
                          </p>
                        </div>
                      </div>
