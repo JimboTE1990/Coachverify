@@ -20,10 +20,11 @@ export const AdminDashboard: React.FC = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'admin123') {
+    const adminPassword = (import.meta as any).env?.VITE_ADMIN_PASSWORD;
+    if (adminPassword && password === adminPassword) {
       setIsAuthenticated(true);
     } else {
-      alert('Invalid password (hint: admin123)');
+      alert('Invalid password');
     }
   };
 
@@ -57,7 +58,6 @@ const handleFlag = async (coachId: string, reviewId: string) => {
               Enter Dashboard
             </button>
           </form>
-          <p className="mt-4 text-center text-xs text-slate-400">Hint: admin123</p>
         </div>
       </div>
     );
