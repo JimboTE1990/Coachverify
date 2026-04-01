@@ -128,9 +128,9 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
   },
 
   // Post-Beta Launch Offer — £50 off lifetime (£149 → £100), no use limit
-  // Stripe promo code ID: promo_1THRejDye3rmKJaDiMbHLFwr
-  'LAUNCH50': {
-    code: 'LAUNCH50',
+  // Stripe promo code: EMCC50 | API ID: promo_1THRejDye3rmKJaDiMbHLFwr
+  'EMCC50': {
+    code: 'EMCC50',
     type: 'lifetime_fixed',
     value: 50, // £50 off the £149 lifetime price = £100 final
     enabled: true,
