@@ -144,6 +144,7 @@ serve(async (req) => {
     } else if (discountCode) {
       // Map discount codes to Stripe coupon IDs (fallback when no promotion code ID available)
       const couponMap: Record<string, string> = {
+        'LAUNCH50':  'promo_1THRejDye3rmKJaDiMbHLFwr',
         'BETA49':    'E7g5S88d',
         'EMCC15':    'NStyLey1',
         'PARTNER2026': 'partner_30_off',

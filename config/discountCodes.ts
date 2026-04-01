@@ -127,6 +127,20 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     stripePromotionCodeId: 'promo_1TBanXDye3rmKJaDlq8eKosB',
   },
 
+  // Post-Beta Launch Offer — £50 off lifetime (£149 → £100), no use limit
+  // Stripe promo code ID: promo_1THRejDye3rmKJaDiMbHLFwr
+  'LAUNCH50': {
+    code: 'LAUNCH50',
+    type: 'lifetime_fixed',
+    value: 50, // £50 off the £149 lifetime price = £100 final
+    enabled: true,
+    planRestrictions: ['lifetime'],
+    source: 'launch_offer',
+    displayName: 'Launch Offer',
+    description: '£50 off - Pay only £100 for lifetime access',
+    stripePromotionCodeId: 'promo_1THRejDye3rmKJaDiMbHLFwr',
+  },
+
   // Legacy code — kept disabled, superseded by BETA49
   'BETA100': {
     code: 'BETA100',
