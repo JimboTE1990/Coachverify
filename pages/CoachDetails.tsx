@@ -12,8 +12,9 @@ import {
   ArrowLeft, Star, Mail, Instagram, MessageCircle, Linkedin,
   MapPin, CheckCircle, Share2, ChevronLeft, ChevronRight, Clock, X,
   Facebook, Globe, Youtube, Phone, Copy, Flag, Reply, Edit, Trash2, Send, AlertTriangle, ExternalLink,
-  Calendar, Award, FileText
+  Calendar, Award, FileText, Bookmark
 } from 'lucide-react';
+import { isBookmarked, addBookmark, removeBookmark, getBookmarkedIds } from '../utils/bookmarks';
 
 export const CoachDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +26,8 @@ export const CoachDetails: React.FC = () => {
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const [showRecentlyViewed, setShowRecentlyViewed] = useState(false);
   const [recentlyViewedCoaches, setRecentlyViewedCoaches] = useState<Coach[]>([]);
+  const [currentCoachBookmarked, setCurrentCoachBookmarked] = useState(false);
+  const [bookmarkedCoaches, setBookmarkedCoaches] = useState<Coach[]>([]);
   const [questionnaireData, setQuestionnaireData] = useState<QuestionnaireAnswers | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [copiedContact, setCopiedContact] = useState<string | null>(null);
@@ -94,26 +97,33 @@ export const CoachDetails: React.FC = () => {
     }
   }, [location]);
 
-  // Load recently viewed coaches
+  // Load recently viewed + bookmarked coaches
   useEffect(() => {
-    const loadRecentlyViewed = async () => {
-      const stored = localStorage.getItem('recentlyViewedCoaches');
-      if (stored) {
-        try {
+    const loadSavedAndRecent = async () => {
+      try {
+        const allCoaches = await getCoaches();
+
+        const stored = localStorage.getItem('recentlyViewedCoaches');
+        if (stored) {
           const coachIds: string[] = JSON.parse(stored);
-          // Fetch full coach data for recently viewed
-          const allCoaches = await getCoaches();
           const recentCoaches = coachIds
             .map(coachId => allCoaches.find(c => c.id === coachId))
             .filter((c): c is Coach => c !== undefined)
-            .slice(0, 8); // Show last 8
+            .slice(0, 8);
           setRecentlyViewedCoaches(recentCoaches);
-        } catch {
-          setRecentlyViewedCoaches([]);
         }
+
+        const savedIds = getBookmarkedIds();
+        const saved = savedIds
+          .map(savedId => allCoaches.find(c => c.id === savedId))
+          .filter((c): c is Coach => c !== undefined);
+        setBookmarkedCoaches(saved);
+        if (id) setCurrentCoachBookmarked(isBookmarked(id));
+      } catch {
+        setRecentlyViewedCoaches([]);
       }
     };
-    loadRecentlyViewed();
+    loadSavedAndRecent();
   }, [id]);
 
   useEffect(() => {
@@ -716,22 +726,41 @@ export const CoachDetails: React.FC = () => {
           {/* Top Section: Recently Viewed (Left), Match & Photo (Center), Share (Right) */}
           <div className="px-6 pt-8 pb-6">
             <div className="flex items-start justify-between mb-6">
-              {/* Recently Viewed Button - TOP LEFT */}
-              {recentlyViewedCoaches.length > 0 ? (
+              {/* Bookmark Button - TOP LEFT */}
+              <div className="flex flex-col items-center gap-1">
                 <button
-                  onClick={() => setShowRecentlyViewed(true)}
+                  onClick={() => {
+                    if (!id) return;
+                    if (currentCoachBookmarked) {
+                      removeBookmark(id);
+                    } else {
+                      addBookmark(id);
+                    }
+                    setCurrentCoachBookmarked(!currentCoachBookmarked);
+                    setBookmarkedCoaches(prev =>
+                      currentCoachBookmarked
+                        ? prev.filter(c => c.id !== id)
+                        : coach ? [...prev, coach] : prev
+                    );
+                  }}
                   className="flex flex-col items-center group"
                 >
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all">
-                    <Clock className="h-7 w-7 text-purple-600" />
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all ${currentCoachBookmarked ? 'bg-gradient-to-br from-brand-100 to-brand-200' : 'bg-gradient-to-br from-slate-100 to-slate-200'}`}>
+                    <Bookmark className={`h-7 w-7 transition-colors ${currentCoachBookmarked ? 'text-brand-600 fill-current' : 'text-slate-400'}`} />
                   </div>
                   <span className="text-xs font-bold text-slate-600 mt-2">
-                    {recentlyViewedCoaches.length} recent
+                    {currentCoachBookmarked ? 'Saved' : 'Save'}
                   </span>
                 </button>
-              ) : (
-                <div className="w-20"></div> /* Spacer if no recently viewed */
-              )}
+                {(bookmarkedCoaches.length > 0 || recentlyViewedCoaches.length > 0) && (
+                  <button
+                    onClick={() => setShowRecentlyViewed(true)}
+                    className="text-xs text-brand-600 hover:underline font-medium"
+                  >
+                    View all ({bookmarkedCoaches.length + recentlyViewedCoaches.filter(c => !getBookmarkedIds().includes(c.id)).length})
+                  </button>
+                )}
+              </div>
 
               {/* Center: Match Percentage + Profile Photo */}
               <div className="flex flex-col items-center">
@@ -1505,53 +1534,73 @@ export const CoachDetails: React.FC = () => {
         <div className="h-8"></div>
       </div>
 
-      {/* Recently Viewed Modal - Like Amazon/eBay */}
+      {/* Saved & Recent Modal */}
       {showRecentlyViewed && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center p-4">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-2xl">
-            {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-slate-200">
-              <h3 className="text-2xl font-black text-slate-900">Recently Viewed</h3>
-              <button
-                onClick={() => setShowRecentlyViewed(false)}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
-              >
+              <h3 className="text-2xl font-black text-slate-900">Saved & Recent</h3>
+              <button onClick={() => setShowRecentlyViewed(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                 <X className="h-6 w-6 text-slate-600" />
               </button>
             </div>
 
-            {/* List of Recently Viewed Coaches */}
-            <div className="overflow-y-auto max-h-[calc(80vh-100px)] p-4">
-              <div className="space-y-3">
-                {recentlyViewedCoaches.map((recentCoach) => (
-                  <button
-                    key={recentCoach.id}
-                    onClick={() => {
-                      setShowRecentlyViewed(false);
-                      navigate(`/coach/${recentCoach.id}`);
-                    }}
-                    className="w-full flex items-center gap-4 p-4 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all group"
-                  >
-                    <img
-                      src={recentCoach.photoUrl || '/default-avatar.png'}
-                      alt={recentCoach.name}
-                      className="w-16 h-16 rounded-xl object-cover ring-2 ring-slate-200 group-hover:ring-brand-500 transition-all"
-                    />
-                    <div className="flex-1 text-left">
-                      <p className="font-bold text-slate-900 text-lg">{recentCoach.name}</p>
-                      <p className="text-sm text-slate-600">
-                        {recentCoach.specialties && recentCoach.specialties.length > 0
-                          ? recentCoach.specialties.slice(0, 2).join(' • ')
-                          : 'Coach'}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-black text-brand-600 text-lg">£{recentCoach.hourlyRate}</p>
-                      <p className="text-xs text-slate-500">per hour</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
+            <div className="overflow-y-auto max-h-[calc(80vh-100px)] p-4 space-y-6">
+              {/* Saved Coaches */}
+              {bookmarkedCoaches.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Bookmark className="h-4 w-4 text-brand-600 fill-current" />
+                    <p className="text-sm font-bold text-slate-700 uppercase tracking-wide">Saved Coaches</p>
+                  </div>
+                  <div className="space-y-3">
+                    {bookmarkedCoaches.map((savedCoach) => (
+                      <button
+                        key={savedCoach.id}
+                        onClick={() => { setShowRecentlyViewed(false); navigate(`/coach/${savedCoach.id}`); }}
+                        className="w-full flex items-center gap-4 p-4 bg-brand-50 hover:bg-brand-100 rounded-2xl transition-all group"
+                      >
+                        <img src={savedCoach.photoUrl || '/default-avatar.png'} alt={savedCoach.name} className="w-14 h-14 rounded-xl object-cover ring-2 ring-brand-200 group-hover:ring-brand-400 transition-all" />
+                        <div className="flex-1 text-left">
+                          <p className="font-bold text-slate-900">{savedCoach.name}</p>
+                          <p className="text-sm text-slate-500">{savedCoach.location}</p>
+                        </div>
+                        <p className="font-black text-brand-600">£{savedCoach.hourlyRate}<span className="text-xs font-normal text-slate-400">/hr</span></p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Recently Viewed (not saved) */}
+              {recentlyViewedCoaches.filter(c => !getBookmarkedIds().includes(c.id)).length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Clock className="h-4 w-4 text-slate-500" />
+                    <p className="text-sm font-bold text-slate-700 uppercase tracking-wide">Recently Viewed</p>
+                  </div>
+                  <div className="space-y-3">
+                    {recentlyViewedCoaches.filter(c => !getBookmarkedIds().includes(c.id)).map((recentCoach) => (
+                      <button
+                        key={recentCoach.id}
+                        onClick={() => { setShowRecentlyViewed(false); navigate(`/coach/${recentCoach.id}`); }}
+                        className="w-full flex items-center gap-4 p-4 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all group"
+                      >
+                        <img src={recentCoach.photoUrl || '/default-avatar.png'} alt={recentCoach.name} className="w-14 h-14 rounded-xl object-cover ring-2 ring-slate-200 group-hover:ring-brand-500 transition-all" />
+                        <div className="flex-1 text-left">
+                          <p className="font-bold text-slate-900">{recentCoach.name}</p>
+                          <p className="text-sm text-slate-500">{recentCoach.location}</p>
+                        </div>
+                        <p className="font-black text-brand-600">£{recentCoach.hourlyRate}<span className="text-xs font-normal text-slate-400">/hr</span></p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {bookmarkedCoaches.length === 0 && recentlyViewedCoaches.length === 0 && (
+                <p className="text-center text-slate-500 py-8">No saved or recently viewed coaches yet.</p>
+              )}
             </div>
           </div>
         </div>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Search, SlidersHorizontal, X, Sparkles, Bone, AlertCircle } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Sparkles, Bone, AlertCircle, Bookmark, MapPin, ArrowRight, Clock } from 'lucide-react';
 import { getCoaches } from '../services/supabaseService';
+import { getBookmarkedIds, addBookmark, removeBookmark, isBookmarked } from '../utils/bookmarks';
 import { Coach, QuestionnaireAnswers, Specialty, Format, CoachingExpertise, CoachingLanguage, CPDQualification } from '../types';
 import { CoachCard } from '../components/CoachCard';
 import { FilterSidebar } from '../components/filters/FilterSidebar';
@@ -43,6 +44,23 @@ export const CoachList: React.FC = () => {
 
   // Questionnaire results passed from Onboarding
   const [matchData, setMatchData] = useState<QuestionnaireAnswers | null>(null);
+
+  // Bookmarks
+  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
+  const [showBookmarks, setShowBookmarks] = useState(false);
+
+  useEffect(() => {
+    setBookmarkedIds(getBookmarkedIds());
+  }, []);
+
+  const handleBookmarkToggle = (coachId: string) => {
+    if (isBookmarked(coachId)) {
+      removeBookmark(coachId);
+    } else {
+      addBookmark(coachId);
+    }
+    setBookmarkedIds(getBookmarkedIds());
+  };
 
   useEffect(() => {
     // Load initial data from Supabase
@@ -459,6 +477,20 @@ export const CoachList: React.FC = () => {
                     />
                   </div>
 
+                  {/* Bookmarks Button */}
+                  <button
+                    onClick={() => setShowBookmarks(true)}
+                    className="relative flex items-center justify-center px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 transition-colors"
+                    title="Saved coaches"
+                  >
+                    <Bookmark className={`h-5 w-5 ${bookmarkedIds.length > 0 ? 'text-brand-600 fill-current' : 'text-slate-500'}`} />
+                    {bookmarkedIds.length > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 bg-brand-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                        {bookmarkedIds.length}
+                      </span>
+                    )}
+                  </button>
+
                 </div>
               </div>
             </div>
@@ -549,6 +581,8 @@ export const CoachList: React.FC = () => {
                         matchReason={matchData ? getEnhancedMatchReason(coach, matchData) : undefined}
                         matchPercentage={matchData ? calculateMatchScore(coach, matchData) : undefined}
                         filterMatchPercentage={showPartialMatches ? calculateFilterMatchPercentage(coach).percentage : undefined}
+                        isBookmarked={bookmarkedIds.includes(coach.id)}
+                        onBookmarkToggle={handleBookmarkToggle}
                       />
                     </div>
                   ))}
@@ -658,6 +692,102 @@ export const CoachList: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Bookmarks Drawer */}
+      {showBookmarks && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowBookmarks(false)} />
+
+          {/* Panel */}
+          <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <Bookmark className="h-5 w-5 text-brand-600 fill-current" />
+                <h2 className="text-lg font-bold text-slate-900">Saved Coaches</h2>
+                {bookmarkedIds.length > 0 && (
+                  <span className="bg-brand-100 text-brand-700 text-xs font-bold px-2 py-0.5 rounded-full">{bookmarkedIds.length}</span>
+                )}
+              </div>
+              <button onClick={() => setShowBookmarks(false)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                <X className="h-5 w-5 text-slate-500" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+              {/* Saved Coaches */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Bookmark className="h-4 w-4 text-brand-600 fill-current" />
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Saved Coaches</p>
+                </div>
+                {bookmarkedIds.length === 0 ? (
+                  <div className="text-center py-6 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                    <p className="text-sm text-slate-500">Click the bookmark icon on any coach card to save them here.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {coaches.filter(c => bookmarkedIds.includes(c.id)).map(coach => (
+                      <div key={coach.id} className="flex items-center gap-3 p-3 bg-brand-50 rounded-xl border border-brand-100 hover:border-brand-300 transition-colors">
+                        <img src={coach.photoUrl} alt={coach.name} className="w-11 h-11 rounded-lg object-cover flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-slate-900 text-sm truncate">{coach.name}</p>
+                          <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><MapPin className="h-3 w-3" />{coach.location}</p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <a href={`/coach/${coach.id}`} className="flex items-center gap-1 text-xs font-bold text-brand-600 hover:text-brand-800 transition-colors">
+                            View <ArrowRight className="h-3 w-3" />
+                          </a>
+                          <button onClick={() => handleBookmarkToggle(coach.id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Remove">
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Recently Viewed (not saved) */}
+              {(() => {
+                let recentIds: string[] = [];
+                try { recentIds = JSON.parse(localStorage.getItem('recentlyViewedCoaches') ?? '[]'); } catch { recentIds = []; }
+                const recentNotSaved = coaches.filter(c => recentIds.includes(c.id) && !bookmarkedIds.includes(c.id));
+                if (recentNotSaved.length === 0) return null;
+                return (
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Clock className="h-4 w-4 text-slate-400" />
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Recently Viewed</p>
+                    </div>
+                    <div className="space-y-2">
+                      {recentNotSaved.map(coach => (
+                        <div key={coach.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 hover:border-slate-300 transition-colors">
+                          <img src={coach.photoUrl} alt={coach.name} className="w-11 h-11 rounded-lg object-cover flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-slate-900 text-sm truncate">{coach.name}</p>
+                            <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><MapPin className="h-3 w-3" />{coach.location}</p>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <a href={`/coach/${coach.id}`} className="flex items-center gap-1 text-xs font-bold text-brand-600 hover:text-brand-800 transition-colors">
+                              View <ArrowRight className="h-3 w-3" />
+                            </a>
+                            <button onClick={() => handleBookmarkToggle(coach.id)} className="p-1.5 text-slate-300 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors" title="Save">
+                              <Bookmark className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

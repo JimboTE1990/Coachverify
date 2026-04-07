@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Coach, CURRENCIES } from '../types';
-import { BadgeCheck, Star, MapPin, ArrowRight, Sparkles } from 'lucide-react';
+import { BadgeCheck, Star, MapPin, ArrowRight, Sparkles, Bookmark } from 'lucide-react';
 import { AccreditationBadge } from './AccreditationBadge';
 import { hasAccreditationBadge } from '../utils/accreditationBadges';
 import { EXPERTISE_CATEGORIES } from '../constants/filterOptions';
@@ -11,9 +11,11 @@ interface CoachCardProps {
   matchReason?: string;
   matchPercentage?: number;
   filterMatchPercentage?: number;
+  isBookmarked?: boolean;
+  onBookmarkToggle?: (coachId: string) => void;
 }
 
-export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchPercentage, filterMatchPercentage }) => {
+export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchPercentage, filterMatchPercentage, isBookmarked, onBookmarkToggle }) => {
   const navigate = useNavigate();
   const totalReviews = coach.totalReviews || coach.reviews?.length || 0;
 
@@ -88,11 +90,22 @@ export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchP
               </div>
             )}
           </div>
-          <div className="text-right">
+          <div className="flex items-start gap-3">
+            <div className="text-right">
               <span className="text-xl font-bold text-slate-900">
                 {CURRENCIES.find(c => c.code === (coach.currency || 'GBP'))?.symbol || '£'}{coach.hourlyRate}
               </span>
               <span className="text-xs text-slate-400 block font-medium">/hr</span>
+            </div>
+            {onBookmarkToggle && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onBookmarkToggle(coach.id); }}
+                className={`p-1.5 rounded-lg transition-colors ${isBookmarked ? 'text-brand-600 bg-brand-50 hover:bg-brand-100' : 'text-slate-300 hover:text-brand-500 hover:bg-slate-50'}`}
+                title={isBookmarked ? 'Remove bookmark' : 'Save coach'}
+              >
+                <Bookmark className={`h-5 w-5 ${isBookmarked ? 'fill-current' : ''}`} />
+              </button>
+            )}
           </div>
         </div>
 
