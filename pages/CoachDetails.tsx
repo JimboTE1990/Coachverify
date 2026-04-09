@@ -1125,11 +1125,15 @@ export const CoachDetails: React.FC = () => {
                 <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Coach Bio:</h3>
                 {coach.bio.trim().startsWith('<') ? (
                   <div
-                    className="text-slate-900 leading-relaxed font-medium text-base prose prose-sm max-w-none prose-headings:text-slate-900 prose-headings:mt-4 prose-headings:mb-1 prose-p:my-2 prose-ul:my-2 prose-li:my-0.5"
+                    className="text-slate-900 leading-relaxed font-medium text-base prose prose-sm max-w-none prose-headings:text-slate-900 prose-headings:mt-4 prose-headings:mb-1 prose-p:my-4 prose-ul:my-2 prose-li:my-0.5"
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(coach.bio) }}
                   />
                 ) : (
-                  <p className="text-slate-900 leading-relaxed font-medium text-base whitespace-pre-line">{coach.bio}</p>
+                  <div className="text-slate-900 leading-relaxed font-medium text-base">
+                    {coach.bio.trim().split(/\n\n+/).map((para, i) => (
+                      <p key={i} className="mb-4 whitespace-pre-line last:mb-0">{para}</p>
+                    ))}
+                  </div>
                 )}
               </div>
             )}

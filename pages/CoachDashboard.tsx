@@ -145,10 +145,7 @@ export const CoachDashboard: React.FC = () => {
   const { viewMode, setViewMode, isMobile, isTablet } = useDeviceDetection();
   const hasRedirected = useRef(false);
 
-  // Default to 'account' tab if subscription is expired, otherwise 'profile'
-  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'subscription' | 'analytics' | 'reviews'>(
-    currentCoach?.subscriptionStatus === 'expired' ? 'account' : 'profile'
-  );
+  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'subscription' | 'analytics' | 'reviews'>('profile');
 
   // Onboarding checklist dismiss state (persisted in localStorage per coach)
   const [checklistDismissed, setChecklistDismissed] = useState(false);
@@ -1216,13 +1213,13 @@ export const CoachDashboard: React.FC = () => {
                           <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                           </svg>
-                          <h3 className="text-xl font-bold text-red-800">Profile Hidden - View Only Mode</h3>
+                          <h3 className="text-xl font-bold text-red-800">Profile Hidden</h3>
                         </div>
                         <p className="text-red-700 text-sm mb-2">
                           Your profile is <strong>not visible in search results</strong>. Your subscription ended on <strong>{currentCoach.subscriptionEndsAt ? new Date(currentCoach.subscriptionEndsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : currentCoach.trialEndsAt ? new Date(currentCoach.trialEndsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'recently'}</strong>.
                         </p>
                         <p className="text-red-600 text-xs font-semibold">
-                          ℹ️ You can view your profile but cannot edit it. Upgrade to reactivate editing and become visible to clients.
+                          ℹ️ You can still edit your profile, but it won't appear in search until you reactivate your subscription.
                         </p>
                       </div>
                       <Link
@@ -1409,9 +1406,8 @@ export const CoachDashboard: React.FC = () => {
                       </button>
                       <button
                         onClick={handleSaveProfile}
-                        disabled={!hasUnsavedChanges || isSaving || trialStatus.isExpired}
+                        disabled={!hasUnsavedChanges || isSaving}
                         className="bg-brand-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                        title={trialStatus.isExpired ? 'Profile editing disabled - Reactivate subscription to edit' : ''}
                       >
                         {isSaving ? (
                           <>
@@ -1424,8 +1420,7 @@ export const CoachDashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Disable all editing for expired users */}
-                  <div className={trialStatus.isExpired ? 'opacity-60 pointer-events-none select-none' : ''}>
+                  <div>
 
                   {/* Coach Bio Section - CONSOLIDATED */}
                   <CollapsibleSection
