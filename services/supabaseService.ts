@@ -80,7 +80,7 @@ export const getCoachById = async (id: string): Promise<Coach | null> => {
   // Fetch reviews separately (review_token intentionally excluded — never expose to client)
   const { data: reviews } = await supabase
     .from('reviews')
-    .select('id,coach_id,author_name,author_photo_url,rating,review_text,is_flagged,created_at,is_verified_client,coach_reply,coach_reply_date,coaching_period,verification_status,verified_at,reviewer_location,spam_score,spam_reasons,is_spam,spam_category')
+    .select('id,coach_id,author_name,rating,review_text,is_flagged,created_at,is_verified_client,coach_reply,coach_reply_date,coaching_period,verification_status,verified_at,reviewer_location,spam_score,spam_reasons,is_spam,spam_category')
     .eq('coach_id', resolvedId)
     .order('created_at', { ascending: false });
 
@@ -137,7 +137,7 @@ export const getCoachByUserId = async (userId: string): Promise<Coach | null> =>
   // Fetch reviews separately (review_token intentionally excluded — never expose to client)
   const { data: reviews } = await supabase
     .from('reviews')
-    .select('id,coach_id,author_name,author_photo_url,rating,review_text,is_flagged,created_at,is_verified_client,coach_reply,coach_reply_date,coaching_period,verification_status,verified_at,reviewer_location,spam_score,spam_reasons,is_spam,spam_category')
+    .select('id,coach_id,author_name,rating,review_text,is_flagged,created_at,is_verified_client,coach_reply,coach_reply_date,coaching_period,verification_status,verified_at,reviewer_location,spam_score,spam_reasons,is_spam,spam_category')
     .eq('coach_id', coach.id)
     .order('created_at', { ascending: false });
 
