@@ -1027,7 +1027,7 @@ export const CoachDetails: React.FC = () => {
             {((coach.accreditationBody === 'EMCC' && coach.emccVerified) ||
               (coach.accreditationBody === 'ICF' && coach.icfVerified) ||
               (coach.accreditationBody === 'AC' && coach.acVerified)) && (
-              <div className={`flex items-center gap-6 p-5 rounded-2xl border-2 shadow-md mb-6 ${
+              <div className={`flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-5 rounded-2xl border-2 shadow-md mb-6 ${
                 coach.accreditationBody === 'EMCC'
                   ? 'bg-gradient-to-br from-[#2B4170]/5 to-[#C9A961]/10 border-[#2B4170]/30'
                   : coach.accreditationBody === 'ICF'
@@ -1041,7 +1041,7 @@ export const CoachDetails: React.FC = () => {
                       body={coach.accreditationBody}
                       level={coach.accreditationLevel || coach.icfAccreditationLevel || ''}
                       size="large"
-                      className="!h-32 !w-32"
+                      className="!h-20 !w-20 sm:!h-32 sm:!w-32"
                     />
                   )}
                 </div>

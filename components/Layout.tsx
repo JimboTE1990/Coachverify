@@ -372,7 +372,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </div>
           <div className="border-t border-slate-100 pt-8 flex flex-col md:flex-row justify-between items-center">
             <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
-              <p className="text-slate-400 text-sm font-medium">© 2024 CoachDog. All rights reserved.</p>
+              <p className="text-slate-400 text-sm font-medium">© 2026 CoachDog. All rights reserved.</p>
               <div className="flex space-x-4 text-xs text-slate-400">
                 <Link to="/privacy" className="hover:text-brand-600 font-medium">Privacy</Link>
                 <span>·</span>
