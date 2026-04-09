@@ -1125,7 +1125,7 @@ export const CoachDetails: React.FC = () => {
                 <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Coach Bio:</h3>
                 {coach.bio.trim().startsWith('<') ? (
                   <div
-                    className="text-slate-900 leading-relaxed font-medium text-base prose prose-sm max-w-none prose-headings:text-slate-900 prose-headings:mt-4 prose-headings:mb-1 prose-p:my-4 prose-ul:my-2 prose-li:my-0.5"
+                    className="text-slate-900 leading-relaxed font-medium text-base [&>p]:mb-4 [&>p:last-child]:mb-0 [&>h2]:font-bold [&>h2]:text-lg [&>h2]:mt-4 [&>h2]:mb-2 [&>h3]:font-bold [&>h3]:mt-3 [&>h3]:mb-1 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-3 [&>li]:mb-1"
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(coach.bio) }}
                   />
                 ) : (
