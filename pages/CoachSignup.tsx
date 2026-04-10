@@ -18,6 +18,7 @@ export const CoachSignup: React.FC = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [verifiedLevel, setVerifiedLevel] = useState<string | null>(null); // Level returned by verification (EMCC directory/OCR)
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [signupError, setSignupError] = useState('');
@@ -238,6 +239,8 @@ export const CoachSignup: React.FC = () => {
         setVerified(true);
         setPendingManualReview(false);
         setSignupError('');
+        // Capture level extracted from certificate OCR
+        setVerifiedLevel(result.extractedData?.accreditationLevel || null);
       }
     } catch (err) {
       console.error('[handleCertificateUpload] Error:', err);
@@ -278,6 +281,8 @@ export const CoachSignup: React.FC = () => {
       if (result.verified) {
         setVerified(true);
         setPendingManualReview(false);
+        // Capture level from directory verification (EMCC returns this; ICF uses formData.accreditationLevel)
+        setVerifiedLevel((result as any).matchDetails?.level || formData.accreditationLevel || null);
       } else if ((result as any).pendingManualReview) {
         // Allow signup to continue with pending verification
         setVerified(true); // Allow them to proceed
@@ -319,7 +324,13 @@ export const CoachSignup: React.FC = () => {
               last_name: formData.last_name,
               gender: formData.gender,
               accreditation_body: formData.body,
+              accreditation_level: verifiedLevel || formData.accreditationLevel || null,
               registration_number: formData.regNumber,
+              // Store verification result so createCoachProfile can apply it on profile creation
+              emcc_verified: verified && formData.body === 'EMCC',
+              icf_verified: verified && formData.body === 'ICF',
+              ac_verified: verified && formData.body === 'AC',
+              verification_status: verified ? 'verified' : 'pending',
             },
           },
         }),

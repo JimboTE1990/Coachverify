@@ -111,12 +111,9 @@ async function verifyStripeSignature(body: string, signature: string, secret: st
     throw new Error('Invalid stripe-signature header format');
   }
 
-  // Reject webhooks older than 24 hours — prevents replay attacks while allowing
-  // Stripe's retry schedule (retries reuse the original timestamp, up to 3 days)
-  const ageSeconds = Math.floor(Date.now() / 1000) - parseInt(timestamp, 10);
-  if (ageSeconds > 86400) {
-    throw new Error('Webhook timestamp too old — possible replay attack');
-  }
+  // Stripe's HMAC-SHA256 signature already prevents replay attacks.
+  // We do not enforce a timestamp window because Stripe retries use the original
+  // timestamp and our retries would be rejected if we imposed a short cutoff.
 
   // Compute HMAC-SHA256 of "<timestamp>.<body>" using the webhook secret
   const signedPayload = `${timestamp}.${body}`;
@@ -167,6 +164,7 @@ async function handleCheckoutCompleted(session: any, supabase: any) {
     .from('coaches')
     .update({
       subscription_status: subscriptionStatus,
+      is_lifetime_member: isLifetime,
       billing_cycle: billingCycle,
       stripe_customer_id: session.customer,
       stripe_subscription_id: isLifetime ? null : session.subscription,

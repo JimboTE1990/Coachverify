@@ -165,6 +165,29 @@ export const Home: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Partners & Associated Organisations */}
+      <div className="bg-white border-t border-slate-100 py-14">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-slate-500 text-sm font-semibold uppercase tracking-widest mb-10">
+            Our Partners &amp; Associated Organisations
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-10 md:gap-16">
+            <a href="https://www.emccglobal.org" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity">
+              <img src="/assets/emcc-logo.png" alt="EMCC Global" className="h-12 w-auto object-contain" />
+            </a>
+            <a href="https://coachingfederation.org" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity">
+              <img src="/assets/icf-logo.png" alt="ICF International Coaching Federation" className="h-12 w-auto object-contain" />
+            </a>
+            <a href="https://coachingmindsglobal.com" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity">
+              <img src="/assets/cm-logo-3.png" alt="Coaching Minds" className="h-12 w-auto object-contain" />
+            </a>
+            <a href="https://www.associationforcoaching.com" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity">
+              <img src="/assets/ac-logo.png" alt="Association for Coaching" className="h-12 w-auto object-contain" />
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -94,6 +94,15 @@ export async function createCoachProfile(
     dashboard_access: true, // Trial users have dashboard access
     // Partner referral source (if coach arrived via a partner URL)
     referral_source: additionalData?.referral_source || null,
+    // Accreditation data stored in user metadata during signup
+    // createCoachProfile is called after email confirmation, by which time the
+    // verification result (emcc_verified etc.) is only in metadata — not the DB.
+    accreditation_body: userData.user_metadata?.accreditation_body || null,
+    accreditation_level: userData.user_metadata?.accreditation_level || null,
+    emcc_verified: userData.user_metadata?.emcc_verified === true,
+    icf_verified: userData.user_metadata?.icf_verified === true,
+    ac_verified: userData.user_metadata?.ac_verified === true,
+    verification_status: userData.user_metadata?.verification_status || 'pending',
   };
 
   console.log('[ProfileCreation] Profile data to insert:', insertData);
