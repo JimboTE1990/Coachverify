@@ -39,6 +39,7 @@ export const CoachDetails: React.FC = () => {
     text: ''
   });
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewSessionConfirmed, setReviewSessionConfirmed] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [expandedReview, setExpandedReview] = useState(false);
@@ -299,6 +300,10 @@ export const CoachDetails: React.FC = () => {
       setReviewError('Please enter your review');
       return;
     }
+    if (!reviewSessionConfirmed) {
+      setReviewError('Please confirm you have received a session from this coach');
+      return;
+    }
 
     setReviewSubmitting(true);
 
@@ -332,6 +337,7 @@ export const CoachDetails: React.FC = () => {
 
       // Reset form and close modal
       setReviewFormData({ rating: 5, author: '', coachingPeriod: '', location: '', text: '' });
+      setReviewSessionConfirmed(false);
       setShowReviewForm(false);
 
       // Show vibrant success message with safe DOM construction (no innerHTML)
@@ -1621,6 +1627,7 @@ export const CoachDetails: React.FC = () => {
                 onClick={() => {
                   setShowReviewForm(false);
                   setReviewFormData({ rating: 5, author: '', coachingPeriod: '', location: '', text: '' });
+                  setReviewSessionConfirmed(false);
                   setReviewError(null);
                 }}
                 className="p-2 hover:bg-slate-100 rounded-full transition-colors"
@@ -1734,6 +1741,20 @@ export const CoachDetails: React.FC = () => {
                   disabled={reviewSubmitting}
                 />
               </div>
+
+              {/* Session Confirmation */}
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={reviewSessionConfirmed}
+                  onChange={(e) => setReviewSessionConfirmed(e.target.checked)}
+                  disabled={reviewSubmitting}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 flex-shrink-0 cursor-pointer"
+                />
+                <span className="text-sm text-slate-600 leading-snug group-hover:text-slate-800 transition-colors">
+                  I confirm I have received a paid or gifted session from this coach. <span className="text-red-500">*</span>
+                </span>
+              </label>
 
               {/* Submit Button */}
               <button
