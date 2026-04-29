@@ -95,6 +95,7 @@ export const CoachSignup: React.FC = () => {
     regNumber: '',
     location: '', // NEW: For ICF verification (City, Country)
     accreditationLevel: '', // NEW: For ICF credential level
+    hearAboutUs: '',
   });
 
   const passwordStrength = validatePassword(formData.password);
@@ -331,6 +332,7 @@ export const CoachSignup: React.FC = () => {
               icf_verified: verified && formData.body === 'ICF',
               ac_verified: verified && formData.body === 'AC',
               verification_status: verified ? 'verified' : 'pending',
+              hear_about_us: formData.hearAboutUs || null,
             },
           },
         }),
@@ -638,6 +640,31 @@ export const CoachSignup: React.FC = () => {
                     Passwords do not match
                   </p>
                 )}
+              </div>
+
+              {/* Where did you hear about us */}
+              <div className="space-y-2">
+                <label htmlFor="hearAboutUs" className="block text-sm font-semibold text-slate-700">
+                  Where did you hear about CoachDog? <span className="text-slate-400 font-normal">(optional)</span>
+                </label>
+                <select
+                  id="hearAboutUs"
+                  name="hearAboutUs"
+                  value={formData.hearAboutUs}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all bg-white"
+                >
+                  <option value="">Select an option</option>
+                  <option value="Google Search">Google Search</option>
+                  <option value="Facebook">Facebook</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="LinkedIn">LinkedIn</option>
+                  <option value="TikTok">TikTok</option>
+                  <option value="YouTube">YouTube</option>
+                  <option value="Coaching School Referral">Coaching School Referral</option>
+                  <option value="Word of Mouth">Word of Mouth</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
 
               {signupError && (

@@ -476,7 +476,8 @@ export const addReview = async (
   reviewText: string,
   coachingPeriod: string,
   location?: string,
-  reviewToken?: string // Optional token - will be generated if not provided
+  reviewToken?: string, // Optional token - will be generated if not provided
+  reviewerSocialUrl?: string
 ): Promise<Review | null> => {
   // Import spam detection (dynamic import to avoid circular dependencies)
   const { detectSpam, getSpamMessage } = await import('../utils/spamDetection');
@@ -504,6 +505,7 @@ export const addReview = async (
       review_text: reviewText,
       coaching_period: coachingPeriod,
       reviewer_location: location || null,
+      reviewer_social_url: reviewerSocialUrl || null,
       review_token: token, // Store token for ownership verification
       // spam_score: spamCheck.confidence,
       // spam_reasons: spamCheck.reasons,

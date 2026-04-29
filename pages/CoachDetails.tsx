@@ -33,6 +33,7 @@ export const CoachDetails: React.FC = () => {
   const [copiedContact, setCopiedContact] = useState<string | null>(null);
   const [reviewFormData, setReviewFormData] = useState({
     rating: 5,
+    socialUrl: '',
     author: '',
     coachingPeriod: '',
     location: '',
@@ -315,7 +316,9 @@ export const CoachDetails: React.FC = () => {
         reviewFormData.rating,
         reviewFormData.text.trim(),
         reviewFormData.coachingPeriod.trim(),
-        reviewFormData.location.trim() || undefined
+        reviewFormData.location.trim() || undefined,
+        undefined, // reviewToken
+        reviewFormData.socialUrl.trim() || undefined
       );
 
       if (!newReview) {
@@ -336,7 +339,7 @@ export const CoachDetails: React.FC = () => {
       });
 
       // Reset form and close modal
-      setReviewFormData({ rating: 5, author: '', coachingPeriod: '', location: '', text: '' });
+      setReviewFormData({ rating: 5, author: '', coachingPeriod: '', location: '', text: '', socialUrl: '' });
       setReviewSessionConfirmed(false);
       setShowReviewForm(false);
 
@@ -1626,7 +1629,7 @@ export const CoachDetails: React.FC = () => {
               <button
                 onClick={() => {
                   setShowReviewForm(false);
-                  setReviewFormData({ rating: 5, author: '', coachingPeriod: '', location: '', text: '' });
+                  setReviewFormData({ rating: 5, author: '', coachingPeriod: '', location: '', text: '', socialUrl: '' });
                   setReviewSessionConfirmed(false);
                   setReviewError(null);
                 }}
@@ -1738,6 +1741,22 @@ export const CoachDetails: React.FC = () => {
                   placeholder="Share your experience with this coach..."
                   rows={5}
                   className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all resize-none"
+                  disabled={reviewSubmitting}
+                />
+              </div>
+
+              {/* Social Media Link (optional identity verification) */}
+              <div>
+                <label htmlFor="review-social-url" className="block text-sm font-bold text-slate-900 mb-2">
+                  Your Social Media Profile <span className="text-slate-400 font-normal">(optional — helps verify your identity)</span>
+                </label>
+                <input
+                  id="review-social-url"
+                  type="url"
+                  value={reviewFormData.socialUrl}
+                  onChange={(e) => setReviewFormData({ ...reviewFormData, socialUrl: e.target.value })}
+                  placeholder="e.g. linkedin.com/in/yourname or instagram.com/yourhandle"
+                  className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all"
                   disabled={reviewSubmitting}
                 />
               </div>
