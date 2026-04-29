@@ -99,9 +99,9 @@ export async function createCoachProfile(
     // verification result (emcc_verified etc.) is only in metadata — not the DB.
     accreditation_body: userData.user_metadata?.accreditation_body || null,
     accreditation_level: userData.user_metadata?.accreditation_level || null,
-    emcc_verified: userData.user_metadata?.emcc_verified === true,
-    icf_verified: userData.user_metadata?.icf_verified === true,
-    ac_verified: userData.user_metadata?.ac_verified === true,
+    emcc_verified: userData.user_metadata?.emcc_verified === true || userData.user_metadata?.emcc_verified === 'true',
+    icf_verified: userData.user_metadata?.icf_verified === true || userData.user_metadata?.icf_verified === 'true',
+    ac_verified: userData.user_metadata?.ac_verified === true || userData.user_metadata?.ac_verified === 'true',
     verification_status: userData.user_metadata?.verification_status || 'pending',
   };
 
