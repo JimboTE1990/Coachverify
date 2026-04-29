@@ -599,7 +599,7 @@ export const CoachSignup: React.FC = () => {
               </div>
 
               {/* Confirm Password */}
-              <div className="space-y-2">
+              <div className="space-y-2 mt-2">
                 <label htmlFor="confirmPassword" className="block text-sm font-semibold text-slate-700">
                   Confirm Password <span className="text-red-500">*</span>
                 </label>
