@@ -643,7 +643,7 @@ export const CoachSignup: React.FC = () => {
               </div>
 
               {/* Where did you hear about us */}
-              <div className="space-y-2">
+              <div className="space-y-2 mt-6">
                 <label htmlFor="hearAboutUs" className="block text-sm font-semibold text-slate-700">
                   Where did you hear about CoachDog? <span className="text-slate-400 font-normal">(optional)</span>
                 </label>
