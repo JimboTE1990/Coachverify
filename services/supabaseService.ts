@@ -82,6 +82,7 @@ export const getCoachById = async (id: string): Promise<Coach | null> => {
     .from('reviews')
     .select('id,coach_id,author_name,rating,review_text,is_flagged,created_at,is_verified_client,coach_reply,coach_reply_date,coaching_period,verification_status,verified_at,reviewer_location,spam_score,spam_reasons,is_spam,spam_category')
     .eq('coach_id', resolvedId)
+    .eq('is_flagged', false)
     .order('created_at', { ascending: false });
 
   // Fetch social links
@@ -139,6 +140,7 @@ export const getCoachByUserId = async (userId: string): Promise<Coach | null> =>
     .from('reviews')
     .select('id,coach_id,author_name,rating,review_text,is_flagged,created_at,is_verified_client,coach_reply,coach_reply_date,coaching_period,verification_status,verified_at,reviewer_location,spam_score,spam_reasons,is_spam,spam_category')
     .eq('coach_id', coach.id)
+    .eq('is_flagged', false)
     .order('created_at', { ascending: false });
 
   // Fetch social links
