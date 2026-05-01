@@ -76,3 +76,4 @@ supabase/
 |---------|---------|
 | `/security-audit` | Full security sweep — RLS, secrets, auth, bucket policies |
 | `/pre-ship` | Pre-deployment checklist before any push |
+| `/bug-fix` | Structured bug investigation — symptom → root cause → fix → changelog |
