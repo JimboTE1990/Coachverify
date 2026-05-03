@@ -32,6 +32,7 @@ import { ChangePlanSuccess } from './pages/subscription/ChangePlanSuccess';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfService } from './pages/TermsOfService';
 import { CookiesPolicy } from './pages/CookiesPolicy';
+import { HowToFindACertifiedCoach } from './pages/HowToFindACertifiedCoach';
 
 interface ErrorBoundaryProps {
   children?: ReactNode;
@@ -133,6 +134,7 @@ const App: React.FC = () => {
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/cookies" element={<CookiesPolicy />} />
+              <Route path="/how-to-find-a-certified-verified-coach" element={<HowToFindACertifiedCoach />} />
             </Routes>
           </Layout>
         </AuthProvider>

@@ -95,6 +95,16 @@ export const Home: React.FC = () => {
             </p>
           </div>
 
+          {/* Pillar page link */}
+          <div className="mt-6 text-center">
+            <p className="text-slate-500 text-base">
+              Not sure how to choose the right coach?{' '}
+              <Link to="/how-to-find-a-certified-verified-coach" className="text-brand-600 font-semibold hover:text-brand-700 underline underline-offset-2">
+                Read our complete guide: How to Find a Certified Coach That Fits Your Budget and Needs →
+              </Link>
+            </p>
+          </div>
+
           {/* Embedded Video Player */}
           <div className="max-w-5xl mx-auto">
             <div

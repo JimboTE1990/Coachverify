@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ChevronDown, User, Search, HelpCircle, Mail, CreditCard, LogIn, UserPlus, LayoutDashboard, ClipboardList } from 'lucide-react';
+import { Menu, X, ChevronDown, User, Search, HelpCircle, Mail, CreditCard, LogIn, UserPlus, LayoutDashboard, ClipboardList, BookOpen } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { ProfileDropdown } from './navigation/ProfileDropdown';
 import { ExpiredBanner } from './subscription/ExpiredBanner';
@@ -214,6 +214,31 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 )}
               </div>
 
+              {/* Resources Dropdown */}
+              <div className="relative group">
+                <button
+                  className={`flex items-center text-lg font-display font-bold transition-all focus:outline-none group ${openDropdown === 'resources' ? 'text-brand-600' : 'text-slate-700 hover:text-brand-600'}`}
+                  onClick={() => toggleDropdown('resources')}
+                >
+                  Resources
+                  <ChevronDown className={`ml-1.5 h-5 w-5 transition-transform duration-200 ${openDropdown === 'resources' ? 'rotate-180 text-brand-600' : 'text-slate-400 group-hover:text-brand-600'}`} />
+                </button>
+                {openDropdown === 'resources' && (
+                  <div className="absolute left-1/2 -translate-x-1/2 mt-6 w-96 rounded-3xl shadow-2xl bg-white border border-slate-100 ring-1 ring-black ring-opacity-5 animate-fade-in-up overflow-hidden z-50">
+                    <div className="h-1.5 bg-gradient-to-r from-emerald-400 to-teal-500"></div>
+                    <div className="p-3 space-y-1">
+                      <NavMenuItem
+                        to="/how-to-find-a-certified-verified-coach"
+                        icon={BookOpen}
+                        label="How to Find a Certified Coach"
+                        desc="The complete 6-step guide to finding your perfect match"
+                        colorClass="bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Action Buttons */}
               <div className="flex items-center gap-3">
                 {/* Upgrade to Premium Button - for trial users only, not lifetime */}
@@ -298,6 +323,16 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 </div>
               </div>
 
+              {/* Mobile Section: Resources */}
+              <div>
+                <h3 className="text-sm font-extrabold text-emerald-600 uppercase tracking-widest mb-4 flex items-center"><BookOpen className="h-4 w-4 mr-2" /> Resources</h3>
+                <div className="space-y-3">
+                  <Link to="/how-to-find-a-certified-verified-coach" className="flex items-center px-5 py-4 rounded-2xl hover:bg-slate-50 text-slate-700 font-bold" onClick={closeMobileMenu}>
+                    <BookOpen className="h-6 w-6 mr-4 text-slate-400" /> How to Find a Certified Coach
+                  </Link>
+                </div>
+              </div>
+
               {/* Mobile Section: Coaches */}
               <div>
                 <h3 className="text-sm font-extrabold text-indigo-600 uppercase tracking-widest mb-4 flex items-center"><LayoutDashboard className="h-4 w-4 mr-2" /> For Coaches</h3>
@@ -327,7 +362,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
             <div className="col-span-1 md:col-span-2 lg:col-span-1">
                <div className="mb-4">
                   <CoachDogFullLogo className="h-16 w-auto" />
@@ -367,6 +402,13 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                  <li><Link to="/privacy" className="hover:text-brand-600">Privacy Policy</Link></li>
                  <li><Link to="/terms" className="hover:text-brand-600">Terms of Service</Link></li>
                  <li><Link to="/cookies" className="hover:text-brand-600">Cookies Policy</Link></li>
+               </ul>
+            </div>
+
+            <div>
+               <h4 className="font-bold text-slate-900 mb-4">Resources</h4>
+               <ul className="space-y-2 text-sm text-slate-500 font-medium">
+                 <li><Link to="/how-to-find-a-certified-verified-coach" className="hover:text-brand-600">How to Find a Certified Coach</Link></li>
                </ul>
             </div>
           </div>
