@@ -1516,6 +1516,47 @@ export const restoreAccount = async (coachId: string): Promise<boolean> => {
 };
 
 // ---------------------------------------------------------------------------
+// ICF Certificate OCR Verification
+// ---------------------------------------------------------------------------
+export interface IcfCertOcrResult {
+  verified: boolean;
+  confidence: number;
+  extractedData: {
+    credentialNumber: string | null;
+    fullName: string | null;
+    credentialLevel: string | null;
+    expiryDate: string | null;
+  };
+  matchDetails: { nameMatch: boolean; levelMatch: boolean; notExpired: boolean };
+  reason: string;
+}
+
+export const verifyIcfCertificate = async (
+  coachId: string,
+  fullName: string,
+  accreditationLevel: string,
+  imageBase64: string,
+  imageMediaType = 'image/jpeg'
+): Promise<IcfCertOcrResult> => {
+  const { data, error } = await supabase.functions.invoke('verify-icf-certificate-ocr', {
+    body: { coachId, fullName, accreditationLevel, imageBase64, imageMediaType },
+  });
+
+  if (error) {
+    console.error('[verifyIcfCertificate] Edge function error:', error);
+    return {
+      verified: false,
+      confidence: 0,
+      extractedData: { credentialNumber: null, fullName: null, credentialLevel: null, expiryDate: null },
+      matchDetails: { nameMatch: false, levelMatch: false, notExpired: false },
+      reason: 'Certificate verification is currently unavailable — please try again or contact support',
+    };
+  }
+
+  return data as IcfCertOcrResult;
+};
+
+// ---------------------------------------------------------------------------
 // EMCC Certificate OCR Verification (DEV / PREVIEW only)
 // ---------------------------------------------------------------------------
 export interface EmccCertOcrResult {

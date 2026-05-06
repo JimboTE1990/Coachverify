@@ -3,7 +3,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).toString();
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { ShieldCheck, CheckCircle, ArrowRight, Loader, Mail, AlertTriangle, Eye, EyeOff, XCircle, Info, ExternalLink, FileText, Upload } from 'lucide-react';
-import { verifyCoachLicense, verifyEmccCertificate, EmccCertOcrResult } from '../services/supabaseService';
+import { verifyCoachLicense, verifyEmccCertificate, EmccCertOcrResult, verifyIcfCertificate, IcfCertOcrResult } from '../services/supabaseService';
 import { supabase } from '../lib/supabase';
 import { validatePassword } from '../utils/passwordValidation';
 import { createCoachProfile } from '../utils/profileCreation';
@@ -30,9 +30,13 @@ export const CoachSignup: React.FC = () => {
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrResult, setOcrResult] = useState<EmccCertOcrResult | null>(null);
   const [certFileName, setCertFileName] = useState('');
+  const [icfOcrLoading, setIcfOcrLoading] = useState(false);
+  const [icfOcrResult, setIcfOcrResult] = useState<IcfCertOcrResult | null>(null);
+  const [icfCertFileName, setIcfCertFileName] = useState('');
   const infoButtonRef = useRef<HTMLButtonElement>(null);
   const hasRedirected = useRef(false);
   const certFileInputRef = useRef<HTMLInputElement>(null);
+  const icfCertFileInputRef = useRef<HTMLInputElement>(null);
 
   // Close popup when clicking outside
   useEffect(() => {
@@ -254,6 +258,52 @@ export const CoachSignup: React.FC = () => {
       });
     } finally {
       setOcrLoading(false);
+    }
+  };
+
+  const handleIcfCertificateUpload = async (file: File) => {
+    setIcfCertFileName(file.name);
+    setIcfOcrResult(null);
+    setIcfOcrLoading(true);
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      bytes.forEach(b => (binary += String.fromCharCode(b)));
+      const imageBase64 = btoa(binary);
+      const mediaType = file.type || 'image/jpeg';
+
+      const fullName = `${formData.first_name} ${formData.last_name}`.trim();
+      const tempCoachId = `temp_${Date.now()}`;
+
+      const result = await verifyIcfCertificate(
+        tempCoachId,
+        fullName,
+        formData.accreditationLevel || '',
+        imageBase64,
+        mediaType
+      );
+
+      setIcfOcrResult(result);
+
+      if (result.verified) {
+        setVerified(true);
+        setPendingManualReview(false);
+        setSignupError('');
+        setVerifiedLevel(result.extractedData?.credentialLevel || null);
+      }
+    } catch (err) {
+      console.error('[handleIcfCertificateUpload] Error:', err);
+      setIcfOcrResult({
+        verified: false,
+        confidence: 0,
+        extractedData: { credentialNumber: null, fullName: null, credentialLevel: null, expiryDate: null },
+        matchDetails: { nameMatch: false, levelMatch: false, notExpired: false },
+        reason: 'Upload failed — please try again',
+      });
+    } finally {
+      setIcfOcrLoading(false);
     }
   };
 
@@ -964,6 +1014,72 @@ export const CoachSignup: React.FC = () => {
                        <option value="MCC">MCC - Master Certified Coach</option>
                        <option value="ACTC">ACTC - Approved Coach Training Course</option>
                      </select>
+                   </div>
+                 )}
+
+                 {/* ICF Verification — OCR certificate upload (fallback for lapsed directory access) */}
+                 {formData.body === 'ICF' && !verified && (
+                   <div className="bg-blue-50 border border-blue-300 rounded-xl p-4 mb-4 space-y-3">
+                     <p className="text-sm font-semibold text-blue-900">Can't access the ICF directory?</p>
+                     <p className="text-xs text-blue-700">
+                       If your ICF directory access has lapsed, you can verify your accreditation by uploading a photo of your ICF credential certificate instead.
+                       Supported formats: JPG, PNG. Your credential level above must be selected first.
+                     </p>
+
+                     <label className={`flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl border-2 border-dashed cursor-pointer transition-all ${
+                       icfOcrLoading ? 'opacity-50 cursor-not-allowed border-blue-300 bg-blue-50' : 'border-blue-400 bg-white hover:bg-blue-50'
+                     }`}>
+                       <Upload className="h-4 w-4 text-blue-600" />
+                       <span className="text-sm font-medium text-blue-700">
+                         {icfCertFileName || 'Choose certificate file…'}
+                       </span>
+                       <input
+                         ref={icfCertFileInputRef}
+                         type="file"
+                         accept="image/jpeg,image/png,image/webp"
+                         className="hidden"
+                         disabled={icfOcrLoading || !formData.accreditationLevel}
+                         onChange={e => {
+                           const file = e.target.files?.[0];
+                           if (file) handleIcfCertificateUpload(file);
+                         }}
+                       />
+                     </label>
+
+                     {icfOcrLoading && (
+                       <div className="flex items-center gap-2 text-sm text-blue-700">
+                         <Loader className="h-4 w-4 animate-spin" />
+                         Reading certificate…
+                       </div>
+                     )}
+
+                     {icfOcrResult && (
+                       <div className={`rounded-lg p-3 text-sm space-y-1 ${icfOcrResult.verified ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                         <p className={`font-semibold ${icfOcrResult.verified ? 'text-green-800' : 'text-red-800'}`}>
+                           {icfOcrResult.verified ? '✓ Verified' : '✗ Could not verify'}
+                         </p>
+                         <p className={`text-xs ${icfOcrResult.verified ? 'text-slate-600' : 'text-red-700'}`}>{icfOcrResult.reason}</p>
+                         {icfOcrResult.extractedData.credentialLevel && (
+                           <p className="text-xs text-slate-500">
+                             Extracted: <strong>{icfOcrResult.extractedData.fullName}</strong> · {icfOcrResult.extractedData.credentialLevel}
+                             {icfOcrResult.extractedData.expiryDate && ` · Valid through ${icfOcrResult.extractedData.expiryDate}`}
+                           </p>
+                         )}
+                         {!icfOcrResult.verified && (
+                           <button
+                             type="button"
+                             onClick={() => { setIcfOcrResult(null); setIcfCertFileName(''); if (icfCertFileInputRef.current) icfCertFileInputRef.current.value = ''; }}
+                             className="mt-1 text-xs font-semibold text-red-700 underline hover:text-red-900"
+                           >
+                             Try again
+                           </button>
+                         )}
+                       </div>
+                     )}
+
+                     <p className="text-xs text-blue-600">
+                       Having trouble? Email your certificate to <strong>coachdogverify@gmail.com</strong> with your name and ICF credential level in the subject line and we'll verify you manually.
+                     </p>
                    </div>
                  )}
 
