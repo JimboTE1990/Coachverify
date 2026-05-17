@@ -55,54 +55,33 @@ export async function createCoachProfile(
   const firstName = userData.user_metadata?.first_name || fullName.split(' ')[0] || 'Coach';
   const lastName = userData.user_metadata?.last_name || fullName.split(' ').slice(1).join(' ') || '';
 
-  // Calculate trial end date (30 days from now)
-  const trialEndsAt = new Date();
-  trialEndsAt.setDate(trialEndsAt.getDate() + 30);
-
-  const profileData: CoachProfileData = {
+  // NOTE: Columns covered by 20260317_restrict_coaches_insert.sql REVOKE are omitted here.
+  // is_verified, verification_status, subscription_status, billing_cycle, trial_ends_at,
+  // emcc_verified, icf_verified, ac_verified, emcc_verified_at, icf_verified_at, ac_verified_at
+  // — these use their DB defaults and are set via the auto-create trigger (SECURITY DEFINER)
+  // or the finalize-coach-profile edge function.
+  const insertData: any = {
     user_id: userData.id,
     name: fullName,
     email: userData.email || '',
-    is_verified: additionalData?.is_verified ?? true, // Default to true if they've completed verification
     documents_submitted: false,
-    subscription_status: 'trial', // Auto-activate trial immediately
-    billing_cycle: 'monthly',
     two_factor_enabled: false,
-  };
-
-  // Add ALL required fields including those with no defaults
-  const insertData: any = {
-    ...profileData,
-    first_name: firstName,
-    last_name: lastName,
-    trial_ends_at: trialEndsAt.toISOString(),
-    trial_used: false, // Trial not consumed until they add payment method
-    // Required fields that can't be null
-    photo_url: '', // Empty string default
-    bio: '', // Empty string default
-    location: '', // Empty string default
-    hourly_rate: 0, // Default to 0, coach will set later
-    years_experience: 0, // Default to 0, coach will set later
-    certifications: [], // Empty array
-    specialties: [], // Empty array
-    available_formats: [], // Empty array
-    phone_number: '', // Empty string default
-    social_links: [], // Empty array
-    reviews: [], // Empty array
-    // Optional fields for visibility management
-    profile_visible: true, // Trial users should be visible
-    dashboard_access: true, // Trial users have dashboard access
-    // Partner referral source (if coach arrived via a partner URL)
+    photo_url: '',
+    bio: '',
+    location: '',
+    hourly_rate: 0,
+    years_experience: 0,
+    certifications: [],
+    specialties: [],
+    available_formats: [],
+    phone_number: '',
+    social_links: [],
+    reviews: [],
+    profile_visible: true,
+    dashboard_access: true,
     referral_source: additionalData?.referral_source || null,
-    // Accreditation data stored in user metadata during signup
-    // createCoachProfile is called after email confirmation, by which time the
-    // verification result (emcc_verified etc.) is only in metadata — not the DB.
     accreditation_body: userData.user_metadata?.accreditation_body || null,
     accreditation_level: userData.user_metadata?.accreditation_level || null,
-    emcc_verified: userData.user_metadata?.emcc_verified === true || userData.user_metadata?.emcc_verified === 'true',
-    icf_verified: userData.user_metadata?.icf_verified === true || userData.user_metadata?.icf_verified === 'true',
-    ac_verified: userData.user_metadata?.ac_verified === true || userData.user_metadata?.ac_verified === 'true',
-    verification_status: userData.user_metadata?.verification_status || 'pending',
   };
 
   console.log('[ProfileCreation] Profile data to insert:', insertData);

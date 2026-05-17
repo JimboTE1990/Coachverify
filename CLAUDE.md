@@ -67,7 +67,7 @@ supabase/
 - Components use TailwindCSS utility classes — no CSS modules
 - TypeScript strict mode — avoid `any`
 - No `SECURITY DEFINER` on views — use `SECURITY INVOKER` (default)
-- Migration files: `supabase/migrations/YYYYMMDD_description.sql`
+- Migration files: `supabase/migrations/YYYYMMDD_description.sql` — every `CREATE TABLE` must include explicit GRANTs (Supabase stops auto-granting new tables from Oct 30 2026). Tables used via supabase-js need `GRANT SELECT ON public.<table> TO anon, authenticated;` and `GRANT INSERT, UPDATE, DELETE ON public.<table> TO authenticated;`. Exception: service-role-only tables (e.g. `ocr_rate_limits`) need no GRANT.
 - React conditional rendering: use ternary or `!!` cast to avoid `{0}` rendering bugs
 
 ## Agents Available

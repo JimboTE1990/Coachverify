@@ -1045,10 +1045,10 @@ export const CoachDetails: React.FC = () => {
               }`}>
                 {/* Badge on the left */}
                 <div className="flex-shrink-0">
-                  {coach.accreditationLevel && (
+                  {(coach.accreditationBody === 'ICF' ? coach.icfAccreditationLevel : coach.accreditationLevel) && (
                     <AccreditationBadge
                       body={coach.accreditationBody}
-                      level={coach.accreditationLevel || coach.icfAccreditationLevel || ''}
+                      level={coach.accreditationBody === 'ICF' ? (coach.icfAccreditationLevel || '') : (coach.accreditationLevel || '')}
                       size="large"
                       className="!h-20 !w-20 sm:!h-32 sm:!w-32"
                     />
@@ -1071,11 +1071,11 @@ export const CoachDetails: React.FC = () => {
                   </div>
 
                   {/* Level */}
-                  {coach.accreditationLevel && (
+                  {(coach.accreditationBody === 'ICF' ? coach.icfAccreditationLevel : coach.accreditationLevel) && (
                     <p className={`text-center text-base font-bold mb-3 ${
                       coach.accreditationBody === 'EMCC' ? 'text-[#2B4170]' :
                       coach.accreditationBody === 'ICF' ? 'text-[#2E5C8A]' : 'text-slate-700'
-                    }`}>{coach.accreditationLevel || coach.icfAccreditationLevel}</p>
+                    }`}>{coach.accreditationBody === 'ICF' ? coach.icfAccreditationLevel : coach.accreditationLevel}</p>
                   )}
 
                   {/* ICF subtitle */}
