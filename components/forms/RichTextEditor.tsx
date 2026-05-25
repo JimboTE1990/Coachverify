@@ -49,10 +49,11 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
     },
   });
 
-  // Populate editor when profile data loads after mount (editor initialises before data arrives)
+  // Populate editor when profile data loads after mount (editor initialises before data arrives).
+  // emitUpdate=false prevents this programmatic set from triggering onChange → hasUnsavedChanges.
   useEffect(() => {
     if (editor && value && editor.isEmpty) {
-      editor.commands.setContent(value);
+      editor.commands.setContent(value, false);
     }
   }, [value, editor]);
 
