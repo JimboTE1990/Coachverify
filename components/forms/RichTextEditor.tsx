@@ -37,7 +37,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
       TextStyle,
       Color,
     ],
-    content: value || '',
+    content: '',
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       onChange(html === '<p></p>' ? '' : html);
@@ -49,8 +49,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
     },
   });
 
-  // Populate editor when profile data loads after mount (editor initialises before data arrives).
-  // emitUpdate=false prevents this programmatic set from triggering onChange → hasUnsavedChanges.
+  // Populate editor from props. Editor always starts empty (content:'') so TipTap never fires
+  // onUpdate during initialisation — avoiding a false hasUnsavedChanges=true on mount.
+  // emitUpdate=false prevents this programmatic setContent from triggering onChange.
   useEffect(() => {
     if (editor && value && editor.isEmpty) {
       editor.commands.setContent(value, false);
