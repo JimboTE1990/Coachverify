@@ -33,6 +33,9 @@ import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfService } from './pages/TermsOfService';
 import { CookiesPolicy } from './pages/CookiesPolicy';
 import { HowToFindACertifiedCoach } from './pages/HowToFindACertifiedCoach';
+import { Resources } from './pages/Resources';
+import { StreamsOfLife } from './pages/resources/StreamsOfLife';
+import { PremiumResources } from './pages/PremiumResources';
 
 interface ErrorBoundaryProps {
   children?: ReactNode;
@@ -135,6 +138,9 @@ const App: React.FC = () => {
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/cookies" element={<CookiesPolicy />} />
               <Route path="/how-to-find-a-certified-verified-coach" element={<HowToFindACertifiedCoach />} />
+              <Route path="/resources" element={<Resources />} />
+              <Route path="/resources/streams-of-life" element={<StreamsOfLife />} />
+              <Route path="/resources/premium" element={<PremiumResources />} />
             </Routes>
           </Layout>
         </AuthProvider>

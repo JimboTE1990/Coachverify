@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ChevronDown, User, Search, HelpCircle, Mail, CreditCard, LogIn, UserPlus, LayoutDashboard, ClipboardList, BookOpen } from 'lucide-react';
+import { Menu, X, ChevronDown, User, Search, HelpCircle, Mail, CreditCard, LogIn, UserPlus, LayoutDashboard, ClipboardList, BookOpen, Lock } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { ProfileDropdown } from './navigation/ProfileDropdown';
 import { ExpiredBanner } from './subscription/ExpiredBanner';
@@ -228,11 +228,18 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     <div className="h-1.5 bg-gradient-to-r from-emerald-400 to-teal-500"></div>
                     <div className="p-3 space-y-1">
                       <NavMenuItem
-                        to="/how-to-find-a-certified-verified-coach"
+                        to="/resources"
                         icon={BookOpen}
-                        label="How to Find a Certified Coach"
-                        desc="The complete 6-step guide to finding your perfect match"
+                        label="Coaching Resources"
+                        desc="Free tools and worksheets for coaches and clients"
                         colorClass="bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white"
+                      />
+                      <NavMenuItem
+                        to="/resources/premium"
+                        icon={Lock}
+                        label="Premium Resources"
+                        desc="Members-only tools, workbooks and guides"
+                        colorClass="bg-amber-50 text-amber-500 group-hover:bg-amber-500 group-hover:text-white"
                       />
                     </div>
                   </div>
@@ -327,8 +334,11 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <div>
                 <h3 className="text-sm font-extrabold text-emerald-600 uppercase tracking-widest mb-4 flex items-center"><BookOpen className="h-4 w-4 mr-2" /> Resources</h3>
                 <div className="space-y-3">
-                  <Link to="/how-to-find-a-certified-verified-coach" className="flex items-center px-5 py-4 rounded-2xl hover:bg-slate-50 text-slate-700 font-bold" onClick={closeMobileMenu}>
-                    <BookOpen className="h-6 w-6 mr-4 text-slate-400" /> How to Find a Certified Coach
+                  <Link to="/resources" className="flex items-center px-5 py-4 rounded-2xl hover:bg-slate-50 text-slate-700 font-bold" onClick={closeMobileMenu}>
+                    <BookOpen className="h-6 w-6 mr-4 text-slate-400" /> Coaching Resources
+                  </Link>
+                  <Link to="/resources/premium" className="flex items-center px-5 py-4 rounded-2xl bg-amber-50 text-amber-700 font-bold hover:bg-amber-100 transition-colors" onClick={closeMobileMenu}>
+                    <Lock className="h-6 w-6 mr-4 text-amber-400" /> Premium Resources <span className="ml-2 text-xs font-semibold text-amber-500 bg-amber-100 px-2 py-0.5 rounded-full">Members only</span>
                   </Link>
                 </div>
               </div>
@@ -409,6 +419,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                <h4 className="font-bold text-slate-900 mb-4">Resources</h4>
                <ul className="space-y-2 text-sm text-slate-500 font-medium">
                  <li><Link to="/how-to-find-a-certified-verified-coach" className="hover:text-brand-600">How to Find a Certified Coach</Link></li>
+                 <li><Link to="/resources" className="hover:text-brand-600">Coaching Resources</Link></li>
+                 <li className="flex items-center gap-1.5 opacity-60 cursor-default"><Lock className="h-3.5 w-3.5" /> Premium Resources</li>
                </ul>
             </div>
           </div>
