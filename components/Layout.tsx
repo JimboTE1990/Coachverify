@@ -170,7 +170,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                         colorClass="bg-rose-50 text-rose-600 group-hover:bg-rose-600 group-hover:text-white"
                       />
                       {/* Upgrade CTA for trial users */}
-                      {isAuthenticated && coach && coach.subscriptionStatus === 'trial' && coach.subscriptionStatus !== 'lifetime' && (() => {
+                      {isAuthenticated && coach && coach.subscriptionStatus === 'trial' && (() => {
                         const startingPrice = getStartingPrice();
                         return (
                           <div className="mx-3 my-2">
@@ -238,7 +238,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                         to="/resources/premium"
                         icon={Lock}
                         label="Premium Resources"
-                        desc="Members-only tools, workbooks and guides"
+                        desc="For paid plan users and free trial coaches"
                         colorClass="bg-amber-50 text-amber-500 group-hover:bg-amber-500 group-hover:text-white"
                       />
                     </div>
@@ -338,7 +338,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     <BookOpen className="h-6 w-6 mr-4 text-slate-400" /> Coaching Resources
                   </Link>
                   <Link to="/resources/premium" className="flex items-center px-5 py-4 rounded-2xl bg-amber-50 text-amber-700 font-bold hover:bg-amber-100 transition-colors" onClick={closeMobileMenu}>
-                    <Lock className="h-6 w-6 mr-4 text-amber-400" /> Premium Resources <span className="ml-2 text-xs font-semibold text-amber-500 bg-amber-100 px-2 py-0.5 rounded-full">Members only</span>
+                    <Lock className="h-6 w-6 mr-4 text-amber-400" /> Premium Resources <span className="ml-2 text-xs font-semibold text-amber-500 bg-amber-100 px-2 py-0.5 rounded-full">Paid plans</span>
                   </Link>
                 </div>
               </div>
