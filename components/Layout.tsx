@@ -8,6 +8,7 @@ import { TrialCountdownBanner } from './subscription/TrialCountdownBanner';
 import { TrialLoginNotification } from './subscription/TrialLoginNotification';
 import { CookieConsent } from './CookieConsent';
 import { getStartingPrice } from '../config/pricing';
+import { ReviewPromptBanner } from './ReviewPromptBanner';
 
 // --- Using actual logo image from PDF ---
 
@@ -284,6 +285,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     Coach Login
                   </Link>
                 )}
+
+                {/* Review prompt pill — shown to authenticated coaches who haven't reviewed */}
+                <ReviewPromptBanner />
 
                 {/* Profile Dropdown or Get Matched Button */}
                 {isAuthenticated ? (

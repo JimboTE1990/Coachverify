@@ -267,6 +267,19 @@ export interface Review {
   comments?: ReviewComment[]; // Coach comments on the review
 }
 
+export interface ProductReview {
+  id: string;
+  reviewerId?: string;
+  reviewerName: string;
+  reviewerTitle?: string;
+  reviewerPhotoUrl?: string;
+  rating: number;
+  text: string;
+  source: 'site' | 'facebook';
+  sourceUrl?: string;
+  date: string;
+}
+
 export interface Acknowledgement {
   id: string;
   title: string; // e.g. "Author of multiple books", "Coach of the Year 2025"

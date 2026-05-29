@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, ArrowRight, HeartHandshake, Check, Users, Star } from 'lucide-react';
+import { ProductReviewWidget } from '../components/ProductReviewWidget';
 
 export const CoachInfo: React.FC = () => {
   return (
@@ -307,6 +308,7 @@ export const CoachInfo: React.FC = () => {
         </div>
       </div>
 
+      <ProductReviewWidget />
     </div>
   );
 };

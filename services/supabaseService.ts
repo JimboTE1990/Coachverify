@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { Coach, Review, SocialLink, Specialty, Format } from '../types';
+import { Coach, Review, SocialLink, Specialty, Format, ProductReview } from '../types';
 
 // Re-export supabase for use in other components
 export { supabase };
@@ -1596,4 +1596,142 @@ export const verifyEmccCertificate = async (
   }
 
   return data as EmccCertOcrResult;
+};
+
+// ============================================================================
+// PRODUCT REVIEW SERVICES
+// ============================================================================
+
+const mapProductReview = (data: any, reviewerPhotoUrl?: string): ProductReview => ({
+  id: data.id,
+  reviewerId: data.reviewer_id ?? undefined,
+  reviewerName: data.reviewer_name,
+  reviewerTitle: data.reviewer_title ?? undefined,
+  reviewerPhotoUrl,
+  rating: data.rating,
+  text: data.review_text,
+  source: data.source ?? 'site',
+  sourceUrl: data.source_url ?? undefined,
+  date: new Date(data.created_at).toISOString().split('T')[0],
+});
+
+export const getProductReviews = async (): Promise<ProductReview[]> => {
+  const { data, error } = await supabase
+    .from('product_reviews')
+    .select('id, reviewer_id, reviewer_name, reviewer_title, rating, review_text, source, source_url, created_at')
+    .eq('is_approved', true)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('[getProductReviews] Error:', error);
+    return [];
+  }
+
+  const rows = data || [];
+
+  // Fetch CoachDog profile photos for reviewers who have accounts
+  const reviewerIds = rows.map(r => r.reviewer_id).filter((id): id is string => !!id);
+  const photoMap: Record<string, string> = {};
+  if (reviewerIds.length > 0) {
+    const { data: coaches } = await supabase
+      .from('coach_profiles')
+      .select('user_id, photo_url')
+      .in('user_id', reviewerIds);
+    (coaches || []).forEach(c => {
+      if (c.photo_url) photoMap[c.user_id] = c.photo_url;
+    });
+  }
+
+  return rows.map(r => mapProductReview(r, photoMap[r.reviewer_id] ?? undefined));
+};
+
+export const addProductReview = async (review: {
+  reviewerName: string;
+  reviewerTitle?: string;
+  rating: number;
+  text: string;
+}): Promise<ProductReview | null> => {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { data, error } = await supabase
+    .from('product_reviews')
+    .insert({
+      reviewer_id: user?.id ?? null,
+      reviewer_name: review.reviewerName,
+      reviewer_title: review.reviewerTitle ?? null,
+      rating: review.rating,
+      review_text: review.text,
+    })
+    .select('id, reviewer_id, reviewer_name, reviewer_title, rating, review_text, source, source_url, created_at')
+    .single();
+
+  if (error) {
+    console.error('[addProductReview] Error:', error);
+    return null;
+  }
+
+  return mapProductReview(data);
+};
+
+export const approveProductReview = async (reviewId: string): Promise<boolean> => {
+  const { error } = await supabase
+    .from('product_reviews')
+    .update({ is_approved: true })
+    .eq('id', reviewId);
+
+  if (error) {
+    console.error('[approveProductReview] Error:', error);
+    return false;
+  }
+  return true;
+};
+
+export const deleteProductReview = async (reviewId: string): Promise<boolean> => {
+  const { error } = await supabase
+    .from('product_reviews')
+    .delete()
+    .eq('id', reviewId);
+
+  if (error) {
+    console.error('[deleteProductReview] Error:', error);
+    return false;
+  }
+  return true;
+};
+
+/** Fetches pending (unapproved) product reviews — for use in admin panel only. */
+export const getPendingProductReviews = async (): Promise<ProductReview[]> => {
+  const { data, error } = await supabase
+    .from('product_reviews')
+    .select('id, reviewer_id, reviewer_name, reviewer_title, rating, review_text, source, source_url, created_at')
+    .eq('is_approved', false)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('[getPendingProductReviews] Error:', error);
+    return [];
+  }
+
+  return (data || []).map(r => mapProductReview(r));
+};
+
+/**
+ * Approve or delete a product review via the admin-product-review edge function.
+ * Requires the admin password (stored in VITE_ADMIN_PASSWORD env var).
+ */
+export const adminActionProductReview = async (
+  action: 'approve' | 'delete',
+  reviewId: string,
+  adminPassword: string
+): Promise<boolean> => {
+  const { data, error } = await supabase.functions.invoke('admin-product-review', {
+    body: { action, reviewId },
+    headers: { 'x-admin-password': adminPassword },
+  });
+
+  if (error || !data?.success) {
+    console.error('[adminActionProductReview] Error:', error || data);
+    return false;
+  }
+  return true;
 };

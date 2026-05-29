@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, HeartHandshake, Star, ArrowRight, ShieldCheck } from 'lucide-react';
+import { ProductReviewWidget } from '../components/ProductReviewWidget';
 
 export const Home: React.FC = () => {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -198,6 +199,8 @@ export const Home: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <ProductReviewWidget />
     </div>
   );
 };

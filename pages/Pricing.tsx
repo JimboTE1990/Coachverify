@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CheckCircle, Zap, Clock, Infinity } from 'lucide-react';
+import { ProductReviewWidget } from '../components/ProductReviewWidget';
 import { useAuth } from '../hooks/useAuth';
 import { PRICING_CONFIG } from '../config/pricing';
 import { SUBSCRIPTION_CONSTANTS } from '../constants/subscription';
@@ -459,6 +460,8 @@ export const Pricing: React.FC = () => {
 
         </div>
       </div>
+
+      <ProductReviewWidget />
     </div>
   );
 };
