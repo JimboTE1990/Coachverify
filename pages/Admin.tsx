@@ -17,6 +17,11 @@ export const AdminDashboard: React.FC = () => {
   const [approvedProductReviews, setApprovedProductReviews] = useState<ProductReview[]>([]);
   const [starFilter, setStarFilter] = useState<number | null>(null);
   const [reviewPage, setReviewPage] = useState(1);
+  const [pendingConfirm, setPendingConfirm] = useState<{
+    action: 'approve' | 'delete';
+    reviewId: string;
+    reviewerName: string;
+  } | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -219,13 +224,13 @@ export const AdminDashboard: React.FC = () => {
                     </div>
                     <div className="flex gap-2 pt-1">
                       <button
-                        onClick={() => handleProductReviewAction('approve', review.id)}
+                        onClick={() => setPendingConfirm({ action: 'approve', reviewId: review.id, reviewerName: review.reviewerName })}
                         className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold text-sm py-2 rounded-lg transition-colors"
                       >
                         Approve
                       </button>
                       <button
-                        onClick={() => handleProductReviewAction('delete', review.id)}
+                        onClick={() => setPendingConfirm({ action: 'delete', reviewId: review.id, reviewerName: review.reviewerName })}
                         className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-sm py-2 rounded-lg transition-colors"
                       >
                         Delete
@@ -284,7 +289,7 @@ export const AdminDashboard: React.FC = () => {
                         <p className="text-xs text-slate-400 mt-0.5">{review.date}</p>
                       </div>
                       <button
-                        onClick={() => handleProductReviewAction('delete', review.id)}
+                        onClick={() => setPendingConfirm({ action: 'delete', reviewId: review.id, reviewerName: review.reviewerName })}
                         className="bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-sm py-2 rounded-lg transition-colors"
                       >
                         Delete
@@ -402,6 +407,44 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
         </>
+      )}
+
+      {/* Confirm modal */}
+      {pendingConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+            <h3 className="text-base font-bold text-slate-900 mb-1">
+              {pendingConfirm.action === 'delete' ? 'Delete review?' : 'Approve review?'}
+            </h3>
+            <p className="text-sm text-slate-500 mb-6">
+              {pendingConfirm.action === 'delete'
+                ? <>This will permanently delete <span className="font-semibold text-slate-700">{pendingConfirm.reviewerName}</span>'s review. This cannot be undone.</>
+                : <>This will make <span className="font-semibold text-slate-700">{pendingConfirm.reviewerName}</span>'s review publicly visible.</>
+              }
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setPendingConfirm(null)}
+                className="flex-1 border border-slate-200 text-slate-600 font-semibold text-sm py-2.5 rounded-xl hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleProductReviewAction(pendingConfirm.action, pendingConfirm.reviewId);
+                  setPendingConfirm(null);
+                }}
+                className={`flex-1 font-semibold text-sm py-2.5 rounded-xl transition-colors ${
+                  pendingConfirm.action === 'delete'
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
+              >
+                {pendingConfirm.action === 'delete' ? 'Yes, delete' : 'Yes, approve'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
