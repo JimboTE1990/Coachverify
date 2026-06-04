@@ -278,7 +278,7 @@ export const ProductReviewWidget: React.FC = () => {
                 </button>
 
                 <p className="text-xs text-slate-400 text-center">
-                  Reviews appear publicly immediately. We may remove reviews that violate our guidelines.
+                  Your review will be visible once approved by our team, usually within 24 hours.
                 </p>
               </form>
             )}

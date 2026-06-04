@@ -82,7 +82,8 @@ serve(async (req: Request) => {
     });
   }
 
-  // Insert with service role — bypasses RLS entirely
+  // Insert with service role — bypasses RLS entirely.
+  // is_approved = false so new reviews go through the admin pending queue.
   const { data, error } = await supabase
     .from('product_reviews')
     .insert({
@@ -91,6 +92,7 @@ serve(async (req: Request) => {
       reviewer_title: reviewerTitle?.trim() || null,
       rating,
       review_text: text.trim(),
+      is_approved: false,
     })
     .select('id, reviewer_id, reviewer_name, reviewer_title, rating, review_text, source, source_url, created_at')
     .single();
