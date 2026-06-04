@@ -1651,12 +1651,15 @@ export const addProductReview = async (review: {
   rating: number;
   text: string;
 }): Promise<ProductReview | null> => {
-  const { data: { user } } = await supabase.auth.getUser();
+  // Use getSession() (local cache) rather than getUser() (network call) to
+  // reliably get the user ID. The JWT is validated server-side anyway, and
+  // the RLS policy enforces auth.uid() = reviewer_id.
+  const { data: { session } } = await supabase.auth.getSession();
 
   const { data, error } = await supabase
     .from('product_reviews')
     .insert({
-      reviewer_id: user?.id ?? null,
+      reviewer_id: session?.user?.id ?? null,
       reviewer_name: review.reviewerName,
       reviewer_title: review.reviewerTitle ?? null,
       rating: review.rating,
