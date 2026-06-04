@@ -50,7 +50,7 @@ serve(async (req: Request) => {
     });
   }
 
-  let body: { action: string; reviewId: string };
+  let body: { action: string; reviewId?: string };
   try {
     body = await req.json();
   } catch {
@@ -60,8 +60,13 @@ serve(async (req: Request) => {
   }
 
   const { action, reviewId } = body;
-  if (!reviewId || !['approve', 'delete'].includes(action)) {
-    return new Response(JSON.stringify({ error: 'Missing or invalid action/reviewId' }), {
+  if (!['approve', 'delete', 'list-pending', 'list-approved'].includes(action)) {
+    return new Response(JSON.stringify({ error: 'Invalid action' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  if (['approve', 'delete'].includes(action) && !reviewId) {
+    return new Response(JSON.stringify({ error: 'Missing reviewId' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
@@ -71,6 +76,23 @@ serve(async (req: Request) => {
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   );
+
+  if (action === 'list-pending' || action === 'list-approved') {
+    const { data, error } = await supabase
+      .from('product_reviews')
+      .select('id, reviewer_id, reviewer_name, reviewer_title, rating, review_text, source, source_url, created_at')
+      .eq('is_approved', action === 'list-approved')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    return new Response(JSON.stringify({ reviews: data ?? [] }), {
+      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
 
   if (action === 'approve') {
     const { error } = await supabase

@@ -1699,20 +1699,31 @@ export const deleteProductReview = async (reviewId: string): Promise<boolean> =>
   return true;
 };
 
-/** Fetches pending (unapproved) product reviews — for use in admin panel only. */
-export const getPendingProductReviews = async (): Promise<ProductReview[]> => {
-  const { data, error } = await supabase
-    .from('product_reviews')
-    .select('id, reviewer_id, reviewer_name, reviewer_title, rating, review_text, source, source_url, created_at')
-    .eq('is_approved', false)
-    .order('created_at', { ascending: false });
+/**
+ * Fetch pending or approved reviews via the admin edge function (service role).
+ * Required because the SELECT RLS policy only exposes is_approved=true rows.
+ */
+export const adminGetProductReviews = async (
+  filter: 'pending' | 'approved',
+  adminPassword: string
+): Promise<ProductReview[]> => {
+  const action = filter === 'pending' ? 'list-pending' : 'list-approved';
+  const { data, error } = await supabase.functions.invoke('admin-product-review', {
+    body: { action },
+    headers: { 'x-admin-password': adminPassword },
+  });
 
-  if (error) {
-    console.error('[getPendingProductReviews] Error:', error);
+  if (error || !data?.reviews) {
+    console.error(`[adminGetProductReviews] Error (${filter}):`, error || data);
     return [];
   }
 
-  return (data || []).map(r => mapProductReview(r));
+  return (data.reviews as any[]).map(r => mapProductReview(r));
+};
+
+/** @deprecated RLS blocks unapproved rows — use adminGetProductReviews('pending') instead. */
+export const getPendingProductReviews = async (): Promise<ProductReview[]> => {
+  return [];
 };
 
 /**

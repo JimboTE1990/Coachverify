@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCoaches, toggleFlagReview, getProductReviews, getPendingProductReviews, adminActionProductReview } from '../services/supabaseService';
+import { getCoaches, toggleFlagReview, adminGetProductReviews, adminActionProductReview } from '../services/supabaseService';
 import { Coach, ProductReview } from '../types';
 import { Lock, FileText, Flag, Star, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -25,11 +25,12 @@ export const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
+      const adminPassword = (import.meta as any).env?.VITE_ADMIN_PASSWORD;
       const loadData = async () => {
         const [coachData, approvedData, pendingData] = await Promise.all([
           getCoaches(),
-          getProductReviews(),
-          getPendingProductReviews(),
+          adminGetProductReviews('approved', adminPassword),
+          adminGetProductReviews('pending', adminPassword),
         ]);
         setCoaches(coachData);
         setApprovedProductReviews(approvedData);
