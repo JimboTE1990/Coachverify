@@ -1670,7 +1670,7 @@ export const addProductReview = async (review: {
     .single();
 
   if (error) {
-    console.error('[addProductReview] Error:', error);
+    console.error('[addProductReview] code:', error.code, '| message:', error.message, '| details:', error.details, '| hint:', error.hint);
     return null;
   }
 
