@@ -1651,30 +1651,26 @@ export const addProductReview = async (review: {
   rating: number;
   text: string;
 }): Promise<ProductReview | null> => {
-  // Use getSession() (local cache) rather than getUser() (network call) to
-  // reliably get the user ID. The JWT is validated server-side anyway, and
-  // the RLS policy enforces auth.uid() = reviewer_id.
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  console.error('[addProductReview] session.user.id:', session?.user?.id ?? 'NULL', 'sessionError:', sessionError?.message ?? 'none');
-
-  const { data, error } = await supabase
-    .from('product_reviews')
-    .insert({
-      reviewer_id: session?.user?.id ?? null,
-      reviewer_name: review.reviewerName,
-      reviewer_title: review.reviewerTitle ?? null,
+  // Route through the submit-product-review edge function.
+  // Direct PostgREST INSERT consistently fails with 42501 because the Supabase
+  // JS client does not reliably attach the user JWT to the request, causing
+  // PostgREST to treat it as anon (no INSERT policy). The edge function reads
+  // the JWT from the Authorization header and validates it server-side.
+  const { data, error } = await supabase.functions.invoke('submit-product-review', {
+    body: {
+      reviewerName: review.reviewerName,
+      reviewerTitle: review.reviewerTitle,
       rating: review.rating,
-      review_text: review.text,
-    })
-    .select('id, reviewer_id, reviewer_name, reviewer_title, rating, review_text, source, source_url, created_at')
-    .single();
+      text: review.text,
+    },
+  });
 
-  if (error) {
-    console.error('[addProductReview] code:', error.code, '| message:', error.message, '| details:', error.details, '| hint:', error.hint);
+  if (error || !data?.review) {
+    console.error('[addProductReview] Error:', error || data);
     return null;
   }
 
-  return mapProductReview(data);
+  return mapProductReview(data.review);
 };
 
 export const approveProductReview = async (reviewId: string): Promise<boolean> => {
