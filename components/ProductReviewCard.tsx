@@ -66,9 +66,11 @@ export const ProductReviewCard: React.FC<ProductReviewCardProps> = ({ review }) 
       </div>
 
       {/* Review text */}
-      <p className="text-slate-700 text-sm leading-relaxed flex-1 relative z-10">
-        "{review.text}"
-      </p>
+      <div className="flex-1 overflow-y-auto max-h-40 relative z-10 pr-1 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+        <p className="text-slate-700 text-sm leading-relaxed">
+          "{review.text}"
+        </p>
+      </div>
 
       {/* Reviewer info + source badge */}
       <div className="flex items-end justify-between gap-2 pt-2 border-t border-slate-100">
