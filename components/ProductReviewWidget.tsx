@@ -49,7 +49,8 @@ export const ProductReviewWidget: React.FC = () => {
   const scroll = (direction: 'prev' | 'next') => {
     const el = scrollRef.current;
     if (!el) return;
-    const cardWidth = el.offsetWidth / 3;
+    const firstCard = el.firstElementChild as HTMLElement;
+    const cardWidth = firstCard ? firstCard.offsetWidth : el.offsetWidth;
     el.scrollBy({ left: direction === 'next' ? cardWidth : -cardWidth, behavior: 'smooth' });
   };
 
@@ -114,8 +115,8 @@ export const ProductReviewWidget: React.FC = () => {
           </p>
 
           {/* Arrow controls */}
-          {reviews.length > 3 && (
-            <div className="absolute right-0 top-0 flex gap-2">
+          {reviews.length > 1 && (
+            <div className="absolute right-0 top-0 hidden sm:flex gap-2">
               <button
                 onClick={() => scroll('prev')}
                 disabled={!canPrev}
@@ -149,8 +150,7 @@ export const ProductReviewWidget: React.FC = () => {
             {reviews.map((review) => (
               <div
                 key={review.id}
-                className="snap-start flex-shrink-0 px-3"
-                style={{ width: '33.333%' }}
+                className="snap-start flex-shrink-0 px-3 w-full sm:w-1/2 lg:w-1/3"
               >
                 <ProductReviewCard review={review} />
               </div>

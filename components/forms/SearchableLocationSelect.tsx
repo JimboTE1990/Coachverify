@@ -28,13 +28,18 @@ export const SearchableLocationSelect: React.FC<SearchableLocationSelectProps> =
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const containerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // Close on outside click
+  // Close on outside click (must check both trigger and fixed dropdown panel)
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      const insideTrigger = containerRef.current?.contains(target);
+      const insideDropdown = dropdownRef.current?.contains(target);
+      if (!insideTrigger && !insideDropdown) {
         setIsOpen(false);
         setSearch('');
       }
@@ -51,6 +56,16 @@ export const SearchableLocationSelect: React.FC<SearchableLocationSelectProps> =
   }, [isOpen]);
 
   const open = () => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setDropdownStyle({
+        position: 'fixed',
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+        zIndex: 9999,
+      });
+    }
     setIsOpen(true);
     setSearch('');
   };
@@ -116,9 +131,9 @@ export const SearchableLocationSelect: React.FC<SearchableLocationSelectProps> =
         </span>
       </button>
 
-      {/* Dropdown panel */}
+      {/* Dropdown panel — fixed so it escapes overflow-y:auto parent containers */}
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
+        <div ref={dropdownRef} style={dropdownStyle} className="bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
           {/* Search box */}
           <div className="p-2 border-b border-slate-100">
             <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg">
