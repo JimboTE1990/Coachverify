@@ -127,18 +127,34 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     stripePromotionCodeId: 'promo_1TBanXDye3rmKJaDlq8eKosB',
   },
 
-  // Post-Beta Launch Offer — £50 off lifetime (£149 → £100), no use limit
-  // Stripe promo code: EMCC50 | API ID: promo_1THRejDye3rmKJaDiMbHLFwr
+  // EMCC/ICF Exclusive Discount — £50 off lifetime (£149 → £99)
+  // Stripe coupon: "EMCC/ICF Exclusive Discount" | Promo code: EMCC50 | API ID: promo_1THRejDye3rmKJaDiMbHLFwr
   'EMCC50': {
     code: 'EMCC50',
     type: 'lifetime_fixed',
-    value: 50, // £50 off the £149 lifetime price = £100 final
+    value: 50, // £50 off the £149 lifetime price = £99 final
     enabled: true,
     planRestrictions: ['lifetime'],
-    source: 'launch_offer',
-    displayName: 'Launch Offer',
+    source: 'partner_exclusive',
+    partnerId: 'emcc',
+    displayName: 'EMCC/ICF Exclusive Discount',
     description: '£50 off - Pay only £99 for lifetime access',
     stripePromotionCodeId: 'promo_1THRejDye3rmKJaDiMbHLFwr',
+  },
+
+  // EMCC/ICF Exclusive Discount — ICF variant (same coupon, different promo code)
+  // Stripe coupon: "EMCC/ICF Exclusive Discount" | Promo code: ICF50 | API ID: promo_1Tg2a9Dye3rmKJaDPaDOoCxX
+  'ICF50': {
+    code: 'ICF50',
+    type: 'lifetime_fixed',
+    value: 50, // £50 off the £149 lifetime price = £99 final
+    enabled: true,
+    planRestrictions: ['lifetime'],
+    source: 'partner_exclusive',
+    partnerId: 'icf',
+    displayName: 'EMCC/ICF Exclusive Discount',
+    description: '£50 off - Pay only £99 for lifetime access',
+    stripePromotionCodeId: 'promo_1Tg2a9Dye3rmKJaDPaDOoCxX',
   },
 
   // Legacy code — kept disabled, superseded by BETA49
