@@ -1,6 +1,9 @@
 import { supabase } from '../lib/supabase';
 import { Coach, Review, SocialLink, Specialty, Format, ProductReview } from '../types';
 
+// Hidden test/internal profiles — excluded from all public directory listings
+const HIDDEN_PROFILE_IDS = ['354e2bae-8150-4b2f-80d5-9dc808c15b5b'];
+
 // Re-export supabase for use in other components
 export { supabase };
 
@@ -17,6 +20,7 @@ export const getCoaches = async (): Promise<Coach[]> => {
     .select('*')
     .in('subscription_status', ['trial', 'active', 'lifetime']) // Show all coaches with active subscriptions
     .or('subscription_status.eq.trial,subscription_status.eq.lifetime,is_verified.eq.true') // Trial/lifetime coaches OR verified coaches
+    .not('id', 'in', `(${HIDDEN_PROFILE_IDS.join(',')})`) // Exclude hidden/test profiles
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -901,7 +905,8 @@ export const searchCoaches = async (filters: {
     .from('coach_profiles')
     .select('*')
     .in('subscription_status', ['trial', 'active', 'lifetime']) // Only show coaches with active subscriptions
-    .or('subscription_status.eq.trial,subscription_status.eq.lifetime,is_verified.eq.true'); // Trial/lifetime coaches OR verified coaches
+    .or('subscription_status.eq.trial,subscription_status.eq.lifetime,is_verified.eq.true') // Trial/lifetime coaches OR verified coaches
+    .not('id', 'in', `(${HIDDEN_PROFILE_IDS.join(',')})`); // Exclude hidden/test profiles
 
   if (filters.specialty) {
     query = query.contains('specialties', [filters.specialty]);
