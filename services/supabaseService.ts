@@ -1751,3 +1751,62 @@ export const adminActionProductReview = async (
   }
   return true;
 };
+
+// ============================================================================
+// TKI Questionnaire Results
+// ============================================================================
+
+export interface TKIResult {
+  id: string;
+  coach_id: string;
+  answers: Record<number, 'A' | 'B'>;
+  scores: Record<string, number>;
+  dominant_mode: string;
+  completed_at: string;
+}
+
+export const saveTKIResult = async (
+  coachId: string,
+  answers: Record<number, 'A' | 'B'>,
+  scores: Record<string, number>,
+  dominantMode: string
+): Promise<{ id: string; completed_at: string } | null> => {
+  const { data, error } = await supabase
+    .from('tki_results')
+    .insert({ coach_id: coachId, answers, scores, dominant_mode: dominantMode })
+    .select('id, completed_at')
+    .single();
+
+  if (error) {
+    console.error('[saveTKIResult] Error:', error);
+    return null;
+  }
+  return data;
+};
+
+export const getTKIResults = async (coachId: string): Promise<TKIResult[]> => {
+  const { data, error } = await supabase
+    .from('tki_results')
+    .select('*')
+    .eq('coach_id', coachId)
+    .order('completed_at', { ascending: false });
+
+  if (error) {
+    console.error('[getTKIResults] Error:', error);
+    return [];
+  }
+  return data ?? [];
+};
+
+export const deleteTKIResult = async (resultId: string): Promise<boolean> => {
+  const { error } = await supabase
+    .from('tki_results')
+    .delete()
+    .eq('id', resultId);
+
+  if (error) {
+    console.error('[deleteTKIResult] Error:', error);
+    return false;
+  }
+  return true;
+};
