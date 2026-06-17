@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, ChevronRight, Download, FileText, Lock, Sparkles, Trash2 } from 'lucide-react';
+import { Check, ChevronRight, Download, FileText, Lock, Sparkles } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { saveTKIResult, getTKIResults, deleteTKIResult, TKIResult } from '../../services/supabaseService';
+import { saveTKIResult } from '../../services/supabaseService';
 
 type Mode = 'Competing' | 'Avoiding' | 'Accommodating' | 'Collaborating' | 'Compromising';
 
@@ -48,10 +48,6 @@ const MODE_COLORS: Record<Mode, string> = {
 };
 
 const MODES: Mode[] = ['Competing', 'Avoiding', 'Accommodating', 'Collaborating', 'Compromising'];
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-}
 
 function buildWordHTML(
   coachName: string | undefined,
@@ -142,9 +138,6 @@ export const TKIQuestionnaire: React.FC = () => {
   const [answers, setAnswers] = useState<Record<number, 'A' | 'B'>>({});
   const [savedId, setSavedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [history, setHistory] = useState<TKIResult[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(true);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const scores = QUESTIONS.reduce<Record<Mode, number>>(
     (acc, q) => {
@@ -166,39 +159,12 @@ export const TKIQuestionnaire: React.FC = () => {
     return modes.length === 1 ? modes[0] : `${modes.join(' / ')} (tied at ${maxScore})`;
   })();
 
-  // Load history on mount
-  useEffect(() => {
-    if (!coach?.id) return;
-    getTKIResults(coach.id).then(results => {
-      setHistory(results);
-      setHistoryLoading(false);
-    });
-  }, [coach?.id]);
-
   const handleSave = async () => {
     if (!coach?.id || !dominantMode) return;
     setSaving(true);
     const result = await saveTKIResult(coach.id, answers, scores, dominantMode);
     setSaving(false);
-    if (result) {
-      setSavedId(result.id);
-      setHistory(prev => [{
-        id: result.id,
-        coach_id: coach.id,
-        answers,
-        scores,
-        dominant_mode: dominantMode,
-        completed_at: result.completed_at,
-      }, ...prev]);
-    }
-  };
-
-  const handleDelete = async (resultId: string) => {
-    const success = await deleteTKIResult(resultId);
-    if (success) {
-      setHistory(prev => prev.filter(r => r.id !== resultId));
-      setConfirmDeleteId(null);
-    }
+    if (result) setSavedId(result.id);
   };
 
   const downloadWord = () => {
@@ -468,59 +434,6 @@ export const TKIQuestionnaire: React.FC = () => {
             ))}
           </ol>
         </div>
-
-        {/* Past Results History — hidden in print */}
-        {!historyLoading && history.length > 0 && (
-          <div className="border-2 border-slate-200 rounded-2xl overflow-hidden print:hidden">
-            <div className="bg-slate-50 px-5 py-3 border-b border-slate-200">
-              <span className="text-sm font-semibold text-slate-800">🕓 Past Results</span>
-            </div>
-            <div className="divide-y divide-slate-100">
-              {history.map(result => (
-                <div key={result.id} className="px-5 py-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-900 mb-1">
-                        {formatDate(result.completed_at)}
-                        <span className="ml-2 text-teal-600">· {result.dominant_mode}</span>
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {MODES.map(m => `${m} ${(result.scores as Record<string,number>)[m] ?? 0}`).join(' · ')}
-                      </p>
-                    </div>
-                    <div className="flex-shrink-0">
-                      {confirmDeleteId === result.id ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-slate-500">Delete this record?</span>
-                          <button
-                            onClick={() => setConfirmDeleteId(null)}
-                            className="text-xs text-slate-500 hover:text-slate-700 underline"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={() => handleDelete(result.id)}
-                            className="text-xs font-semibold text-red-600 hover:text-red-800 underline"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setConfirmDeleteId(result.id)}
-                          className="p-1.5 text-slate-300 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"
-                          aria-label="Delete this result"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Reset — hidden in print */}
         {answeredCount > 0 && (
