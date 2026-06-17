@@ -36,6 +36,7 @@ import { HowToFindACertifiedCoach } from './pages/HowToFindACertifiedCoach';
 import { Resources } from './pages/Resources';
 import { StreamsOfLife } from './pages/resources/StreamsOfLife';
 import { PremiumResources } from './pages/PremiumResources';
+import { TKIQuestionnaire } from './pages/resources/TKIQuestionnaire';
 
 interface ErrorBoundaryProps {
   children?: ReactNode;
@@ -141,6 +142,7 @@ const App: React.FC = () => {
               <Route path="/resources" element={<Resources />} />
               <Route path="/resources/streams-of-life" element={<StreamsOfLife />} />
               <Route path="/resources/premium" element={<PremiumResources />} />
+              <Route path="/resources/tki-questionnaire" element={<TKIQuestionnaire />} />
             </Routes>
           </Layout>
         </AuthProvider>

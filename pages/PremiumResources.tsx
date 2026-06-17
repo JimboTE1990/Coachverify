@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Lock, Sparkles, BookOpen, ChevronRight } from 'lucide-react';
+import { Lock, Sparkles, BookOpen, ChevronRight, ArrowRight } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 const isPaidMember = (coach: any) =>
@@ -47,18 +47,39 @@ export const PremiumResources: React.FC = () => {
         </div>
       </section>
 
-      {/* Locked resources grid */}
+      {/* Resources grid */}
       <section className="py-14 lg:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
 
-          {/* Coming soon notice */}
-          <div className="mb-8 flex items-start gap-3 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm text-slate-600">
-            <Sparkles className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
-            <p><span className="font-semibold text-slate-800">Content coming soon.</span> These resources are in production and will be available to all members shortly. Sign up now and you'll get access the moment they launch.</p>
+          <div className="grid sm:grid-cols-2 gap-6 mb-12">
+            {/* TKI Questionnaire card */}
+            <Link
+              to="/resources/tki-questionnaire"
+              className="group border border-slate-200 rounded-2xl overflow-hidden hover:border-teal-300 hover:shadow-lg transition-all"
+            >
+              <div className="bg-slate-900 px-5 py-6">
+                <div className="flex flex-wrap gap-2 mb-3">
+                  <span className="text-xs font-bold text-amber-400 bg-amber-400/10 px-2.5 py-0.5 rounded-full uppercase tracking-wide">Premium</span>
+                  <span className="text-xs text-slate-300 bg-white/10 px-2.5 py-0.5 rounded-full">Self-Assessment</span>
+                  <span className="text-xs text-slate-300 bg-white/10 px-2.5 py-0.5 rounded-full">Conflict Styles</span>
+                </div>
+                <h3 className="text-lg font-bold text-white leading-snug">
+                  Thomas-Kilmann TKI Questionnaire
+                </h3>
+              </div>
+              <div className="px-5 py-4 bg-white">
+                <p className="text-sm text-slate-600 mb-4 leading-relaxed">
+                  A 15-pair interactive questionnaire that identifies your dominant conflict mode across five styles: Competing, Avoiding, Accommodating, Collaborating, and Compromising.
+                </p>
+                <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-teal-600 group-hover:gap-2.5 transition-all">
+                  Open tool <ArrowRight className="h-4 w-4" />
+                </span>
+              </div>
+            </Link>
           </div>
 
           {/* Back link */}
-          <div className="mt-10">
+          <div>
             <Link to="/resources" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-emerald-700 transition-colors">
               <BookOpen className="h-4 w-4" />
               Back to free resources
