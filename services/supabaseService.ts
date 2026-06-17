@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase';
 import { Coach, Review, SocialLink, Specialty, Format, ProductReview } from '../types';
 
 // Hidden test/internal profiles — excluded from all public directory listings
-const HIDDEN_PROFILE_IDS = ['354e2bae-8150-4b2f-80d5-9dc808c15b5b'];
+const HIDDEN_PROFILE_IDS = ['78fcccb5-95e1-4412-87ec-5ee1d0456d92'];
 
 // Re-export supabase for use in other components
 export { supabase };
