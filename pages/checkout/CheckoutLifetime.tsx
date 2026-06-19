@@ -4,7 +4,7 @@ import { CheckCircle, ArrowLeft, Loader, Lock, Zap, Tag, X, Infinity } from 'luc
 import { SUBSCRIPTION_CONSTANTS } from '../../constants/subscription';
 import { STRIPE_PRICES } from '../../lib/stripe';
 import { supabase } from '../../lib/supabase';
-import { createCheckoutSession, getPriceId } from '../../services/stripeService';
+import { createCheckoutSession } from '../../services/stripeService';
 import type { Coach } from '../../types';
 import { getActivePromoCode, validateDiscountCode, calculateDiscount, DiscountCode } from '../../config/discountCodes';
 
@@ -65,13 +65,12 @@ export const CheckoutLifetime: React.FC = () => {
 
   const checkAuthAndFetchCoach = async () => {
     try {
-      // Check authentication with session first (faster than getUser)
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-      // CRITICAL: If no session or error getting session, redirect to login immediately
+      // No session — show the page so they can see the discount code field;
+      // the checkout button will redirect to login when they try to pay.
       if (!session || sessionError || !session.user) {
-        console.log('No valid session - redirecting to login');
-        navigate('/for-coaches', { replace: true });
+        setIsLoading(false);
         return;
       }
 
@@ -93,7 +92,7 @@ export const CheckoutLifetime: React.FC = () => {
           subscription_status: 'onboarding',
           trial_used: false,
           billing_cycle: 'lifetime',
-        } as Coach);
+        } as unknown as Coach);
         setIsLoading(false);
         return;
       }
@@ -138,6 +137,12 @@ export const CheckoutLifetime: React.FC = () => {
   };
 
   const handleCheckout = async () => {
+    // Not logged in — redirect to login, return here after
+    if (!currentCoach) {
+      navigate('/coach-login', { state: { from: { pathname: '/checkout/lifetime' } } });
+      return;
+    }
+
     setIsProcessing(true);
     setError(null);
 
