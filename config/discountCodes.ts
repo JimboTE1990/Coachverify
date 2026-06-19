@@ -142,6 +142,20 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     stripePromotionCodeId: 'promo_1THRejDye3rmKJaDiMbHLFwr',
   },
 
+  // Founding Member Discount — £100 off lifetime (£149 → £49)
+  // Stripe coupon: "Founding Member Discount" | Promo code: FETCH100 | API ID: promo_1Tk1xSDye3rmKJaDofzG4okT
+  'FETCH100': {
+    code: 'FETCH100',
+    type: 'lifetime_fixed',
+    value: 100, // £100 off the £149 lifetime price = £49 final
+    enabled: true,
+    planRestrictions: ['lifetime'],
+    source: 'founding_member',
+    displayName: 'Founding Member Discount',
+    description: '£100 off - Pay only £49 for lifetime access',
+    stripePromotionCodeId: 'promo_1Tk1xSDye3rmKJaDofzG4okT',
+  },
+
   // EMCC/ICF Exclusive Discount — ICF variant (same coupon, different promo code)
   // Stripe coupon: "EMCC/ICF Exclusive Discount" | Promo code: ICF50 | API ID: promo_1Tg2a9Dye3rmKJaDPaDOoCxX
   'ICF50': {

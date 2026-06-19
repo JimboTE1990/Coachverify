@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CheckCircle, Zap, Clock, Infinity } from 'lucide-react';
 import { ProductReviewWidget } from '../components/ProductReviewWidget';
@@ -20,48 +20,19 @@ export const Pricing: React.FC = () => {
   const currentBillingCycle = coach?.billingCycle; // 'monthly' or 'annual'
 
   const handlePlanSelection = (plan: 'monthly' | 'annual' | 'lifetime') => {
-    // Lifetime is one-time payment, can't switch to it
-    if (plan === 'lifetime') {
-      // If not authenticated, redirect to login
-      if (!isAuthenticated) {
-        sessionStorage.setItem('pendingCheckout', JSON.stringify({
-          plan,
-          discountCode: appliedDiscount?.code || null,
-          timestamp: Date.now()
-        }));
-        navigate('/coach-login', { state: { from: { pathname: `/checkout/${plan}` } } });
-        return;
-      }
-      // Authenticated - go to checkout
-      navigate(`/checkout/${plan}`);
-      return;
-    }
-
-    // If already subscribed and trying to switch plans, go to change plan flow
-    if (hasActiveSubscription && currentBillingCycle && currentBillingCycle !== plan) {
-      navigate(`/subscription/change-plan?to=${plan}`);
-      return;
-    }
-
-    // If already on this plan, navigate to subscription management
+    // Already on this plan
     if (hasActiveSubscription && currentBillingCycle === plan) {
       navigate('/for-coaches?tab=subscription');
       return;
     }
 
-    // If not authenticated, redirect to login
-    if (!isAuthenticated) {
-      // Store selected plan and discount code in sessionStorage for post-login redirect
-      sessionStorage.setItem('pendingCheckout', JSON.stringify({
-        plan,
-        discountCode: appliedDiscount?.code || null,
-        timestamp: Date.now()
-      }));
-      navigate('/coach-login', { state: { from: { pathname: `/checkout/${plan}` } } });
+    // Switching between monthly/annual
+    if (hasActiveSubscription && currentBillingCycle && currentBillingCycle !== plan && plan !== 'lifetime') {
+      navigate(`/subscription/change-plan?to=${plan}`);
       return;
     }
 
-    // Authenticated and no subscription - go to checkout (discount will be retrieved from sessionStorage)
+    // Everyone else (including unauthenticated) goes to checkout — checkout handles auth
     navigate(`/checkout/${plan}`);
   };
 
@@ -314,10 +285,10 @@ export const Pricing: React.FC = () => {
 
               <button
                 onClick={() => handlePlanSelection('lifetime')}
-                disabled={hasActiveSubscription && currentBillingCycle === 'lifetime'}
+                disabled={coach?.subscriptionStatus === 'lifetime'}
                 className="mt-8 w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-4 rounded-xl font-bold hover:from-amber-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {hasActiveSubscription && currentBillingCycle === 'lifetime'
+                {coach?.subscriptionStatus === 'lifetime'
                   ? 'Current Plan'
                   : 'Secure Lifetime Access'}
               </button>
