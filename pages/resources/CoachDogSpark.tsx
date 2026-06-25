@@ -1,9 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  ChevronRight, Lock, Sparkles, Play, Pause, Clock,
-  Captions, CaptionsOff, ChevronDown, Volume2, VolumeX, Maximize
-} from 'lucide-react';
+import { ChevronRight, Lock, Sparkles, Clock } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 const isPaidMember = (coach: any) =>
@@ -14,8 +11,7 @@ interface Lesson {
   title: string;
   description: string;
   duration: string;
-  videoSrc?: string;
-  captionSrc?: string;
+  youtubeId?: string;
   available: boolean;
 }
 
@@ -24,9 +20,8 @@ const LESSONS: Lesson[] = [
     number: 1,
     title: 'Getting Started with CoachDog',
     description: 'An introduction to your CoachDog profile — how to set it up for maximum impact and what coaches need to know to hit the ground running.',
-    duration: '',
-    videoSrc: '/spark/lesson-1.mp4',
-    captionSrc: '/spark/lesson-1.vtt',
+    duration: '9:27',
+    youtubeId: 'mMm8pXcmhxo',
     available: true,
   },
   {
@@ -45,74 +40,10 @@ const LESSONS: Lesson[] = [
   },
 ];
 
-function formatTime(s: number): string {
-  const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60);
-  return `${m}:${sec.toString().padStart(2, '0')}`;
-}
-
 export const CoachDogSpark: React.FC = () => {
   const { isAuthenticated, coach } = useAuth();
   const hasPremiumAccess = isAuthenticated && isPaidMember(coach);
   const [activeLesson, setActiveLesson] = useState<Lesson>(LESSONS[0]);
-
-  // Player state
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1);
-  const [captionsOn, setCaptionsOn] = useState(false);
-  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  // Reset player when lesson changes
-  useEffect(() => {
-    setIsPlaying(false);
-    setCurrentTime(0);
-    setDuration(0);
-    setCaptionsOn(false);
-  }, [activeLesson]);
-
-  const togglePlay = () => {
-    if (!videoRef.current) return;
-    if (isPlaying) { videoRef.current.pause(); } else { videoRef.current.play(); }
-    setIsPlaying(v => !v);
-  };
-
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const t = Number(e.target.value);
-    if (videoRef.current) videoRef.current.currentTime = t;
-    setCurrentTime(t);
-  };
-
-  const handleSpeedChange = (speed: number) => {
-    setPlaybackSpeed(speed);
-    if (videoRef.current) videoRef.current.playbackRate = speed;
-    setShowSpeedMenu(false);
-  };
-
-  const toggleMute = () => {
-    if (!videoRef.current) return;
-    videoRef.current.muted = !isMuted;
-    setIsMuted(v => !v);
-  };
-
-  const toggleCaptions = () => {
-    const track = videoRef.current?.textTracks[0];
-    if (!track) return;
-    const next = !captionsOn;
-    track.mode = next ? 'showing' : 'hidden';
-    setCaptionsOn(next);
-  };
-
-  const toggleFullscreen = () => {
-    if (!videoRef.current) return;
-    if (document.fullscreenElement) { document.exitFullscreen(); }
-    else { videoRef.current.requestFullscreen(); }
-  };
-
-  const progressPct = duration ? (currentTime / duration) * 100 : 0;
 
   if (!hasPremiumAccess) {
     return (
@@ -218,127 +149,20 @@ export const CoachDogSpark: React.FC = () => {
 
           {/* Video player — main content */}
           <div className="lg:col-span-2">
-            {activeLesson.videoSrc ? (
-              <div className="rounded-2xl overflow-hidden bg-slate-900 shadow-xl mb-6">
-                {/* Video */}
-                <div className="relative cursor-pointer" onClick={togglePlay}>
-                  <video
-                    ref={videoRef}
-                    key={activeLesson.videoSrc}
-                    className="w-full block"
-                    preload="metadata"
-                    onTimeUpdate={() => setCurrentTime(videoRef.current?.currentTime ?? 0)}
-                    onLoadedMetadata={() => setDuration(videoRef.current?.duration ?? 0)}
-                    onEnded={() => setIsPlaying(false)}
-                  >
-                    <source src={activeLesson.videoSrc} type="video/mp4" />
-                    {activeLesson.captionSrc && (
-                      <track kind="subtitles" src={activeLesson.captionSrc} srcLang="en" label="English" />
-                    )}
-                  </video>
-
-                  {/* Centre play/pause flash */}
-                  {!isPlaying && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="bg-black/40 rounded-full p-4">
-                        <Play className="h-10 w-10 text-white fill-white" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Custom control bar */}
-                <div className="bg-slate-900 px-4 pt-2 pb-3 select-none">
-                  {/* Progress bar */}
-                  <div className="relative h-1 mb-3 group/progress">
-                    <div className="absolute inset-0 bg-white/20 rounded-full" />
-                    <div
-                      className="absolute left-0 top-0 h-full bg-teal-400 rounded-full pointer-events-none"
-                      style={{ width: `${progressPct}%` }}
-                    />
-                    <input
-                      type="range"
-                      min={0}
-                      max={duration || 0}
-                      step={0.1}
-                      value={currentTime}
-                      onChange={handleSeek}
-                      onClick={e => e.stopPropagation()}
-                      className="absolute inset-0 w-full opacity-0 cursor-pointer h-full"
-                    />
-                  </div>
-
-                  {/* Controls row */}
-                  <div className="flex items-center justify-between">
-                    {/* Left: play, volume, time */}
-                    <div className="flex items-center gap-3">
-                      <button onClick={e => { e.stopPropagation(); togglePlay(); }} className="text-white hover:text-teal-400 transition-colors">
-                        {isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
-                      </button>
-                      <button onClick={e => { e.stopPropagation(); toggleMute(); }} className="text-white hover:text-teal-400 transition-colors">
-                        {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                      </button>
-                      <span className="text-xs text-slate-400 font-mono tabular-nums">
-                        {formatTime(currentTime)} / {formatTime(duration)}
-                      </span>
-                    </div>
-
-                    {/* Right: speed, CC, fullscreen */}
-                    <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                      {/* Speed dropdown */}
-                      <div className="relative">
-                        {showSpeedMenu && (
-                          <div className="fixed inset-0 z-10" onClick={() => setShowSpeedMenu(false)} />
-                        )}
-                        <button
-                          onClick={() => setShowSpeedMenu(v => !v)}
-                          className="inline-flex items-center gap-0.5 text-white hover:text-teal-400 text-xs font-bold transition-colors"
-                        >
-                          {playbackSpeed === 1 ? '1×' : `${playbackSpeed}×`}
-                          <ChevronDown className="h-3 w-3" />
-                        </button>
-                        {showSpeedMenu && (
-                          <div className="absolute bottom-full right-0 mb-2 bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-xl z-20 min-w-[110px]">
-                            {[0.75, 1, 1.25, 1.5, 2].map(speed => (
-                              <button
-                                key={speed}
-                                onClick={() => handleSpeedChange(speed)}
-                                className={`w-full text-left px-4 py-2 text-xs font-semibold transition-colors ${
-                                  playbackSpeed === speed
-                                    ? 'bg-teal-600 text-white'
-                                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                                }`}
-                              >
-                                {speed === 1 ? '1× Normal' : `${speed}×`}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* CC toggle */}
-                      {activeLesson.captionSrc && (
-                        <button
-                          onClick={toggleCaptions}
-                          className={`transition-colors ${captionsOn ? 'text-teal-400' : 'text-white hover:text-teal-400'}`}
-                          title={captionsOn ? 'Turn off captions' : 'Turn on captions'}
-                        >
-                          {captionsOn ? <Captions className="h-4 w-4" /> : <CaptionsOff className="h-4 w-4" />}
-                        </button>
-                      )}
-
-                      {/* Fullscreen */}
-                      <button onClick={toggleFullscreen} className="text-white hover:text-teal-400 transition-colors">
-                        <Maximize className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+            {activeLesson.youtubeId ? (
+              <div className="rounded-2xl overflow-hidden shadow-xl mb-6 aspect-video">
+                <iframe
+                  key={activeLesson.youtubeId}
+                  src={`https://www.youtube.com/embed/${activeLesson.youtubeId}?rel=0&modestbranding=1`}
+                  title={activeLesson.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
               </div>
             ) : (
               <div className="rounded-2xl bg-slate-100 flex items-center justify-center aspect-video mb-6">
                 <div className="text-center text-slate-400">
-                  <Play className="h-12 w-12 mx-auto mb-2 opacity-30" />
                   <p className="text-sm font-medium">Coming soon</p>
                 </div>
               </div>
