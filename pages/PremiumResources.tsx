@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Lock, Sparkles, BookOpen, ChevronRight, ArrowRight } from 'lucide-react';
+import { Lock, Sparkles, BookOpen, ChevronRight, ArrowRight, Play } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 const isPaidMember = (coach: any) =>
@@ -52,6 +52,31 @@ export const PremiumResources: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
 
           <div className="grid sm:grid-cols-2 gap-6 mb-12">
+            {/* CoachDog Spark card */}
+            <Link
+              to="/resources/spark"
+              className="group border border-slate-200 rounded-2xl overflow-hidden hover:border-amber-300 hover:shadow-lg transition-all"
+            >
+              <div className="bg-slate-900 px-5 py-6">
+                <div className="flex flex-wrap gap-2 mb-3">
+                  <span className="text-xs font-bold text-amber-400 bg-amber-400/10 px-2.5 py-0.5 rounded-full uppercase tracking-wide">Premium</span>
+                  <span className="text-xs text-slate-300 bg-white/10 px-2.5 py-0.5 rounded-full">Video Series</span>
+                  <span className="text-xs text-slate-300 bg-white/10 px-2.5 py-0.5 rounded-full">Profile Tips</span>
+                </div>
+                <h3 className="text-lg font-bold text-white leading-snug">
+                  CoachDog Spark ⚡
+                </h3>
+              </div>
+              <div className="px-5 py-4 bg-white">
+                <p className="text-sm text-slate-600 mb-4 leading-relaxed">
+                  A growing video series of how-tos and profile tips to help you get the most from CoachDog. New lessons added regularly.
+                </p>
+                <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-600 group-hover:gap-2.5 transition-all">
+                  <Play className="h-4 w-4" /> Watch lessons
+                </span>
+              </div>
+            </Link>
+
             {/* TKI Questionnaire card */}
             <Link
               to="/resources/tki-questionnaire"

@@ -25,3 +25,7 @@ dist-ssr
 .vercel
 .env*.local
 .env
+
+# Large video files — hosted on Supabase Storage / CDN for production
+public/spark/
+*.mp4

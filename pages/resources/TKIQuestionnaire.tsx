@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, ChevronRight, Download, FileText, Lock, Sparkles } from 'lucide-react';
+import { ChevronRight, Download, FileText, Lock, Sparkles } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { saveTKIResult } from '../../services/supabaseService';
 
 type Mode = 'Competing' | 'Avoiding' | 'Accommodating' | 'Collaborating' | 'Compromising';
 
@@ -136,9 +135,6 @@ export const TKIQuestionnaire: React.FC = () => {
   const { isAuthenticated, coach } = useAuth();
   const hasPremiumAccess = isAuthenticated && isPaidMember(coach);
   const [answers, setAnswers] = useState<Record<number, 'A' | 'B'>>({});
-  const [savedId, setSavedId] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-
   const scores = QUESTIONS.reduce<Record<Mode, number>>(
     (acc, q) => {
       const ans = answers[q.pair];
@@ -158,14 +154,6 @@ export const TKIQuestionnaire: React.FC = () => {
     const modes = (Object.keys(scores) as Mode[]).filter(m => scores[m] === maxScore);
     return modes.length === 1 ? modes[0] : `${modes.join(' / ')} (tied at ${maxScore})`;
   })();
-
-  const handleSave = async () => {
-    if (!coach?.id || !dominantMode) return;
-    setSaving(true);
-    const result = await saveTKIResult(coach.id, answers, scores, dominantMode);
-    setSaving(false);
-    if (result) setSavedId(result.id);
-  };
 
   const downloadWord = () => {
     const html = buildWordHTML(coach?.name, scores, dominantMode, answers, QUESTIONS, REFLECTION_QUESTIONS);
@@ -354,20 +342,6 @@ export const TKIQuestionnaire: React.FC = () => {
               <FileText size={16} />
               Download Word (.doc)
             </button>
-            {savedId ? (
-              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-4 py-2.5 rounded-xl">
-                <Check size={15} />
-                Results saved
-              </span>
-            ) : (
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-semibold px-5 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg"
-              >
-                {saving ? 'Saving…' : 'Save Results'}
-              </button>
-            )}
           </div>
         )}
 
@@ -439,7 +413,7 @@ export const TKIQuestionnaire: React.FC = () => {
         {answeredCount > 0 && (
           <div className="text-center print:hidden">
             <button
-              onClick={() => { setAnswers({}); setSavedId(null); }}
+              onClick={() => setAnswers({})}
               className="text-sm text-slate-400 hover:text-slate-600 underline underline-offset-2 transition-colors"
             >
               Reset answers
