@@ -18,8 +18,8 @@ interface Lesson {
 const LESSONS: Lesson[] = [
   {
     number: 1,
-    title: 'Getting Started with CoachDog',
-    description: 'An introduction to your CoachDog profile — how to set it up for maximum impact and what coaches need to know to hit the ground running.',
+    title: 'How to Set Up a Professional Profile Photo',
+    description: 'A step-by-step guide to uploading and setting your profile picture on CoachDog — make a great first impression with clients browsing the directory.',
     duration: '9:27',
     youtubeId: 'mMm8pXcmhxo',
     available: true,
@@ -153,7 +153,7 @@ export const CoachDogSpark: React.FC = () => {
               <div className="rounded-2xl overflow-hidden shadow-xl mb-6 aspect-video">
                 <iframe
                   key={activeLesson.youtubeId}
-                  src={`https://www.youtube.com/embed/${activeLesson.youtubeId}?rel=0&modestbranding=1`}
+                  src={`https://www.youtube.com/embed/${activeLesson.youtubeId}?rel=0&cc_load_policy=1&cc_lang_pref=en`}
                   title={activeLesson.title}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
