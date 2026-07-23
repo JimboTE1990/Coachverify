@@ -1361,9 +1361,7 @@ export const CoachDashboard: React.FC = () => {
                               <span className={`text-sm font-bold ${step.done ? 'text-green-800 line-through opacity-70' : 'text-slate-800'}`}>
                                 {step.emoji} {step.label}
                               </span>
-                              {!step.done && (
-                                <p className="text-xs text-slate-500 mt-0.5">{step.detail}</p>
-                              )}
+                              <p className={`text-xs mt-0.5 ${step.done ? 'text-green-700 opacity-70' : 'text-slate-500'}`}>{step.detail}</p>
                             </div>
                           </div>
                         ))}
