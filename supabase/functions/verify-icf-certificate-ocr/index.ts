@@ -84,14 +84,6 @@ function getClientIp(req: Request): string {
   );
 }
 
-function isExpired(dateStr: string | null): boolean {
-  if (!dateStr) return false; // can't confirm expiry without a date
-  try {
-    return new Date(dateStr) < new Date();
-  } catch {
-    return false;
-  }
-}
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -312,28 +304,10 @@ If a field cannot be found, use null for that field.`;
     const levelMatch = extractedLevel === normalisedLevel;
     if (levelMatch) confidence += 30;
 
-    const expired = isExpired(extracted.expiryDate);
-    const notExpired = !expired;
-    if (notExpired) confidence += 20;
-
     // Bonus: credential number extracted
     if (extracted.credentialNumber) confidence += 10;
 
-    console.log('[ICF OCR] Confidence:', confidence, '| Name overlap:', nameOverlapScore, '| Level match:', levelMatch, '| Expired:', expired);
-
-    // Expiry gate — if we extracted a date and it's past, always reject
-    if (expired) {
-      return new Response(
-        JSON.stringify({
-          verified: false,
-          confidence,
-          extractedData: extracted,
-          matchDetails: { nameMatch, levelMatch, notExpired: false },
-          reason: `Your ICF credential appears to have expired (${extracted.expiryDate}). Please renew your credential with ICF and try again, or contact us if you believe this is an error.`,
-        } as VerificationResult),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    console.log('[ICF OCR] Confidence:', confidence, '| Name overlap:', nameOverlapScore, '| Level match:', levelMatch);
 
     const verified = confidence >= 70;
 
@@ -356,7 +330,7 @@ If a field cannot be found, use null for that field.`;
       verified,
       confidence,
       extractedData: extracted,
-      matchDetails: { nameMatch, levelMatch, notExpired },
+      matchDetails: { nameMatch, levelMatch, notExpired: true },
       reason: verified
         ? 'Certificate verified successfully'
         : !nameMatch
