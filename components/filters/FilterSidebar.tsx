@@ -520,7 +520,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           bg-white
           ${onMobileClose ? 'z-50 w-80' : 'w-full'}
           ${onMobileClose ? 'lg:hidden' : ''}
-          transform transition-transform duration-300 ease-in-out
+          ${onMobileClose ? 'transform transition-transform duration-300 ease-in-out' : ''}
           ${isMobileOpen && onMobileClose ? 'translate-x-0' : ''}
           ${!isMobileOpen && onMobileClose ? '-translate-x-full' : ''}
           ${!onMobileClose ? 'rounded-2xl border border-slate-200 shadow-sm' : ''}
