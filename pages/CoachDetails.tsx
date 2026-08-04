@@ -226,7 +226,7 @@ export const CoachDetails: React.FC = () => {
       ? (coach.reviews.reduce((acc, r) => acc + r.rating, 0) / coach.reviews.length)
       : 0);
 
-  const totalReviews = coach.totalReviews || coach.reviews?.length || 0;
+  const totalReviews = coach.reviews?.length ?? coach.totalReviews ?? 0;
 
   // Calculate dynamic match percentage from questionnaire data
   const matchPercentage = questionnaireData
