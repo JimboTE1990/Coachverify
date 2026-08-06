@@ -16,7 +16,7 @@ export const ClientInfo: React.FC = () => {
             Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600">CoachDog?</span>
           </h1>
           <p className="text-xl md:text-2xl text-slate-600 max-w-3xl mx-auto mb-10 leading-relaxed font-medium">
-            We exist to make finding a life coach safe, simple, and effective. No more guessing. Just verified results.
+            We exist to make finding a verified coach safe, simple, and effective. No more guessing. Just verified results.
           </p>
           <Link to="/questionnaire" className="bg-slate-900 text-white px-10 py-5 rounded-full font-bold text-lg hover:bg-slate-800 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 inline-flex items-center group">
             Find My Match <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -44,7 +44,7 @@ export const ClientInfo: React.FC = () => {
               The coaching industry is unregulated, meaning anyone can call themselves a coach. <span className="text-slate-900 font-bold">We change that.</span>
             </p>
             <p className="text-lg text-slate-600 leading-relaxed max-w-2xl">
-              We use official APIs to connect directly with global accreditation databases (ICF, EMCC, AC), ensuring every match is a verified professional.
+              Every coach on CoachDog is verified against the accreditation standards of ICF, EMCC, or AC — so you can be confident you're working with a genuine, accredited professional.
             </p>
             <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mt-4 inline-block">
                 <ul className="space-y-3 text-left">

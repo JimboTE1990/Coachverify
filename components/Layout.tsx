@@ -344,6 +344,10 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   <Link to="/resources/premium" className="flex items-center px-5 py-4 rounded-2xl bg-amber-50 text-amber-700 font-bold hover:bg-amber-100 transition-colors" onClick={closeMobileMenu}>
                     <Lock className="h-6 w-6 mr-4 text-amber-400" /> Premium Resources <span className="ml-2 text-xs font-semibold text-amber-500 bg-amber-100 px-2 py-0.5 rounded-full">Paid plans</span>
                   </Link>
+                  <Link to="/resources/spark" className="flex items-center px-5 py-4 rounded-2xl bg-indigo-50 text-indigo-700 font-bold hover:bg-indigo-100 transition-colors" onClick={closeMobileMenu}>
+                    <svg className="h-6 w-6 mr-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    CoachDog Spark <span className="ml-2 text-xs font-semibold text-indigo-500 bg-indigo-100 px-2 py-0.5 rounded-full">Paid plans</span>
+                  </Link>
                 </div>
               </div>
 
@@ -351,14 +355,17 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <div>
                 <h3 className="text-sm font-extrabold text-indigo-600 uppercase tracking-widest mb-4 flex items-center"><LayoutDashboard className="h-4 w-4 mr-2" /> For Coaches</h3>
                 <div className="space-y-3">
-                  <Link to="/coach-login" className="flex items-center px-5 py-4 rounded-2xl bg-slate-50 text-slate-800 font-bold" onClick={closeMobileMenu}>
-                      <LogIn className="h-6 w-6 mr-4" /> Portal Log In
+                  <Link to="/coach-benefits" className="flex items-center px-5 py-4 rounded-2xl hover:bg-slate-50 text-slate-700 font-bold" onClick={closeMobileMenu}>
+                      <HelpCircle className="h-6 w-6 mr-4 text-slate-400" /> Information
                   </Link>
                   <Link to="/pricing" className="flex items-center px-5 py-4 rounded-2xl hover:bg-slate-50 text-slate-700 font-bold" onClick={closeMobileMenu}>
                       <CreditCard className="h-6 w-6 mr-4 text-slate-400" /> Pricing
                   </Link>
                   <Link to="/coach-signup" className="flex items-center px-5 py-4 rounded-2xl hover:bg-slate-50 text-slate-700 font-bold" onClick={closeMobileMenu}>
                       <UserPlus className="h-6 w-6 mr-4 text-slate-400" /> Sign Up
+                  </Link>
+                  <Link to="/coach-login" className="flex items-center px-5 py-4 rounded-2xl bg-slate-50 text-slate-800 font-bold" onClick={closeMobileMenu}>
+                      <LogIn className="h-6 w-6 mr-4" /> Portal Log In
                   </Link>
                 </div>
               </div>
