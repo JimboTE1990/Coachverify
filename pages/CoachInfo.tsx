@@ -37,6 +37,21 @@ export const CoachInfo: React.FC = () => {
         </div>
       </div>
 
+      {/* VSL Video */}
+      <div className="py-12 bg-white relative z-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-2xl overflow-hidden shadow-2xl aspect-video">
+            <iframe
+              src="https://www.youtube.com/embed/BBnt6z11c50?rel=0"
+              title="CoachDog — Grow Your Practice"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="w-full h-full"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Benefits Section */}
       <div className="py-16 bg-white relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
