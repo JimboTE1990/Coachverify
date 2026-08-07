@@ -27,7 +27,7 @@ import {
   AlertTriangle, Mail, Smartphone, RefreshCw, Eye, EyeOff,
   Tag, Monitor, LayoutDashboard, Sparkles, BarChart, TrendingUp, Calendar,
   Award, GraduationCap, Trophy, Star, Flag, MessageCircle, Send, Info, ExternalLink,
-  ClipboardCheck, Phone, Linkedin, Instagram, Facebook, Youtube, Twitter, Globe, FileText, Upload
+  ClipboardCheck, Phone, Linkedin, Instagram, Facebook, Youtube, Twitter, Globe, FileText, Upload, Copy
 } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
 import { useAuth } from '../hooks/useAuth';
@@ -285,7 +285,7 @@ export const CoachDashboard: React.FC = () => {
     if (link.type === 'tel' || p.includes('phone') || p.includes('mobile') || u.startsWith('tel:')) return 'phone';
     if (p.includes('booking') || p.includes('appointment') || p.includes('schedule') || p.includes('calendly') || p.includes('cal.com') || p.includes('google calendar') || p.includes('microsoft bookings') || u.includes('calendly.com') || u.includes('cal.com') || u.includes('calendar.google.com') || u.includes('calendar.app.google') || u.includes('bookings.microsoft.com')) return 'booking';
     if (p.includes('form') || p.includes('enquiry') || p.includes('typeform') || p.includes('jotform') || p.includes('tally') || u.includes('forms.gle') || u.includes('typeform.com') || u.includes('jotform.com') || u.includes('tally.so')) return 'enquiry';
-    if (['linkedin', 'instagram', 'x / twitter', 'twitter', 'facebook'].some(s => p.includes(s))) return 'social';
+    if (['linkedin', 'instagram', 'x / twitter', 'twitter', 'facebook', 'tiktok'].some(s => p.includes(s))) return 'social';
     if (p === 'website' || p.includes('website')) return 'website';
     return 'other';
   };
@@ -1257,6 +1257,48 @@ export const CoachDashboard: React.FC = () => {
                   </div>
                 )}
 
+                {/* Shareable Profile Link */}
+                {(() => {
+                  const profileSlug = currentCoach.customUrl || currentCoach.id;
+                  const profileUrl = `https://www.coachdog.co.uk/coach/${profileSlug}`;
+                  return (
+                    <div className="bg-gradient-to-r from-brand-50 to-cyan-50 border border-brand-200 rounded-2xl p-4 animate-fade-in">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="bg-brand-100 rounded-lg p-1.5 flex-shrink-0">
+                          <LinkIcon className="h-4 w-4 text-brand-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">Your Shareable Profile Link</p>
+                          <p className="text-xs text-slate-500">{currentCoach.customUrl ? 'Your custom URL' : 'Set a custom URL in the Profile tab below'}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-white border border-brand-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 font-mono truncate">
+                          {profileUrl}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(profileUrl);
+                            alert('Link copied to clipboard!');
+                          }}
+                          className="flex-shrink-0 flex items-center gap-1.5 bg-brand-600 text-white px-3 py-2.5 rounded-xl text-xs font-bold hover:bg-brand-700 transition-colors"
+                        >
+                          <Copy className="h-3.5 w-3.5" /> Copy
+                        </button>
+                        <a
+                          href={profileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-shrink-0 flex items-center gap-1.5 bg-white border border-brand-200 text-brand-700 px-3 py-2.5 rounded-xl text-xs font-bold hover:bg-brand-50 transition-colors"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" /> View
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Onboarding Checklist */}
                 {(() => {
                   const hasPhoto = !!(currentCoach.photoUrl && currentCoach.photoUrl.trim() && !currentCoach.photoUrl.includes('placeholder'));
@@ -1645,7 +1687,7 @@ export const CoachDashboard: React.FC = () => {
                       <div>
                         <label className="block text-sm font-bold text-slate-700 mb-2">Shareable URL</label>
                         <div className="flex items-center gap-0 border border-slate-200 bg-slate-50 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-brand-500 focus-within:border-brand-500">
-                          <span className="px-3 py-3 text-sm text-slate-500 bg-slate-100 border-r border-slate-200 whitespace-nowrap">coachdog.com/coach/</span>
+                          <span className="px-3 py-3 text-sm text-slate-500 bg-slate-100 border-r border-slate-200 whitespace-nowrap">coachdog.co.uk/coach/</span>
                           <input
                             type="text"
                             value={customUrlInput}
@@ -1708,7 +1750,7 @@ export const CoachDashboard: React.FC = () => {
                               // Trigger a re-render by updating localProfile
                               setLocalProfile(prev => prev ? { ...prev, customUrl: customUrlInput } : prev);
                             }
-                            alert('Profile URL updated! Share coachdog.com/coach/' + customUrlInput);
+                            alert('Profile URL updated! Share coachdog.co.uk/coach/' + customUrlInput);
                           } catch {
                             alert('Failed to save URL — please try again.');
                           } finally {
@@ -1875,7 +1917,7 @@ export const CoachDashboard: React.FC = () => {
                         </div>
                       ) : (
                         <div className="flex flex-wrap gap-2">
-                          {['LinkedIn', 'Instagram', 'X / Twitter', 'Facebook'].map(p => (
+                          {['LinkedIn', 'Instagram', 'X / Twitter', 'Facebook', 'TikTok'].map(p => (
                             <button key={p} type="button"
                               onClick={() => { setLinkInputSection('social'); setLinkInputPlatform(p); setLinkInputUrl(''); }}
                               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50 transition-colors">

@@ -233,22 +233,29 @@ export const CoachDetails: React.FC = () => {
     ? calculateMatchScore(coach, questionnaireData)
     : null;
 
+  const getCanonicalProfileUrl = () => {
+    if (coach?.customUrl) {
+      return `https://www.coachdog.co.uk/coach/${coach.customUrl}`;
+    }
+    return window.location.href;
+  };
+
   const handleShare = () => {
-    // Try native share first (works on mobile)
+    const canonicalUrl = getCanonicalProfileUrl();
     if (navigator.share) {
       navigator.share({
         title: `${coach.name} - CoachDog`,
         text: `Check out ${coach.name} on CoachDog`,
-        url: window.location.href
+        url: canonicalUrl
       });
     } else {
-      // Show custom share modal on desktop
       setShowShareOptions(true);
     }
   };
 
   const shareVia = (platform: string) => {
-    const url = encodeURIComponent(window.location.href);
+    const canonicalUrl = getCanonicalProfileUrl();
+    const url = encodeURIComponent(canonicalUrl);
     const title = encodeURIComponent(`${coach.name} - CoachDog`);
     const text = encodeURIComponent(`Check out ${coach.name} on CoachDog`);
 
@@ -257,13 +264,13 @@ export const CoachDetails: React.FC = () => {
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
       twitter: `https://twitter.com/intent/tweet?url=${url}&text=${text}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
-      instagram: '', // Instagram doesn't support web sharing, will copy link
+      instagram: '',
       email: `mailto:?subject=${title}&body=${text}%20${url}`,
       copy: ''
     };
 
     if (platform === 'copy' || platform === 'instagram') {
-      navigator.clipboard.writeText(window.location.href);
+      navigator.clipboard.writeText(canonicalUrl);
       alert(`Link copied to clipboard!${platform === 'instagram' ? ' Open Instagram and paste in your story or bio.' : ''}`);
       setShowShareOptions(false);
     } else {
