@@ -17,6 +17,14 @@ interface Lesson {
 
 const LESSONS: Lesson[] = [
   {
+    number: 0,
+    title: 'Introduction to CoachDog Spark',
+    description: 'Paul Smith, CoachDog\'s Commercial Director, walks through why you should trust CoachDog, his experience, and the aim of the CoachDog Spark course.',
+    duration: '',
+    youtubeId: 'joqWGM0FLDM',
+    available: true,
+  },
+  {
     number: 1,
     title: 'How to Set Up a Professional Profile Photo',
     description: 'A step-by-step guide to uploading and setting your profile picture on CoachDog — make a great first impression with clients browsing the directory.',
@@ -131,7 +139,7 @@ export const CoachDogSpark: React.FC = () => {
                         ? 'bg-teal-100 text-teal-700'
                         : 'bg-slate-200 text-slate-400'
                     }`}>
-                      {lesson.available ? lesson.number : <Lock className="h-3 w-3" />}
+                      {lesson.available ? (lesson.number === 0 ? '★' : lesson.number) : <Lock className="h-3 w-3" />}
                     </span>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold leading-snug truncate">{lesson.title}</p>
@@ -169,7 +177,7 @@ export const CoachDogSpark: React.FC = () => {
             )}
 
             <h2 className="text-xl font-bold text-slate-900 mb-2">
-              Lesson {activeLesson.number}: {activeLesson.title}
+              {activeLesson.number === 0 ? activeLesson.title : `Lesson ${activeLesson.number}: ${activeLesson.title}`}
             </h2>
             <p className="text-slate-600 leading-relaxed">{activeLesson.description}</p>
           </div>
