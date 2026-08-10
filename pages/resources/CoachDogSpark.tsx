@@ -34,17 +34,19 @@ const LESSONS: Lesson[] = [
   },
   {
     number: 2,
-    title: 'Coming Soon',
-    description: 'More tips and how-tos on the way.',
+    title: 'Background Images',
+    description: 'In this lesson, Paul covers adding a cover/banner photo to make your profile stand out.',
     duration: '',
-    available: false,
+    youtubeId: '7dq4xsdHSMA',
+    available: true,
   },
   {
     number: 3,
-    title: 'Coming Soon',
-    description: 'More tips and how-tos on the way.',
+    title: 'Pricing & Hourly Rates',
+    description: 'Here we discuss how to set hourly rates and best practices for pricing your coaching services.',
     duration: '',
-    available: false,
+    youtubeId: 'v94LnScQ5Zc',
+    available: true,
   },
 ];
 
