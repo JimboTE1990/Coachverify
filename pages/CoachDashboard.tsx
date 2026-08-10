@@ -1908,7 +1908,14 @@ export const CoachDashboard: React.FC = () => {
                       {linkInputSection === 'social' ? (
                         <div className="flex gap-2 items-center bg-blue-50 border border-blue-200 rounded-xl p-3">
                           <span className="text-xs font-bold text-blue-800 whitespace-nowrap">{linkInputPlatform}</span>
-                          <input type="url" autoFocus placeholder="https://linkedin.com/in/yourname"
+                          <input type="url" autoFocus placeholder={
+                              linkInputPlatform === 'LinkedIn' ? 'https://linkedin.com/in/yourname' :
+                              linkInputPlatform === 'Instagram' ? 'https://instagram.com/yourhandle' :
+                              linkInputPlatform === 'X / Twitter' ? 'https://x.com/yourhandle' :
+                              linkInputPlatform === 'Facebook' ? 'https://facebook.com/yourpage' :
+                              linkInputPlatform === 'TikTok' ? 'https://tiktok.com/@yourhandle' :
+                              'https://'
+                            }
                             className="flex-1 border border-blue-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
                             value={linkInputUrl} onChange={e => setLinkInputUrl(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && saveStructuredLink()} />
