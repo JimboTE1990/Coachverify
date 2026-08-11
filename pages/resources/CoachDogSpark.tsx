@@ -48,6 +48,38 @@ const LESSONS: Lesson[] = [
     youtubeId: 'v94LnScQ5Zc',
     available: true,
   },
+  {
+    number: 4,
+    title: 'Uploading Our Links',
+    description: 'In this lesson, Paul runs through how to add social, website and booking links to your CoachDog profile.',
+    duration: '6:03',
+    youtubeId: 'rMCSiVj_PG4',
+    available: true,
+  },
+  {
+    number: 5,
+    title: 'Completing Our Profiles',
+    description: 'In this lesson, Paul covers optimising our profile to maximise client engagement.',
+    duration: '10:18',
+    youtubeId: 'DbiSslKBxK8',
+    available: true,
+  },
+  {
+    number: 6,
+    title: 'Adding a Personal URL',
+    description: 'In this lesson, Paul covers setting up a personal/custom URL for your shareable profile.',
+    duration: '3:07',
+    youtubeId: 'ho7g7rj7A5c',
+    available: true,
+  },
+  {
+    number: 7,
+    title: 'Our Profile Videos',
+    description: 'In this lesson, Paul covers how to add an introductory video to your profile.',
+    duration: '7:53',
+    youtubeId: 'IBpdMoQ9vqo',
+    available: true,
+  },
 ];
 
 const AVAILABLE_LESSONS = LESSONS.filter(l => l.available);
