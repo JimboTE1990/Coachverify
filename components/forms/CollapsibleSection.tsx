@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface CollapsibleSectionProps {
@@ -7,6 +7,7 @@ interface CollapsibleSectionProps {
   icon?: React.ReactNode;
   children: React.ReactNode;
   defaultOpen?: boolean;
+  openTrigger?: number;
   gradient?: string;
   borderColor?: string;
   iconBgColor?: string;
@@ -19,12 +20,17 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   icon,
   children,
   defaultOpen = false,
+  openTrigger,
   gradient = 'from-slate-50 to-slate-50',
   borderColor = 'border-slate-200',
   iconBgColor = 'bg-slate-100',
   iconTextColor = 'text-slate-600'
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  useEffect(() => {
+    if (openTrigger && openTrigger > 0) setIsOpen(true);
+  }, [openTrigger]);
 
   return (
     <div className={`relative bg-gradient-to-br ${gradient} rounded-2xl border ${borderColor} transition-all ${isOpen ? 'overflow-visible' : 'overflow-hidden'}`}>

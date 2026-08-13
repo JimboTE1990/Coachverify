@@ -27,7 +27,7 @@ import {
   AlertTriangle, Mail, Smartphone, RefreshCw, Eye, EyeOff,
   Tag, Monitor, LayoutDashboard, Sparkles, BarChart, TrendingUp, Calendar,
   Award, GraduationCap, Trophy, Star, Flag, MessageCircle, Send, Info, ExternalLink,
-  ClipboardCheck, Phone, Linkedin, Instagram, Facebook, Youtube, Twitter, Globe, FileText, Upload, Copy
+  ClipboardCheck, Phone, Linkedin, Instagram, Facebook, Youtube, Twitter, Globe, FileText, Upload, Copy, Edit
 } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
 import { useAuth } from '../hooks/useAuth';
@@ -160,6 +160,8 @@ export const CoachDashboard: React.FC = () => {
   const [customUrlStatus, setCustomUrlStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
   const [customUrlSaving, setCustomUrlSaving] = useState(false);
   const customUrlDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [customUrlOpenTrigger, setCustomUrlOpenTrigger] = useState(0);
+  const customUrlSectionRef = useRef<HTMLDivElement>(null);
 
   // Analytics state
   const [analytics, setAnalytics] = useState<CoachAnalytics | null>(null);
@@ -1294,6 +1296,18 @@ export const CoachDashboard: React.FC = () => {
                         >
                           <ExternalLink className="h-3.5 w-3.5" /> View
                         </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomUrlOpenTrigger(t => t + 1);
+                            setTimeout(() => {
+                              customUrlSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 50);
+                          }}
+                          className="flex-shrink-0 flex items-center gap-1.5 bg-white border border-slate-300 text-slate-600 px-3 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-50 transition-colors"
+                        >
+                          <Edit className="h-3.5 w-3.5" /> Edit
+                        </button>
                       </div>
                     </div>
                   );
@@ -1673,11 +1687,13 @@ export const CoachDashboard: React.FC = () => {
                   </CollapsibleSection>
 
                   {/* Custom Profile URL */}
+                  <div ref={customUrlSectionRef}>
                   <CollapsibleSection
                     title="Your Profile URL"
                     subtitle="Create a custom shareable link to your coaching profile"
                     icon={<LinkIcon className="h-4 w-4" />}
                     defaultOpen={false}
+                    openTrigger={customUrlOpenTrigger}
                     gradient="from-brand-50 to-cyan-50"
                     borderColor="border-brand-200"
                     iconBgColor="bg-brand-100"
@@ -1766,6 +1782,7 @@ export const CoachDashboard: React.FC = () => {
                       </p>
                     </div>
                   </CollapsibleSection>
+                  </div>
 
                   {/* Social Links */}
                   <CollapsibleSection
