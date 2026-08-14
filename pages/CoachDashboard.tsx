@@ -19,7 +19,9 @@ import {
   CPDQualification,
   CoachingLanguage,
   Currency,
-  CURRENCIES
+  CURRENCIES,
+  SecondaryAccreditation,
+  SecondaryAccreditationBody
 } from '../types';
 import {
   User, Settings, CreditCard, Lock, LogOut,
@@ -151,6 +153,10 @@ export const CoachDashboard: React.FC = () => {
   const [customUrlOpenTrigger, setCustomUrlOpenTrigger] = useState(0);
   const customUrlSectionRef = useRef<HTMLDivElement>(null);
 
+  // Additional accreditations add-form state
+  const [newSecondaryBody, setNewSecondaryBody] = useState<SecondaryAccreditationBody | ''>('');
+  const [newSecondaryLevel, setNewSecondaryLevel] = useState('');
+
   // Analytics state
   const [analytics, setAnalytics] = useState<CoachAnalytics | null>(null);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
@@ -194,6 +200,7 @@ export const CoachDashboard: React.FC = () => {
         country: currentCoach.country || 'United Kingdom',
         customUrl: currentCoach.customUrl || '',
         introVideoUrl: currentCoach.introVideoUrl || '',
+        secondaryAccreditations: currentCoach.secondaryAccreditations || [],
       });
     }
   }, [currentCoach, localProfile]);
@@ -2345,6 +2352,93 @@ export const CoachDashboard: React.FC = () => {
                         <p className="text-xs text-slate-500 mt-3 italic">
                           Your accreditation details appear on your public profile.
                         </p>
+                      </div>
+
+                      {/* Additional Accreditation Bodies */}
+                      <div className="mb-6">
+                        <h3 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                          <Shield className="h-4 w-4 text-indigo-600" />
+                          Additional Accreditations
+                        </h3>
+                        <p className="text-xs text-slate-500 mb-3">Hold accreditation from more than one body? Add your additional credentials here — they'll appear as badges on your profile.</p>
+
+                        {/* Existing secondary accreditations */}
+                        {(localProfile?.secondaryAccreditations || []).length > 0 && (
+                          <div className="space-y-2 mb-4">
+                            {(localProfile?.secondaryAccreditations || []).map((acc, idx) => (
+                              <div key={idx} className="flex items-center justify-between bg-white border border-indigo-200 rounded-xl px-4 py-3">
+                                <div className="flex items-center gap-3">
+                                  <span className={`text-xs font-extrabold px-2 py-1 rounded-md ${
+                                    acc.body === 'EMCC' ? 'bg-[#C9A961]/20 text-[#2B4170]' :
+                                    acc.body === 'ICF' ? 'bg-[#4A90E2]/20 text-[#2E5C8A]' :
+                                    'bg-slate-200 text-slate-700'
+                                  }`}>{acc.body}</span>
+                                  <span className="text-sm font-semibold text-slate-700">{acc.level}</span>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    const updated = (localProfile?.secondaryAccreditations || []).filter((_, i) => i !== idx);
+                                    updateLocalProfile({ secondaryAccreditations: updated });
+                                  }}
+                                  className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Add new secondary accreditation */}
+                        {(() => {
+                          const usedBodies = new Set([
+                            localProfile?.accreditationBody,
+                            ...(localProfile?.secondaryAccreditations || []).map(a => a.body)
+                          ]);
+                          const availableBodies = (['EMCC', 'ICF', 'AC'] as SecondaryAccreditationBody[]).filter(b => !usedBodies.has(b));
+                          const levelOptions: Record<SecondaryAccreditationBody, string[]> = {
+                            EMCC: ['Foundation', 'Practitioner', 'Senior Practitioner', 'Master Practitioner'],
+                            ICF: ['ACC', 'PCC', 'MCC'],
+                            AC: ['Member Coach', 'Accredited Coach', 'Senior Practitioner', 'Master Coach'],
+                          };
+                          if (availableBodies.length === 0) return (
+                            <p className="text-xs text-slate-400 italic">All accreditation bodies have been added.</p>
+                          );
+                          return (
+                            <div className="flex flex-col sm:flex-row gap-2">
+                              <select
+                                value={newSecondaryBody}
+                                onChange={e => { setNewSecondaryBody(e.target.value as SecondaryAccreditationBody | ''); setNewSecondaryLevel(''); }}
+                                className="flex-1 border border-slate-200 bg-white rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none text-slate-700"
+                              >
+                                <option value="">Select body…</option>
+                                {availableBodies.map(b => <option key={b} value={b}>{b}</option>)}
+                              </select>
+                              <select
+                                value={newSecondaryLevel}
+                                onChange={e => setNewSecondaryLevel(e.target.value)}
+                                disabled={!newSecondaryBody}
+                                className="flex-1 border border-slate-200 bg-white rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none text-slate-700 disabled:opacity-50"
+                              >
+                                <option value="">Select level…</option>
+                                {newSecondaryBody && levelOptions[newSecondaryBody].map(l => <option key={l} value={l}>{l}</option>)}
+                              </select>
+                              <button
+                                onClick={() => {
+                                  if (!newSecondaryBody || !newSecondaryLevel) return;
+                                  const existing = localProfile?.secondaryAccreditations || [];
+                                  updateLocalProfile({ secondaryAccreditations: [...existing, { body: newSecondaryBody as SecondaryAccreditationBody, level: newSecondaryLevel }] });
+                                  setNewSecondaryBody('');
+                                  setNewSecondaryLevel('');
+                                }}
+                                disabled={!newSecondaryBody || !newSecondaryLevel}
+                                className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white font-bold px-4 py-2.5 rounded-lg text-sm transition-colors whitespace-nowrap"
+                              >
+                                <Plus className="h-4 w-4" /> Add
+                              </button>
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       {/* Additional Coaching Certifications */}

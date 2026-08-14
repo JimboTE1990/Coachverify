@@ -147,16 +147,6 @@ export type CoachingExpertise =
 
 // New: CPD Qualifications (Additional Professional Development Certifications)
 export type CPDQualification =
-  | 'EMCC Foundation'
-  | 'EMCC Practitioner'
-  | 'EMCC Senior Practitioner'
-  | 'EMCC Master Practitioner'
-  | 'ICF ACC'
-  | 'ICF PCC'
-  | 'ICF MCC'
-  | 'AC Accredited Coach'
-  | 'AC Senior Practitioner'
-  | 'AC Master Coach'
   | 'Mental Health First Aid (MHFA)'
   | 'Trauma-Informed Coaching Certificate'
   | 'Diversity & Inclusion Coaching Certificate'
@@ -224,6 +214,13 @@ export type CoachingLanguage =
   | 'Swahili';
 
 export type Gender = 'Male' | 'Female' | 'Non-binary' | 'Prefer not to say' | string; // string allows for self-describe option
+
+export type SecondaryAccreditationBody = 'EMCC' | 'ICF' | 'AC';
+
+export interface SecondaryAccreditation {
+  body: SecondaryAccreditationBody;
+  level: string;
+}
 
 export type AdditionalCertification =
   | 'Mental Health First Aid Trained'
@@ -369,6 +366,7 @@ export interface Coach {
   coachingLanguages?: CoachingLanguage[]; // Languages offered for coaching sessions
   gender?: Gender; // Coach's gender identity
   referralSource?: string | null; // Partner referral source (e.g. 'emcc', 'icf', 'ac')
+  secondaryAccreditations?: SecondaryAccreditation[]; // Additional accreditation bodies beyond the primary
 
 
   // Subscription & Billing

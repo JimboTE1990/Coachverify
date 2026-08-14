@@ -214,6 +214,7 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   if (coach.coachingExpertise !== undefined) updateData.coaching_expertise = coach.coachingExpertise;
   if (coach.cpdQualifications !== undefined) updateData.cpd_qualifications = coach.cpdQualifications;
   if (coach.coachingLanguages !== undefined) updateData.coaching_languages = coach.coachingLanguages;
+  if (coach.secondaryAccreditations !== undefined) updateData.secondary_accreditations = coach.secondaryAccreditations;
   if (coach.gender !== undefined) updateData.gender = coach.gender;
   if (coach.currency !== undefined) updateData.currency = coach.currency;
   if (coach.introVideoUrl !== undefined) {
@@ -1086,6 +1087,7 @@ const mapCoachProfile = (data: any): Coach => {
     coachingExpertise: data.coaching_expertise,
     cpdQualifications: data.cpd_qualifications,
     coachingLanguages: data.coaching_languages,
+    secondaryAccreditations: data.secondary_accreditations || [],
     gender: data.gender,
     referralSource: data.referral_source || null,
     country: data.country || 'United Kingdom',

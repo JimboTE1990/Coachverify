@@ -1141,6 +1141,41 @@ export const CoachDetails: React.FC = () => {
               </div>
             )}
 
+            {/* Secondary Accreditation Badges */}
+            {coach.secondaryAccreditations && coach.secondaryAccreditations.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wide">Additional Accreditations:</h3>
+                {coach.secondaryAccreditations.map((acc, idx) => (
+                  <div key={idx} className={`flex flex-col sm:flex-row items-center gap-4 sm:gap-5 p-4 rounded-2xl border-2 shadow-sm ${
+                    acc.body === 'EMCC'
+                      ? 'bg-gradient-to-br from-[#2B4170]/5 to-[#C9A961]/10 border-[#2B4170]/20'
+                      : acc.body === 'ICF'
+                      ? 'bg-gradient-to-br from-[#2E5C8A]/5 to-[#4A90E2]/10 border-[#2E5C8A]/20'
+                      : 'bg-gradient-to-br from-slate-100 to-slate-50 border-slate-200'
+                  }`}>
+                    <div className="flex-shrink-0">
+                      <AccreditationBadge
+                        body={acc.body}
+                        level={acc.level}
+                        size="large"
+                        className="!h-16 !w-16 sm:!h-20 sm:!w-20"
+                      />
+                    </div>
+                    <div>
+                      <p className={`text-lg font-black tracking-wide ${
+                        acc.body === 'EMCC' ? 'text-[#2B4170]' :
+                        acc.body === 'ICF' ? 'text-[#2E5C8A]' : 'text-slate-900'
+                      }`}>{acc.body}</p>
+                      <p className={`text-sm font-bold ${
+                        acc.body === 'EMCC' ? 'text-[#2B4170]' :
+                        acc.body === 'ICF' ? 'text-[#2E5C8A]' : 'text-slate-700'
+                      }`}>{acc.level}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Bio */}
             {coach.bio && (
               <div className="bg-slate-50 px-5 py-5 rounded-2xl">

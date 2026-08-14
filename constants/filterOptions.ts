@@ -66,18 +66,6 @@ export const COACHING_LANGUAGES: CoachingLanguage[] = [
 // ============================================================
 
 export const CPD_QUALIFICATIONS: CPDQualification[] = [
-  // Accreditation Bodies (secondary/additional)
-  'EMCC Foundation',
-  'EMCC Practitioner',
-  'EMCC Senior Practitioner',
-  'EMCC Master Practitioner',
-  'ICF ACC',
-  'ICF PCC',
-  'ICF MCC',
-  'AC Accredited Coach',
-  'AC Senior Practitioner',
-  'AC Master Coach',
-  // Professional Development Certifications
   'Mental Health First Aid (MHFA)',
   'Trauma-Informed Coaching Certificate',
   'Diversity & Inclusion Coaching Certificate',
