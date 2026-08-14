@@ -1040,9 +1040,7 @@ export const CoachDetails: React.FC = () => {
           <div className="px-6 py-6 space-y-6">
 
             {/* Accreditation Badge - Compact with Border */}
-            {((coach.accreditationBody === 'EMCC' && coach.emccVerified) ||
-              (coach.accreditationBody === 'ICF' && coach.icfVerified) ||
-              (coach.accreditationBody === 'AC' && coach.acVerified)) && (
+            {coach.accreditationBody && (coach.accreditationLevel || coach.icfAccreditationLevel) && (
               <div className={`flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-5 rounded-2xl border-2 shadow-md mb-6 ${
                 coach.accreditationBody === 'EMCC'
                   ? 'bg-gradient-to-br from-[#2B4170]/5 to-[#C9A961]/10 border-[#2B4170]/30'
@@ -1070,11 +1068,19 @@ export const CoachDetails: React.FC = () => {
                       coach.accreditationBody === 'EMCC' ? 'text-[#2B4170]' :
                       coach.accreditationBody === 'ICF' ? 'text-[#2E5C8A]' : 'text-slate-900'
                     }`}>{coach.accreditationBody}</span>
-                    <span className={`text-sm font-bold ${
-                      coach.accreditationBody === 'EMCC' ? 'text-[#2B4170]' :
-                      coach.accreditationBody === 'ICF' ? 'text-[#2E5C8A]' : 'text-slate-600'
-                    }`}>Verified Accreditation</span>
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    {((coach.accreditationBody === 'EMCC' && coach.emccVerified) ||
+                      (coach.accreditationBody === 'ICF' && coach.icfVerified) ||
+                      (coach.accreditationBody === 'AC' && coach.acVerified)) ? (
+                      <>
+                        <span className={`text-sm font-bold ${
+                          coach.accreditationBody === 'EMCC' ? 'text-[#2B4170]' :
+                          coach.accreditationBody === 'ICF' ? 'text-[#2E5C8A]' : 'text-slate-600'
+                        }`}>Verified Accreditation</span>
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                      </>
+                    ) : (
+                      <span className="text-sm font-medium text-slate-500">Accreditation</span>
+                    )}
                   </div>
 
                   {/* Level */}
