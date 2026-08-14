@@ -44,6 +44,7 @@ import { CollapsibleSection } from '../components/forms/CollapsibleSection';
 import { RichTextEditor } from '../components/forms/RichTextEditor';
 import { LOCATION_RADIUS_OPTIONS } from '../constants/locations';
 import { SearchableLocationSelect } from '../components/forms/SearchableLocationSelect';
+import { CPD_QUALIFICATIONS } from '../constants/filterOptions';
 
 const AVAILABLE_SPECIALTIES: Specialty[] = [
   'Career Growth',
@@ -112,19 +113,6 @@ const COACHING_EXPERTISE_BY_CATEGORY: Record<CoachingExpertiseCategory, Coaching
   ] as MethodologyModalityExpertise[]
 };
 
-// CPD Qualifications
-const CPD_QUALIFICATIONS: CPDQualification[] = [
-  'Mental Health First Aid (MHFA)', 'Trauma-Informed Coaching Certificate',
-  'Diversity & Inclusion Coaching Certificate', 'Corporate Coaching Certification',
-  'Team Coaching Certification', 'Career Coaching Certification',
-  'Executive Coaching Certification', 'Health & Wellness Coaching Certification',
-  'Relationship Coaching Certification', 'NLP Practitioner Certification',
-  'Leadership Coaching Certification', 'Performance Coaching Certification',
-  'Business Coaching Certification', 'Parenting Coach Certification',
-  'ADHD Coaching Certification', 'Nutrition Coaching Certification',
-  'Neuro-affirmed Coaching Certification', 'Menopause Coaching Certification',
-  'Certified in Ethical Application of AI',
-];
 
 // Coaching Languages
 const COACHING_LANGUAGES: CoachingLanguage[] = [

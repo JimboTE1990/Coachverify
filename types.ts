@@ -147,6 +147,16 @@ export type CoachingExpertise =
 
 // New: CPD Qualifications (Additional Professional Development Certifications)
 export type CPDQualification =
+  | 'EMCC Foundation'
+  | 'EMCC Practitioner'
+  | 'EMCC Senior Practitioner'
+  | 'EMCC Master Practitioner'
+  | 'ICF ACC'
+  | 'ICF PCC'
+  | 'ICF MCC'
+  | 'AC Accredited Coach'
+  | 'AC Senior Practitioner'
+  | 'AC Master Coach'
   | 'Mental Health First Aid (MHFA)'
   | 'Trauma-Informed Coaching Certificate'
   | 'Diversity & Inclusion Coaching Certificate'
