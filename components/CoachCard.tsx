@@ -124,7 +124,8 @@ export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchP
         </div>
         
         <p className="text-slate-600 text-sm line-clamp-2 mb-3 leading-relaxed">
-          {coach.bio?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}
+          {coach.bio?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+            .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&#39;/g, "'")}
         </p>
 
         <div className="flex justify-between items-end">
