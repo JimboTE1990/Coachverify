@@ -43,6 +43,30 @@ export const getCoaches = async (): Promise<Coach[]> => {
   return mapCoachProfiles(activeCoaches);
 };
 
+// Admin-only: fetches ALL coaches regardless of subscription status (includes expired)
+export const adminGetAllCoaches = async (): Promise<Coach[]> => {
+  const { data, error } = await supabase
+    .from('coach_profiles')
+    .select('*')
+    .not('id', 'in', `(${HIDDEN_PROFILE_IDS.join(',')})`)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching all coaches:', error);
+    return [];
+  }
+
+  const now = new Date();
+  return mapCoachProfiles((data || []).map((coach: any) => {
+    // Mark expired trials as 'expired' so the admin sees the real status
+    if (coach.subscription_status === 'trial' && coach.trial_ends_at) {
+      const trialEnd = new Date(coach.trial_ends_at);
+      if (trialEnd < now) return { ...coach, subscription_status: 'expired' };
+    }
+    return coach;
+  }));
+};
+
 export const getCoachById = async (id: string): Promise<Coach | null> => {
   console.log('[getCoachById Debug] Fetching coach with id:', id);
 

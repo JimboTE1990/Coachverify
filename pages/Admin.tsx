@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { getCoaches, toggleFlagReview, adminGetProductReviews, adminActionProductReview } from '../services/supabaseService';
+import { adminGetAllCoaches, toggleFlagReview, adminGetProductReviews, adminActionProductReview } from '../services/supabaseService';
 import { Coach, ProductReview } from '../types';
-import { Lock, FileText, Flag, Star, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Lock, FileText, Flag, Star, MessageSquare, ChevronLeft, ChevronRight, Download, Copy, Check } from 'lucide-react';
 
 const COACHES_PER_PAGE = 10;
 const REVIEWS_PER_PAGE = 6;
@@ -17,6 +17,7 @@ export const AdminDashboard: React.FC = () => {
   const [approvedProductReviews, setApprovedProductReviews] = useState<ProductReview[]>([]);
   const [starFilter, setStarFilter] = useState<number | null>(null);
   const [reviewPage, setReviewPage] = useState(1);
+  const [copySuccess, setCopySuccess] = useState(false);
   const [pendingConfirm, setPendingConfirm] = useState<{
     action: 'approve' | 'delete';
     reviewId: string;
@@ -28,7 +29,7 @@ export const AdminDashboard: React.FC = () => {
       const adminPassword = (import.meta as any).env?.VITE_ADMIN_PASSWORD;
       const loadData = async () => {
         const [coachData, approvedData, pendingData] = await Promise.all([
-          getCoaches(),
+          adminGetAllCoaches(),
           adminGetProductReviews('approved', adminPassword),
           adminGetProductReviews('pending', adminPassword),
         ]);
@@ -69,8 +70,37 @@ export const AdminDashboard: React.FC = () => {
 
   const handleFlag = async (coachId: string, reviewId: string) => {
     await toggleFlagReview(coachId, reviewId);
-    const updated = await getCoaches();
+    const updated = await adminGetAllCoaches();
     setCoaches(updated);
+  };
+
+  const getStatusLabel = (coach: Coach): string => {
+    if (coach.subscriptionStatus === 'lifetime') return 'Lifetime';
+    if (coach.subscriptionStatus === 'active') return `Active (${coach.billingCycle || 'paid'})`;
+    if (coach.subscriptionStatus === 'trial') return 'Free Trial';
+    if (coach.subscriptionStatus === 'expired') return 'Expired';
+    return 'Onboarding';
+  };
+
+  const handleExportCSV = () => {
+    const rows = [['Name', 'Email', 'Membership Status']];
+    filteredCoaches.forEach(c => rows.push([c.name, c.email, getStatusLabel(c)]));
+    const csv = rows.map(r => r.map(v => `"${v.replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `coachdog-users-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleCopyToClipboard = async () => {
+    const lines = ['Name\tEmail\tMembership Status'];
+    filteredCoaches.forEach(c => lines.push(`${c.name}\t${c.email}\t${getStatusLabel(c)}`));
+    await navigator.clipboard.writeText(lines.join('\n'));
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2000);
   };
 
   // Derived — coaches
@@ -343,6 +373,51 @@ export const AdminDashboard: React.FC = () => {
               </div>
             );
           })()}
+
+          {/* User export panel */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-700">
+                User List Export
+                <span className="ml-2 text-slate-400 font-normal">({filteredCoaches.length} {filterStatus ? 'filtered' : 'total'})</span>
+              </h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCopyToClipboard}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                >
+                  {copySuccess ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copySuccess ? 'Copied!' : 'Copy'}
+                </button>
+                <button
+                  onClick={handleExportCSV}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-xs font-semibold text-white hover:bg-slate-700 transition-colors"
+                >
+                  <Download className="h-3.5 w-3.5" /> Export CSV
+                </button>
+              </div>
+            </div>
+            <div className="overflow-x-auto max-h-64 overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-slate-50 border-b border-slate-100">
+                  <tr>
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Email</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCoaches.map(coach => (
+                    <tr key={coach.id} className="border-b border-slate-50 hover:bg-slate-50">
+                      <td className="px-4 py-2.5 text-slate-900 font-medium">{coach.name}</td>
+                      <td className="px-4 py-2.5 text-slate-600">{coach.email}</td>
+                      <td className="px-4 py-2.5"><SubBadge coach={coach} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Coach list */}
