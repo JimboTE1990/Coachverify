@@ -29,7 +29,7 @@ import {
   AlertTriangle, Mail, Smartphone, RefreshCw, Eye, EyeOff,
   Tag, Monitor, LayoutDashboard, Sparkles, BarChart, TrendingUp, Calendar,
   Award, GraduationCap, Trophy, Star, Flag, MessageCircle, Send, Info, ExternalLink,
-  ClipboardCheck, Phone, Linkedin, Instagram, Facebook, Youtube, Twitter, Globe, FileText, Upload, Copy, Edit
+  ClipboardCheck, Phone, Linkedin, Instagram, Facebook, Youtube, Twitter, Globe, FileText, Upload, Copy, Edit, X
 } from 'lucide-react';
 import { CoachDogFullLogo } from '../components/Layout';
 import { useAuth } from '../hooks/useAuth';
@@ -570,6 +570,16 @@ export const CoachDashboard: React.FC = () => {
 
     setIsSaving(true);
     const updated = { ...currentCoach, ...localProfile };
+
+    // Strip expertise items that belong to categories no longer selected
+    const selectedCategories = updated.mainCoachingCategories || [];
+    const allowedExpertise = Object.entries(COACHING_EXPERTISE_BY_CATEGORY)
+      .filter(([cat]) => selectedCategories.includes(cat as CoachingExpertiseCategory))
+      .flatMap(([, items]) => items as string[]);
+    updated.coachingExpertise = (updated.coachingExpertise || []).filter(
+      e => allowedExpertise.includes(e)
+    ) as typeof updated.coachingExpertise;
+
     console.log('[Dashboard Save Debug] Saving coach data:', updated);
     console.log('[Dashboard Save Debug] introVideoUrl:', updated.introVideoUrl);
 
@@ -920,10 +930,19 @@ export const CoachDashboard: React.FC = () => {
   const toggleMainCategory = (category: CoachingExpertiseCategory) => {
     if (!localProfile) return;
     const current = localProfile.mainCoachingCategories || [];
-    const updated = current.includes(category)
+    const isRemoving = current.includes(category);
+    const updatedCategories = isRemoving
         ? current.filter(item => item !== category)
-        : [...current, category];
-    updateLocalProfile({ mainCoachingCategories: updated });
+        : current.length >= 3 ? current : [...current, category];
+
+    const update: Partial<Coach> = { mainCoachingCategories: updatedCategories };
+    if (isRemoving) {
+      const categoryItems = COACHING_EXPERTISE_BY_CATEGORY[category] as string[];
+      update.coachingExpertise = (localProfile.coachingExpertise || []).filter(
+        e => !categoryItems.includes(e)
+      ) as typeof localProfile.coachingExpertise;
+    }
+    updateLocalProfile(update);
   };
 
   // Helper to check if coach has expertise in a main category
@@ -2137,9 +2156,15 @@ export const CoachDashboard: React.FC = () => {
                              );
                            })}
                         </div>
-                        <p className="text-xs text-slate-600 mt-2 italic">
-                          Click categories to toggle them on/off. Selected categories will be highlighted.
-                        </p>
+                        <div className="flex items-center justify-between mt-2">
+                          <p className="text-xs text-slate-600 italic">
+                            Click categories to toggle them on/off. Selected categories will be highlighted.
+                          </p>
+                          <span className={`text-xs font-medium ml-3 shrink-0 ${(localProfile?.mainCoachingCategories || []).length >= 3 ? 'text-amber-600' : 'text-slate-500'}`}>
+                            {(localProfile?.mainCoachingCategories || []).length}/3 selected
+                            {(localProfile?.mainCoachingCategories || []).length >= 3 && <span className="ml-1">(limit reached)</span>}
+                          </span>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -2555,7 +2580,50 @@ export const CoachDashboard: React.FC = () => {
                     iconBgColor="bg-purple-100"
                     iconTextColor="text-purple-600"
                   >
-                    {Object.entries(COACHING_EXPERTISE_BY_CATEGORY).map(([category, options]) => (
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-xs text-slate-500">Select specific expertise areas across categories</p>
+                      <span className={`text-xs font-medium ml-3 shrink-0 ${(localProfile?.coachingExpertise || []).length >= 6 ? 'text-amber-600' : 'text-slate-500'}`}>
+                        {(localProfile?.coachingExpertise || []).length}/6 selected
+                        {(localProfile?.coachingExpertise || []).length >= 6 && <span className="ml-1">(limit reached)</span>}
+                      </span>
+                    </div>
+                    {(localProfile?.mainCoachingCategories || []).length === 0 && (
+                      <p className="text-xs text-slate-400 italic py-2">Select your main coaching categories above to unlock expertise areas.</p>
+                    )}
+                    {(() => {
+                      const selectedCats = localProfile?.mainCoachingCategories || [];
+                      const allowedItems = Object.entries(COACHING_EXPERTISE_BY_CATEGORY)
+                        .filter(([cat]) => selectedCats.includes(cat as CoachingExpertiseCategory))
+                        .flatMap(([, items]) => items as string[]);
+                      const orphaned = (localProfile?.coachingExpertise || []).filter(e => !allowedItems.includes(e));
+                      if (orphaned.length === 0) return null;
+                      return (
+                        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                          <p className="text-xs font-semibold text-amber-700 mb-2">
+                            {orphaned.length} expertise area{orphaned.length !== 1 ? 's' : ''} belong to categories you haven't selected — these will be removed when you save
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {orphaned.map(item => (
+                              <span key={item} className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 px-2 py-1 rounded-md text-xs font-medium">
+                                {item}
+                                <button
+                                  type="button"
+                                  onClick={() => updateLocalProfile({
+                                    coachingExpertise: (localProfile?.coachingExpertise || []).filter(e => e !== item) as CoachingExpertise[]
+                                  })}
+                                  className="hover:bg-amber-200 rounded-sm p-0.5 transition-colors"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    {Object.entries(COACHING_EXPERTISE_BY_CATEGORY)
+                      .filter(([cat]) => (localProfile?.mainCoachingCategories || []).includes(cat as CoachingExpertiseCategory))
+                      .map(([category, options]) => (
                       <div key={category}>
                         <label className="block text-sm font-bold text-slate-900 mb-2">{category}</label>
                         <MultiSelect
@@ -2564,7 +2632,8 @@ export const CoachDashboard: React.FC = () => {
                           onChange={(selected) => {
                             const current = localProfile?.coachingExpertise || [];
                             const otherCategories = current.filter(e => !options.includes(e as any));
-                            const updated = [...otherCategories, ...selected] as CoachingExpertise[];
+                            const availableSlots = Math.max(0, 6 - otherCategories.length);
+                            const updated = [...otherCategories, ...selected.slice(0, availableSlots)] as CoachingExpertise[];
                             updateLocalProfile({coachingExpertise: updated});
                           }}
                           placeholder={`Select ${category.toLowerCase()} areas...`}

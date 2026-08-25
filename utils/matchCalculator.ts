@@ -214,6 +214,26 @@ export const calculateMatchScore = (coach: Coach, answers: QuestionnaireAnswers)
     totalPoints += Math.round(ratingPoints + volumeBonus);
   }
 
+  // 8. Gender preference (8 points)
+  maxPoints += 8;
+  if (answers.genderPreference && answers.genderPreference.length > 0) {
+    if (coach.gender && answers.genderPreference.includes(coach.gender)) {
+      totalPoints += 8;
+    }
+  } else {
+    totalPoints += 8;
+  }
+
+  // 9. Location (7 points — only relevant when user wants in-person)
+  maxPoints += 7;
+  if (answers.preferredFormat.includes('In-Person') && answers.preferredLocation) {
+    if (coach.locationCity && coach.locationCity === answers.preferredLocation) {
+      totalPoints += 7;
+    }
+  } else {
+    totalPoints += 7;
+  }
+
   // Calculate percentage
   const percentage = Math.round((totalPoints / maxPoints) * 100);
   return percentage;
@@ -293,7 +313,8 @@ export const sortCoachesByMatch = (
   return [...coaches].sort((a, b) => {
     const scoreA = calculateMatchScore(a, answers);
     const scoreB = calculateMatchScore(b, answers);
-    return scoreB - scoreA;
+    if (scoreB !== scoreA) return scoreB - scoreA;
+    return (b.totalReviews || 0) - (a.totalReviews || 0);
   });
 };
 

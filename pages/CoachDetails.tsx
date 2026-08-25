@@ -30,6 +30,7 @@ export const CoachDetails: React.FC = () => {
   const [bookmarkedCoaches, setBookmarkedCoaches] = useState<Coach[]>([]);
   const [questionnaireData, setQuestionnaireData] = useState<QuestionnaireAnswers | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showAllExpertise, setShowAllExpertise] = useState(false);
   const [copiedContact, setCopiedContact] = useState<string | null>(null);
   const [reviewFormData, setReviewFormData] = useState({
     rating: 5,
@@ -1318,7 +1319,7 @@ export const CoachDetails: React.FC = () => {
               <div>
                 <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Coaching Expertise:</h3>
                 <div className="flex flex-wrap gap-2">
-                  {coach.coachingExpertise.map((expertise, idx) => (
+                  {(showAllExpertise ? coach.coachingExpertise : coach.coachingExpertise.slice(0, 6)).map((expertise, idx) => (
                     <span
                       key={idx}
                       className="bg-blue-100 text-blue-900 px-4 py-2 rounded-full text-sm font-bold border border-blue-300"
@@ -1327,6 +1328,14 @@ export const CoachDetails: React.FC = () => {
                     </span>
                   ))}
                 </div>
+                {coach.coachingExpertise.length > 6 && (
+                  <button
+                    onClick={() => setShowAllExpertise(v => !v)}
+                    className="text-xs text-indigo-600 underline mt-2"
+                  >
+                    {showAllExpertise ? 'Show less' : `Show all ${coach.coachingExpertise.length}`}
+                  </button>
+                )}
               </div>
             )}
 
