@@ -280,7 +280,7 @@ export const CoachDashboard: React.FC = () => {
     const u = (link.url || '').toLowerCase();
     if (link.type === 'email' || p.includes('email') || u.startsWith('mailto:')) return 'email';
     if (link.type === 'tel' || p.includes('phone') || p.includes('mobile') || u.startsWith('tel:')) return 'phone';
-    if (p.includes('booking') || p.includes('appointment') || p.includes('schedule') || p.includes('calendly') || p.includes('cal.com') || p.includes('google calendar') || p.includes('microsoft bookings') || u.includes('calendly.com') || u.includes('cal.com') || u.includes('calendar.google.com') || u.includes('calendar.app.google') || u.includes('bookings.microsoft.com')) return 'booking';
+    if (p.includes('booking') || p.includes('appointment') || p.includes('schedule') || p.includes('calendly') || p.includes('cal.com') || p.includes('google calendar') || p.includes('microsoft bookings') || p.includes('highlevel') || p.includes('gohighlevel') || u.includes('calendly.com') || u.includes('cal.com') || u.includes('calendar.google.com') || u.includes('calendar.app.google') || u.includes('bookings.microsoft.com') || u.includes('leadconnectorhq.com') || u.includes('msgsndr.com') || u.includes('gohighlevel.com')) return 'booking';
     if (p.includes('form') || p.includes('enquiry') || p.includes('typeform') || p.includes('jotform') || p.includes('tally') || u.includes('forms.gle') || u.includes('typeform.com') || u.includes('jotform.com') || u.includes('tally.so')) return 'enquiry';
     if (['linkedin', 'instagram', 'x / twitter', 'twitter', 'facebook', 'tiktok'].some(s => p.includes(s))) return 'social';
     if (p === 'website' || p.includes('website')) return 'website';
@@ -585,6 +585,8 @@ export const CoachDashboard: React.FC = () => {
 
     const success = await updateCoach(updated);
     if (success) {
+      // Sync cleaned expertise back into local state so orphaned-items warning disappears immediately
+      setLocalProfile(prev => prev ? { ...prev, coachingExpertise: updated.coachingExpertise } : prev);
       await refreshCoach(); // Refresh auth context with updated data
       setHasUnsavedChanges(false);
       showToast('Profile updated successfully!', 'success');
@@ -1333,7 +1335,8 @@ export const CoachDashboard: React.FC = () => {
                   const hasCompletedProfile = !!(currentCoach.bio && currentCoach.bio.trim().length > 20 && currentCoach.mainCoachingCategories && currentCoach.mainCoachingCategories.length > 0);
                   const hasSchedulingLink = !!(currentCoach.socialLinks && currentCoach.socialLinks.some(l => {
                     const label = (l.platform || '').toLowerCase();
-                    return label.includes('booking') || label.includes('schedule') || label.includes('calendly') || label.includes('cal.com') || label.includes('microsoft');
+                    const url = (l.url || '').toLowerCase();
+                    return label.includes('booking') || label.includes('schedule') || label.includes('calendly') || label.includes('cal.com') || label.includes('microsoft') || label.includes('highlevel') || label.includes('gohighlevel') || url.includes('leadconnectorhq.com') || url.includes('msgsndr.com') || url.includes('gohighlevel.com');
                   }));
                   const hasReviews = (currentCoach.totalReviews ?? currentCoach.reviews?.length ?? 0) >= 1;
                   const hasSocialLinks = !!(currentCoach.socialLinks && currentCoach.socialLinks.some(l => {
@@ -2582,10 +2585,20 @@ export const CoachDashboard: React.FC = () => {
                   >
                     <div className="flex items-center justify-between mb-4">
                       <p className="text-xs text-slate-500">Select specific expertise areas across categories</p>
-                      <span className={`text-xs font-medium ml-3 shrink-0 ${(localProfile?.coachingExpertise || []).length >= 6 ? 'text-amber-600' : 'text-slate-500'}`}>
-                        {(localProfile?.coachingExpertise || []).length}/6 selected
-                        {(localProfile?.coachingExpertise || []).length >= 6 && <span className="ml-1">(limit reached)</span>}
-                      </span>
+                      {(() => {
+                        const selectedCats = localProfile?.mainCoachingCategories || [];
+                        const validCount = (localProfile?.coachingExpertise || []).filter(e =>
+                          Object.entries(COACHING_EXPERTISE_BY_CATEGORY).some(
+                            ([cat, items]) => selectedCats.includes(cat as CoachingExpertiseCategory) && (items as string[]).includes(e)
+                          )
+                        ).length;
+                        return (
+                          <span className={`text-xs font-medium ml-3 shrink-0 ${validCount >= 6 ? 'text-amber-600' : 'text-slate-500'}`}>
+                            {validCount}/6 selected
+                            {validCount >= 6 && <span className="ml-1">(limit reached)</span>}
+                          </span>
+                        );
+                      })()}
                     </div>
                     {(localProfile?.mainCoachingCategories || []).length === 0 && (
                       <p className="text-xs text-slate-400 italic py-2">Select your main coaching categories above to unlock expertise areas.</p>
@@ -2631,9 +2644,16 @@ export const CoachDashboard: React.FC = () => {
                           selected={localProfile?.coachingExpertise?.filter(e => options.includes(e as any)) || []}
                           onChange={(selected) => {
                             const current = localProfile?.coachingExpertise || [];
-                            const otherCategories = current.filter(e => !options.includes(e as any));
-                            const availableSlots = Math.max(0, 6 - otherCategories.length);
-                            const updated = [...otherCategories, ...selected.slice(0, availableSlots)] as CoachingExpertise[];
+                            const selectedCats = localProfile?.mainCoachingCategories || [];
+                            const otherItems = current.filter(e => !options.includes(e as any));
+                            // Only count items from other selected categories toward the cap — orphaned items must not reduce available slots
+                            const validOtherCount = otherItems.filter(e =>
+                              Object.entries(COACHING_EXPERTISE_BY_CATEGORY).some(
+                                ([cat, items]) => selectedCats.includes(cat as CoachingExpertiseCategory) && (items as string[]).includes(e)
+                              )
+                            ).length;
+                            const availableSlots = Math.max(0, 6 - validOtherCount);
+                            const updated = [...otherItems, ...selected.slice(0, availableSlots)] as CoachingExpertise[];
                             updateLocalProfile({coachingExpertise: updated});
                           }}
                           placeholder={`Select ${category.toLowerCase()} areas...`}

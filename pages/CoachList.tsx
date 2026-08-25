@@ -243,7 +243,8 @@ export const CoachList: React.FC = () => {
       result = result.sort((a, b) => {
         const scoreA = calculateMatchScore(a.coach, matchData);
         const scoreB = calculateMatchScore(b.coach, matchData);
-        return scoreB - scoreA;
+        if (scoreB !== scoreA) return scoreB - scoreA;
+        return (b.coach.totalReviews || 0) - (a.coach.totalReviews || 0);
       });
     } else {
       result = result.sort((a, b) => b.filterMatch.percentage - a.filterMatch.percentage);

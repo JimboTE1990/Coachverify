@@ -600,10 +600,15 @@ export const CoachDetails: React.FC = () => {
       platform.includes('cal.com') ||
       (platform.includes('google') && platform.includes('calendar')) ||
       (platform.includes('calendar') && platform.includes('appointment')) ||
+      platform.includes('highlevel') ||
+      platform.includes('gohighlevel') ||
       url.includes('calendly.com') ||
       url.includes('cal.com') ||
       url.includes('calendar.google.com') ||
-      url.includes('calendar.app.google')
+      url.includes('calendar.app.google') ||
+      url.includes('leadconnectorhq.com') ||
+      url.includes('msgsndr.com') ||
+      url.includes('gohighlevel.com')
     );
   });
 
@@ -843,7 +848,7 @@ export const CoachDetails: React.FC = () => {
                     const hasScheduling = !!(coach.socialLinks?.some(l => {
                       const lbl = (l.platform || '').toLowerCase();
                       const url = (l.url || '').toLowerCase();
-                      return lbl.includes('booking') || lbl.includes('schedule') || lbl.includes('calendly') || lbl.includes('cal.com') || (lbl.includes('google') && lbl.includes('calendar')) || (lbl.includes('calendar') && lbl.includes('appointment')) || url.includes('calendar.google.com') || url.includes('calendar.app.google');
+                      return lbl.includes('booking') || lbl.includes('schedule') || lbl.includes('calendly') || lbl.includes('cal.com') || (lbl.includes('google') && lbl.includes('calendar')) || (lbl.includes('calendar') && lbl.includes('appointment')) || lbl.includes('highlevel') || lbl.includes('gohighlevel') || url.includes('calendar.google.com') || url.includes('calendar.app.google') || url.includes('leadconnectorhq.com') || url.includes('msgsndr.com') || url.includes('gohighlevel.com');
                     }));
                     const hasReviews = totalReviews >= 1;
                     const hasSocial = !!(coach.socialLinks?.some(l => {
@@ -909,7 +914,7 @@ export const CoachDetails: React.FC = () => {
                 {coach.socialLinks?.filter(link => {
                   const url = link.url?.toLowerCase() || '';
                   const platform = link.platform?.toLowerCase() || '';
-                  const isBooking = platform.includes('booking') || platform.includes('appointment') || platform.includes('schedule') || platform.includes('calendly') || platform.includes('cal.com') || (platform.includes('google') && platform.includes('calendar')) || (platform.includes('calendar') && platform.includes('appointment')) || url.includes('calendly.com') || url.includes('cal.com') || url.includes('calendar.google.com') || url.includes('calendar.app.google');
+                  const isBooking = platform.includes('booking') || platform.includes('appointment') || platform.includes('schedule') || platform.includes('calendly') || platform.includes('cal.com') || (platform.includes('google') && platform.includes('calendar')) || (platform.includes('calendar') && platform.includes('appointment')) || platform.includes('highlevel') || platform.includes('gohighlevel') || url.includes('calendly.com') || url.includes('cal.com') || url.includes('calendar.google.com') || url.includes('calendar.app.google') || url.includes('leadconnectorhq.com') || url.includes('msgsndr.com') || url.includes('gohighlevel.com');
                   const isForm = platform.includes('form') || platform.includes('enquiry') || platform.includes('typeform') || platform.includes('jotform') || platform.includes('tally') || url.includes('forms.gle') || url.includes('typeform.com') || url.includes('jotform.com') || url.includes('tally.so');
                   return !isBooking && !isForm;
                 }).map((socialLink) => {
