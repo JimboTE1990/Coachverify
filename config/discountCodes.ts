@@ -171,6 +171,38 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     stripePromotionCodeId: 'promo_1Tg2a9Dye3rmKJaDPaDOoCxX',
   },
 
+  // Referral — Rina — £100 off lifetime (£149 → £49), capped at 10 uses
+  'RINA100': {
+    code: 'RINA100',
+    type: 'lifetime_fixed',
+    value: 100,
+    enabled: true,
+    planRestrictions: ['lifetime'],
+    maxUses: 10,
+    usesRemaining: 10,
+    source: 'referral',
+    displayName: 'Referral Discount',
+    description: '£100 off - Pay only £49 for lifetime access',
+    stripeCouponId: 'me98KrI9',
+    stripePromotionCodeId: 'promo_1U96UsDye3rmKJaDK2z8I4BZ',
+  },
+
+  // Referral — Stacia — £50 off lifetime (£149 → £99), capped at 10 uses
+  'STACIA50': {
+    code: 'STACIA50',
+    type: 'lifetime_fixed',
+    value: 50,
+    enabled: true,
+    planRestrictions: ['lifetime'],
+    maxUses: 10,
+    usesRemaining: 10,
+    source: 'referral',
+    displayName: 'Referral Discount',
+    description: '£50 off - Pay only £99 for lifetime access',
+    stripeCouponId: 'kjejSXgm',
+    stripePromotionCodeId: 'promo_1U96TCDye3rmKJaDixiVOF0P',
+  },
+
   // Legacy code — kept disabled, superseded by BETA49
   'BETA100': {
     code: 'BETA100',

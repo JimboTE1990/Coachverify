@@ -147,6 +147,8 @@ serve(async (req) => {
         'EMCC50':    'promo_1THRejDye3rmKJaDiMbHLFwr',
         'ICF50':     'promo_1Tg2a9Dye3rmKJaDPaDOoCxX',
         'BETA49':    'E7g5S88d',
+        'RINA100':   'promo_1U96UsDye3rmKJaDK2z8I4BZ',
+        'STACIA50':  'promo_1U96TCDye3rmKJaDixiVOF0P',
         'EMCC15':    'NStyLey1',
         'PARTNER2026': 'partner_30_off',
         'FLASH50':   'flash_50_annual',
