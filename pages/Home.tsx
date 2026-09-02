@@ -64,20 +64,21 @@ export const Home: React.FC = () => {
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 align-middle">Beta</span>
             </p>
             <form onSubmit={handleHomeNlSearch}>
-              <div className="flex items-center bg-white rounded-full shadow-2xl border-2 border-brand-200 focus-within:border-brand-500 transition-colors duration-200 px-5 py-4 gap-4">
-                <PawPrint className="h-6 w-6 text-brand-500 flex-shrink-0" />
+              <div className="flex items-center bg-white rounded-full shadow-2xl border-2 border-brand-200 focus-within:border-brand-500 transition-colors duration-200 px-3 sm:px-5 py-3 sm:py-4 gap-2 sm:gap-4">
+                <PawPrint className="h-5 w-5 sm:h-6 sm:w-6 text-brand-500 flex-shrink-0" />
                 <input
                   type="text"
-                  className="flex-grow bg-transparent focus:outline-none text-slate-800 placeholder-slate-400 text-base"
+                  className="flex-grow min-w-0 bg-transparent focus:outline-none text-slate-800 placeholder-slate-400 text-sm sm:text-base"
                   placeholder="e.g. Business coaching, support with a relationship…"
                   value={homeNlQuery}
                   onChange={e => setHomeNlQuery(e.target.value)}
                 />
                 <button
                   type="submit"
-                  className="flex-shrink-0 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white font-semibold px-6 py-2.5 rounded-full transition-all duration-150 shadow-md"
+                  className="flex-shrink-0 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white font-semibold px-3 sm:px-6 py-2 sm:py-2.5 rounded-full transition-all duration-150 shadow-md flex items-center gap-1"
                 >
-                  Find Coaches
+                  <span className="hidden sm:inline">Find Coaches</span>
+                  <ArrowRight className="h-5 w-5 sm:hidden" />
                 </button>
               </div>
             </form>
