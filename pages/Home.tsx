@@ -1,11 +1,20 @@
 import React, { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, HeartHandshake, Star, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, HeartHandshake, Star, ArrowRight, ShieldCheck, PawPrint } from 'lucide-react';
 import { ProductReviewWidget } from '../components/ProductReviewWidget';
 
 export const Home: React.FC = () => {
+  const navigate = useNavigate();
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [homeNlQuery, setHomeNlQuery] = useState('');
+
+  const handleHomeNlSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = homeNlQuery.trim();
+    if (!q) return;
+    navigate(`/search?nlQuery=${encodeURIComponent(q)}`);
+  };
 
   const handleVideoClick = () => {
     if (videoRef.current) {
@@ -45,11 +54,44 @@ export const Home: React.FC = () => {
             <span className="block text-brand-600 xl:inline">no bones about it.</span>
           </h1>
           <p className="mt-3 max-w-md mx-auto text-base text-slate-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            Sniffing out the best coaches in the business. Verified experts, tailored matches, and real results.
+            We fetch top accredited coaches in life, career, and business. We verify credentials upfront, so you don't have to sniff out who's the real deal.
           </p>
 
+          {/* Smart Search */}
+          <div className="mt-10 max-w-2xl mx-auto">
+            <p className="text-base font-semibold text-slate-700 mb-3">
+              In your own words, describe what type of coaching you are looking for?{' '}
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 align-middle">Beta</span>
+            </p>
+            <form onSubmit={handleHomeNlSearch}>
+              <div className="flex items-center bg-white rounded-full shadow-2xl border-2 border-brand-200 focus-within:border-brand-500 transition-colors duration-200 px-5 py-4 gap-4">
+                <PawPrint className="h-6 w-6 text-brand-500 flex-shrink-0" />
+                <input
+                  type="text"
+                  className="flex-grow bg-transparent focus:outline-none text-slate-800 placeholder-slate-400 text-base"
+                  placeholder="e.g. Business coaching, support with a relationship…"
+                  value={homeNlQuery}
+                  onChange={e => setHomeNlQuery(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  className="flex-shrink-0 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white font-semibold px-6 py-2.5 rounded-full transition-all duration-150 shadow-md"
+                >
+                  Find Coaches
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Divider */}
+          <div className="mt-8 flex items-center gap-4 max-w-sm mx-auto">
+            <div className="flex-1 h-px bg-slate-200" />
+            <span className="text-xs text-slate-400 font-medium tracking-wide uppercase">or</span>
+            <div className="flex-1 h-px bg-slate-200" />
+          </div>
+
           {/* CTAs */}
-          <div className="mt-10 max-w-lg mx-auto grid gap-5 sm:grid-cols-2">
+          <div className="mt-6 max-w-lg mx-auto grid gap-5 sm:grid-cols-2">
             <Link to="/questionnaire" className="group flex flex-col items-center justify-center p-6 bg-white rounded-2xl shadow-xl border-2 border-transparent hover:border-brand-500 transition-all duration-300 transform hover:-translate-y-1">
               <div className="h-12 w-12 bg-brand-100 text-brand-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-brand-600 group-hover:text-white transition-colors">
                 <HeartHandshake className="h-6 w-6" />

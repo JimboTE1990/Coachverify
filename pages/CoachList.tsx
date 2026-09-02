@@ -543,6 +543,10 @@ export const CoachList: React.FC = () => {
               <div className="bg-white p-3 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 space-y-2">
 
                 {/* Smart NL Search */}
+                <div className="flex items-center gap-2 px-1 pb-0.5">
+                  <span className="text-xs font-semibold text-slate-500">Smart Search</span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">Beta</span>
+                </div>
                 <form onSubmit={handleNlSearch} className="flex gap-2">
                   <div className="relative flex-grow">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
