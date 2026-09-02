@@ -555,7 +555,7 @@ export const CoachList: React.FC = () => {
                     <input
                       type="text"
                       className="block w-full pl-11 pr-4 py-3 border border-brand-100 rounded-xl bg-brand-50 focus:bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all"
-                      placeholder="Describe what you're looking for… e.g. help with my divorce"
+                      placeholder="e.g. Business coaching, support with a relationship…"
                       value={nlQuery}
                       onChange={e => setNlQuery(e.target.value)}
                     />
