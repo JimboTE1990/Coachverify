@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Search, SlidersHorizontal, X, Sparkles, Bone, AlertCircle, Bookmark, MapPin, ArrowRight, Clock } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Sparkles, Bone, AlertCircle, Bookmark, MapPin, ArrowRight, Clock, PawPrint } from 'lucide-react';
 import { getCoaches } from '../services/supabaseService';
 import { getBookmarkedIds, addBookmark, removeBookmark, isBookmarked } from '../utils/bookmarks';
 import { Coach, QuestionnaireAnswers, Specialty, Format, CoachingExpertise, CoachingLanguage, CPDQualification } from '../types';
 import { CoachCard } from '../components/CoachCard';
 import { FilterSidebar } from '../components/filters/FilterSidebar';
 import { calculateMatchScore, getMatchReason as getEnhancedMatchReason } from '../utils/matchCalculator';
+import { parseNaturalLanguageQuery, scoreCoachAgainstQuery } from '../utils/nlSearch';
 import { EXPERTISE_CATEGORIES } from '../constants/filterOptions';
 
 export const CoachList: React.FC = () => {
@@ -41,6 +42,11 @@ export const CoachList: React.FC = () => {
 
   // Filter feedback state
   const [showFilterAppliedToast, setShowFilterAppliedToast] = useState(false);
+
+  // Natural language search
+  const [nlQuery, setNlQuery] = useState('');
+  const [nlMatchedExpertise, setNlMatchedExpertise] = useState<CoachingExpertise[]>([]);
+  const [nlKeywords, setNlKeywords] = useState<string[]>([]);
 
   // Questionnaire results passed from Onboarding
   const [matchData, setMatchData] = useState<QuestionnaireAnswers | null>(null);
@@ -86,6 +92,24 @@ export const CoachList: React.FC = () => {
       if (q.coachingExpertise && q.coachingExpertise.length > 0) setExpertiseFilter(q.coachingExpertise);
       if (q.cpdQualifications && q.cpdQualifications.length > 0) setCpdFilter(q.cpdQualifications);
       if (q.genderPreference && q.genderPreference.length > 0) setGenderFilter(q.genderPreference);
+      // Apply NL boost from questionnaire free-text answer
+      if (q.freeTextQuery) {
+        const nlResult = parseNaturalLanguageQuery(q.freeTextQuery);
+        setNlQuery(q.freeTextQuery);
+        setNlMatchedExpertise(nlResult.matchedExpertise);
+        setNlKeywords(nlResult.searchKeywords);
+      }
+    }
+
+    // Check for nlQuery URL param (from landing page smart search)
+    const params = new URLSearchParams(location.search);
+    const nl = params.get('nlQuery');
+    if (nl) {
+      const decoded = decodeURIComponent(nl);
+      setNlQuery(decoded);
+      const nlResult = parseNaturalLanguageQuery(decoded);
+      setNlMatchedExpertise(nlResult.matchedExpertise);
+      setNlKeywords(nlResult.searchKeywords);
     }
   }, [location]);
 
@@ -103,6 +127,24 @@ export const CoachList: React.FC = () => {
     setGenderFilter([]);
   };
 
+  const handleNlSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nlQuery.trim()) {
+      setNlMatchedExpertise([]);
+      setNlKeywords([]);
+      return;
+    }
+    const result = parseNaturalLanguageQuery(nlQuery);
+    setNlMatchedExpertise(result.matchedExpertise);
+    setNlKeywords(result.searchKeywords);
+  };
+
+  const clearNlSearch = () => {
+    setNlQuery('');
+    setNlMatchedExpertise([]);
+    setNlKeywords([]);
+  };
+
   const handleApplyFilters = () => {
     // Show success toast
     setShowFilterAppliedToast(true);
@@ -114,6 +156,22 @@ export const CoachList: React.FC = () => {
       resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  // True only when NL tags/keywords exist AND at least one coach in the directory actually matches.
+  // When false, NL ranking still applies but no coaches are filtered out (graceful fallback).
+  const nlShouldFilter = useMemo(() => {
+    if (!coaches || (nlMatchedExpertise.length === 0 && nlKeywords.length === 0)) return false;
+    return coaches.some(c => {
+      const hasTag = nlMatchedExpertise.some(tag => c.coachingExpertise?.includes(tag));
+      const hasBio = nlKeywords.some(kw => {
+        const k = kw.toLowerCase();
+        return (c.bio || '').toLowerCase().includes(k)
+          || (c.coachingExpertise || []).some(e => e.toLowerCase().includes(k))
+          || (c.cpdQualifications || []).some(q => q.toLowerCase().includes(k));
+      });
+      return hasTag || hasBio;
+    });
+  }, [coaches, nlMatchedExpertise, nlKeywords]);
 
   // Calculate match percentage for each coach
   const calculateFilterMatchPercentage = (coach: Coach): {
@@ -212,6 +270,21 @@ export const CoachList: React.FC = () => {
       }
     }
 
+    // 12. Smart (NL) Search — only filters when at least one coach in the directory matches (graceful fallback)
+    if (nlShouldFilter) {
+      criteria.push('Smart search');
+      const hasTagMatch = nlMatchedExpertise.some(tag => coach.coachingExpertise?.includes(tag));
+      const hasBioMatch = nlKeywords.some(kw => {
+        const k = kw.toLowerCase();
+        return (coach.bio || '').toLowerCase().includes(k)
+          || (coach.coachingExpertise || []).some(e => e.toLowerCase().includes(k))
+          || (coach.cpdQualifications || []).some(q => q.toLowerCase().includes(k));
+      });
+      if (hasTagMatch || hasBioMatch) {
+        matched.push('Smart search');
+      }
+    }
+
     const total = criteria.length;
     const percentage = total === 0 ? 100 : Math.round((matched.length / total) * 100);
 
@@ -238,12 +311,32 @@ export const CoachList: React.FC = () => {
       }
     });
 
+    const isNlActive = nlMatchedExpertise.length > 0 || nlKeywords.length > 0;
+
+    const computeNlScore = (coach: Coach): number => {
+      let score = 0;
+      // Layer 1: expertise tag matches (3 pts each)
+      score += nlMatchedExpertise.filter(tag => coach.coachingExpertise?.includes(tag)).length * 3;
+      // Layer 2: bio + profile text matches
+      score += scoreCoachAgainstQuery(coach, nlKeywords);
+      return score;
+    };
+
     // Sort by Match Relevance if matchData exists, otherwise by filter match percentage
     if (matchData) {
       result = result.sort((a, b) => {
-        const scoreA = calculateMatchScore(a.coach, matchData);
-        const scoreB = calculateMatchScore(b.coach, matchData);
+        const scoreA = calculateMatchScore(a.coach, matchData) + computeNlScore(a.coach);
+        const scoreB = calculateMatchScore(b.coach, matchData) + computeNlScore(b.coach);
         if (scoreB !== scoreA) return scoreB - scoreA;
+        return (b.coach.totalReviews || 0) - (a.coach.totalReviews || 0);
+      });
+    } else if (isNlActive) {
+      result = result.sort((a, b) => {
+        const nlA = computeNlScore(a.coach);
+        const nlB = computeNlScore(b.coach);
+        if (nlB !== nlA) return nlB - nlA;
+        if (b.filterMatch.percentage !== a.filterMatch.percentage)
+          return b.filterMatch.percentage - a.filterMatch.percentage;
         return (b.coach.totalReviews || 0) - (a.coach.totalReviews || 0);
       });
     } else {
@@ -252,7 +345,8 @@ export const CoachList: React.FC = () => {
 
     return result.map(r => r.coach);
   }, [coaches, searchTerm, specialtyFilter, formatFilter, minPrice, maxPrice,
-      locationCityFilter, locationRadiusFilter, languageFilter, expertiseFilter, cpdFilter, genderFilter, matchData, showPartialMatches, minMatchPercentage]);
+      locationCityFilter, locationRadiusFilter, languageFilter, expertiseFilter, cpdFilter, genderFilter,
+      matchData, showPartialMatches, minMatchPercentage, nlMatchedExpertise, nlKeywords, nlShouldFilter]);
 
   // Calculate counts for perfect and partial matches
   const perfectMatchCount = useMemo(() => {
@@ -263,7 +357,7 @@ export const CoachList: React.FC = () => {
     }
     return coaches.filter(coach => calculateFilterMatchPercentage(coach).percentage === 100).length;
   }, [coaches, searchTerm, specialtyFilter, formatFilter, minPrice, maxPrice,
-      locationCityFilter, locationRadiusFilter, languageFilter, expertiseFilter, cpdFilter, genderFilter, matchData]);
+      locationCityFilter, locationRadiusFilter, languageFilter, expertiseFilter, cpdFilter, genderFilter, matchData, nlMatchedExpertise, nlKeywords, nlShouldFilter]);
 
   const partialMatchCount = useMemo(() => {
     if (!coaches) return 0;
@@ -279,7 +373,7 @@ export const CoachList: React.FC = () => {
       return match.percentage >= minMatchPercentage && match.percentage < 100;
     }).length;
   }, [coaches, searchTerm, specialtyFilter, formatFilter, minPrice, maxPrice,
-      locationCityFilter, locationRadiusFilter, languageFilter, expertiseFilter, cpdFilter, genderFilter, minMatchPercentage, matchData]);
+      locationCityFilter, locationRadiusFilter, languageFilter, expertiseFilter, cpdFilter, genderFilter, minMatchPercentage, matchData, nlMatchedExpertise, nlKeywords]);
 
   // Calculate very close match count (75%+)
   const veryCloseMatchCount = useMemo(() => {
@@ -295,7 +389,7 @@ export const CoachList: React.FC = () => {
       return match.percentage >= 75 && match.percentage < 100;
     }).length;
   }, [coaches, searchTerm, specialtyFilter, formatFilter, minPrice, maxPrice,
-      locationCityFilter, locationRadiusFilter, languageFilter, expertiseFilter, cpdFilter, genderFilter, matchData]);
+      locationCityFilter, locationRadiusFilter, languageFilter, expertiseFilter, cpdFilter, genderFilter, matchData, nlMatchedExpertise, nlKeywords, nlShouldFilter]);
 
   // Calculate close match count (51-74%)
   const closeMatchCount = useMemo(() => {
@@ -311,7 +405,7 @@ export const CoachList: React.FC = () => {
       return match.percentage >= 51 && match.percentage < 75;
     }).length;
   }, [coaches, searchTerm, specialtyFilter, formatFilter, minPrice, maxPrice,
-      locationCityFilter, locationRadiusFilter, languageFilter, expertiseFilter, cpdFilter, genderFilter, matchData]);
+      locationCityFilter, locationRadiusFilter, languageFilter, expertiseFilter, cpdFilter, genderFilter, matchData, nlMatchedExpertise, nlKeywords, nlShouldFilter]);
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -446,7 +540,55 @@ export const CoachList: React.FC = () => {
 
             {/* Search Bar + Mobile Filter Button */}
             <div className="sticky top-24 z-30 mb-8">
-              <div className="bg-white p-3 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
+              <div className="bg-white p-3 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 space-y-2">
+
+                {/* Smart NL Search */}
+                <form onSubmit={handleNlSearch} className="flex gap-2">
+                  <div className="relative flex-grow">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <PawPrint className="h-5 w-5 text-brand-500" />
+                    </div>
+                    <input
+                      type="text"
+                      className="block w-full pl-11 pr-4 py-3 border border-brand-100 rounded-xl bg-brand-50 focus:bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all"
+                      placeholder="Describe what you're looking for… e.g. help with my divorce"
+                      value={nlQuery}
+                      onChange={e => setNlQuery(e.target.value)}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="flex-shrink-0 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+                  >
+                    Search
+                  </button>
+                  {(nlMatchedExpertise.length > 0 || nlKeywords.length > 0) && (
+                    <button
+                      type="button"
+                      onClick={clearNlSearch}
+                      className="flex-shrink-0 flex items-center justify-center w-10 h-10 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-100 transition-colors"
+                      title="Clear smart search"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </form>
+
+                {/* Matched tag chips */}
+                {nlMatchedExpertise.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 px-1 pb-1">
+                    <span className="text-xs text-slate-400 self-center">Matched:</span>
+                    {nlMatchedExpertise.slice(0, 6).map(tag => (
+                      <span key={tag} className="text-xs bg-brand-100 text-brand-700 px-2.5 py-1 rounded-full font-medium">
+                        {tag}
+                      </span>
+                    ))}
+                    {nlMatchedExpertise.length > 6 && (
+                      <span className="text-xs text-slate-400 self-center">+{nlMatchedExpertise.length - 6} more</span>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex gap-2">
                   {/* Mobile Filter Toggle Button */}
                   <button
