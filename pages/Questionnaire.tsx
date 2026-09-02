@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle, Mic } from 'lucide-react';
 import { QuestionnaireAnswers, Specialty, Format, CoachingExpertise, CoachingLanguage, CPDQualification } from '../types';
 import { MultiSelectDropdown } from '../components/filters/MultiSelectDropdown';
 import { ExpandableCategory, CheckboxGrid } from '../components/filters/ExpandableCategory';
@@ -11,6 +11,44 @@ import { SearchableLocationSelect } from '../components/forms/SearchableLocation
 export const Questionnaire: React.FC = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+
+  // Voice search for free-text field
+  const [isListeningFree, setIsListeningFree] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const freeRecognitionRef = useRef<any>(null);
+  const [speechSupported, setSpeechSupported] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    setSpeechSupported(!!(w.SpeechRecognition || w.webkitSpeechRecognition));
+  }, []);
+  const handleFreeVoice = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!SR) return;
+    if (isListeningFree) { freeRecognitionRef.current?.stop(); setIsListeningFree(false); return; }
+    try {
+      const recognition = new SR();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = navigator.language || 'en-GB';
+      recognition.onstart = () => setIsListeningFree(true);
+      recognition.onresult = (event: any) => {
+        let interim = '', final = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const t = event.results[i][0].transcript;
+          if (event.results[i].isFinal) final += t; else interim += t;
+        }
+        setAnswers(prev => ({ ...prev, freeTextQuery: final || interim }));
+        if (final) setIsListeningFree(false);
+      };
+      recognition.onerror = () => setIsListeningFree(false);
+      recognition.onend = () => setIsListeningFree(false);
+      freeRecognitionRef.current = recognition;
+      recognition.start();
+    } catch { setIsListeningFree(false); }
+  };
   const [answers, setAnswers] = useState<QuestionnaireAnswers>({
     goal: '',
     preferredFormat: [],
@@ -291,6 +329,37 @@ export const Questionnaire: React.FC = () => {
               <p className="text-sm text-blue-800">
                 💡 Tip: Certifications like ICF (International Coaching Federation) and EMCC (European Mentoring & Coaching Council) are widely recognized standards.
               </p>
+            </div>
+
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-slate-700">
+                  Anything else you'd like to share? <span className="text-slate-400 font-normal">(optional)</span>
+                </label>
+                {speechSupported && (
+                  <button
+                    type="button"
+                    onClick={handleFreeVoice}
+                    title={isListeningFree ? 'Stop listening' : 'Speak your answer'}
+                    className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all duration-150 ${
+                      isListeningFree
+                        ? 'bg-red-100 text-red-500 animate-pulse'
+                        : 'bg-brand-50 text-brand-600 hover:bg-brand-100'
+                    }`}
+                  >
+                    <Mic className="h-3.5 w-3.5" />
+                    {isListeningFree ? 'Listening…' : 'Speak'}
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 mb-2">Describe your situation in your own words — we'll use this to refine your matches.</p>
+              <textarea
+                className="block w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all resize-none text-sm placeholder-slate-400"
+                rows={3}
+                placeholder="e.g. I'm going through a divorce and need help rebuilding my confidence…"
+                value={answers.freeTextQuery || ''}
+                onChange={e => setAnswers({ ...answers, freeTextQuery: e.target.value })}
+              />
             </div>
           </div>
         )}

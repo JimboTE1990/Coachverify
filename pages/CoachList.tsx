@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Search, SlidersHorizontal, X, Sparkles, Bone, AlertCircle, Bookmark, MapPin, ArrowRight, Clock, PawPrint } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Sparkles, Bone, AlertCircle, Bookmark, MapPin, ArrowRight, Clock, PawPrint, Mic } from 'lucide-react';
 import { getCoaches } from '../services/supabaseService';
 import { getBookmarkedIds, addBookmark, removeBookmark, isBookmarked } from '../utils/bookmarks';
 import { Coach, QuestionnaireAnswers, Specialty, Format, CoachingExpertise, CoachingLanguage, CPDQualification } from '../types';
@@ -47,6 +47,44 @@ export const CoachList: React.FC = () => {
   const [nlQuery, setNlQuery] = useState('');
   const [nlMatchedExpertise, setNlMatchedExpertise] = useState<CoachingExpertise[]>([]);
   const [nlKeywords, setNlKeywords] = useState<string[]>([]);
+
+  // Voice search
+  const [isListening, setIsListening] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
+  const [speechSupported, setSpeechSupported] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    setSpeechSupported(!!(w.SpeechRecognition || w.webkitSpeechRecognition));
+  }, []);
+  const handleVoiceSearch = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!SR) return;
+    if (isListening) { recognitionRef.current?.stop(); setIsListening(false); return; }
+    try {
+      const recognition = new SR();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = navigator.language || 'en-GB';
+      recognition.onstart = () => setIsListening(true);
+      recognition.onresult = (event: any) => {
+        let interim = '', final = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const t = event.results[i][0].transcript;
+          if (event.results[i].isFinal) final += t; else interim += t;
+        }
+        setNlQuery(final || interim);
+        if (final) setIsListening(false);
+      };
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch { setIsListening(false); }
+  };
 
   // Questionnaire results passed from Onboarding
   const [matchData, setMatchData] = useState<QuestionnaireAnswers | null>(null);
@@ -560,6 +598,18 @@ export const CoachList: React.FC = () => {
                       onChange={e => setNlQuery(e.target.value)}
                     />
                   </div>
+                  {speechSupported && (
+                    <button
+                      type="button"
+                      onClick={handleVoiceSearch}
+                      title={isListening ? 'Stop listening' : 'Search by voice'}
+                      className={`flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-150 ${
+                        isListening ? 'bg-red-100 text-red-500 animate-pulse' : 'text-slate-400 hover:text-brand-600 hover:bg-brand-50'
+                      }`}
+                    >
+                      <Mic className="h-4 w-4" />
+                    </button>
+                  )}
                   <button
                     type="submit"
                     className="flex-shrink-0 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"

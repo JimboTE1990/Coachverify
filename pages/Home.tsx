@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, HeartHandshake, Star, ArrowRight, ShieldCheck, PawPrint } from 'lucide-react';
+import { Search, HeartHandshake, Star, ArrowRight, ShieldCheck, PawPrint, Mic } from 'lucide-react';
 import { ProductReviewWidget } from '../components/ProductReviewWidget';
 
 export const Home: React.FC = () => {
@@ -8,6 +8,73 @@ export const Home: React.FC = () => {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [homeNlQuery, setHomeNlQuery] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState<'idle' | 'listening' | 'error'>('idle');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
+  const [speechSupported, setSpeechSupported] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    setSpeechSupported(!!(w.SpeechRecognition || w.webkitSpeechRecognition));
+  }, []);
+
+  const handleVoiceSearch = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!SR) return;
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      setVoiceStatus('idle');
+      return;
+    }
+
+    try {
+      const recognition = new SR();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = navigator.language || 'en-GB';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        setVoiceStatus('listening');
+      };
+      recognition.onresult = (event: any) => {
+        let interim = '';
+        let final = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const t = event.results[i][0].transcript;
+          if (event.results[i].isFinal) final += t;
+          else interim += t;
+        }
+        // Show interim results live so user sees words appearing
+        setHomeNlQuery(final || interim);
+        if (final) {
+          setIsListening(false);
+          setVoiceStatus('idle');
+        }
+      };
+      recognition.onerror = () => {
+        setIsListening(false);
+        setVoiceStatus('error');
+        setTimeout(() => setVoiceStatus('idle'), 2000);
+      };
+      recognition.onend = () => {
+        setIsListening(false);
+        setVoiceStatus('idle');
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch {
+      setVoiceStatus('error');
+      setTimeout(() => setVoiceStatus('idle'), 2000);
+    }
+  };
 
   const handleHomeNlSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +140,20 @@ export const Home: React.FC = () => {
                   value={homeNlQuery}
                   onChange={e => setHomeNlQuery(e.target.value)}
                 />
+                {speechSupported && (
+                  <button
+                    type="button"
+                    onClick={handleVoiceSearch}
+                    title={isListening ? 'Stop listening' : 'Search by voice'}
+                    className={`flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full transition-all duration-150 ${
+                      isListening
+                        ? 'bg-red-100 text-red-500 animate-pulse'
+                        : 'text-slate-400 hover:text-brand-600 hover:bg-brand-50'
+                    }`}
+                  >
+                    <Mic className="h-4 w-4" />
+                  </button>
+                )}
                 <button
                   type="submit"
                   className="flex-shrink-0 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white font-semibold px-3 sm:px-6 py-2 sm:py-2.5 rounded-full transition-all duration-150 shadow-md flex items-center gap-1"
@@ -82,6 +163,12 @@ export const Home: React.FC = () => {
                 </button>
               </div>
             </form>
+            {voiceStatus === 'listening' && (
+              <p className="mt-2 text-xs text-center text-brand-600 animate-pulse">Listening… speak now</p>
+            )}
+            {voiceStatus === 'error' && (
+              <p className="mt-2 text-xs text-center text-red-500">Couldn't hear anything — check microphone permissions</p>
+            )}
           </div>
 
           {/* Divider */}
