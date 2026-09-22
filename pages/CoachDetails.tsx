@@ -1273,7 +1273,7 @@ export const CoachDetails: React.FC = () => {
             )}
 
             {/* Coaching Hours */}
-            {coach.coachingHours && (
+            {!!coach.coachingHours && (
               <div className="bg-cyan-50 px-4 py-3 rounded-2xl border border-cyan-200">
                 <p className="text-cyan-900 font-black text-lg">{coach.coachingHours}+ hours of coaching</p>
               </div>
