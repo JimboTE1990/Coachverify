@@ -121,7 +121,7 @@ export const Home: React.FC = () => {
             <span className="block text-brand-600 xl:inline">are top dog.</span>
           </h1>
           <p className="mt-3 max-w-md mx-auto text-base text-slate-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            We connect you with accredited coaches across life, career, and business. We verify credentials upfront — so you don't have to sniff out who's the real deal.
+            We connect you with accredited coaches across life, career, and business. We verify credentials upfront, so you don't have to sniff out who's the real deal.
           </p>
 
           {/* Smart Search */}
