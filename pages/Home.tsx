@@ -117,11 +117,11 @@ export const Home: React.FC = () => {
 
           {/* Title & Subtitle */}
           <h1 className="text-4xl tracking-tight font-display font-extrabold text-slate-900 sm:text-5xl md:text-6xl">
-            <span className="block xl:inline">Top dog coaches,</span>{' '}
-            <span className="block text-brand-600 xl:inline">no bones about it.</span>
+            <span className="block xl:inline">Where accredited coaches</span>{' '}
+            <span className="block text-brand-600 xl:inline">are top dog.</span>
           </h1>
           <p className="mt-3 max-w-md mx-auto text-base text-slate-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            We fetch top accredited coaches in life, career, and business. We verify credentials upfront, so you don't have to sniff out who's the real deal.
+            We connect you with accredited coaches across life, career, and business. We verify credentials upfront — so you don't have to sniff out who's the real deal.
           </p>
 
           {/* Smart Search */}
