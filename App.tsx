@@ -1,10 +1,4 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-// DEV POC — remove before production
-import { InsightsHubPOC } from './components/experimental/InsightsHubPOC';
-import { ThreadDetailPOC } from './components/experimental/ThreadDetailPOC';
-import { ArticleDetailPOC } from './components/experimental/ArticleDetailPOC';
-import { ResourcesHubPOC } from './components/experimental/ResourcesHubPOC';
-import { CoachHubPOC } from './components/experimental/CoachHubPOC';
 import { CoachHubPage } from './pages/CoachHubPage';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -153,12 +147,6 @@ const App: React.FC = () => {
               <Route path="/resources/tki-questionnaire" element={<TKIQuestionnaire />} />
               <Route path="/resources/spark" element={<CoachDogSpark />} />
               <Route path="/coach-hub" element={<CoachHubPage />} />
-              {/* DEV POC — remove before production */}
-              <Route path="/insights-poc" element={<InsightsHubPOC />} />
-              <Route path="/insights-poc/resources" element={<ResourcesHubPOC />} />
-              <Route path="/insights-poc/coach-hub" element={<CoachHubPOC />} />
-              <Route path="/insights-poc/articles/:slug" element={<ArticleDetailPOC />} />
-              <Route path="/insights-poc/:slug" element={<ThreadDetailPOC />} />
             </Routes>
           </Layout>
         </AuthProvider>
