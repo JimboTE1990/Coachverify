@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ChevronDown, User, Search, HelpCircle, Mail, CreditCard, LogIn, UserPlus, LayoutDashboard, ClipboardList, BookOpen, Lock } from 'lucide-react';
+import { Menu, X, ChevronDown, User, Search, HelpCircle, Mail, CreditCard, LogIn, UserPlus, LayoutDashboard, ClipboardList, BookOpen, Lock, Users } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { ProfileDropdown } from './navigation/ProfileDropdown';
 import { ExpiredBanner } from './subscription/ExpiredBanner';
@@ -193,6 +193,13 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                           </div>
                         );
                       })()}
+                      <NavMenuItem
+                        to="/coach-hub"
+                        icon={Users}
+                        label="Coach Hub"
+                        desc="Collaboration board for verified coaches"
+                        colorClass="bg-teal-50 text-teal-700 group-hover:bg-teal-600 group-hover:text-white"
+                      />
                       <div className="border-t border-slate-100 my-2 mx-3"></div>
                       {!isAuthenticated && (
                         <>
@@ -360,6 +367,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   </Link>
                   <Link to="/pricing" className="flex items-center px-5 py-4 rounded-2xl hover:bg-slate-50 text-slate-700 font-bold" onClick={closeMobileMenu}>
                       <CreditCard className="h-6 w-6 mr-4 text-slate-400" /> Pricing
+                  </Link>
+                  <Link to="/coach-hub" className="flex items-center px-5 py-4 rounded-2xl bg-teal-50 text-teal-700 font-bold" onClick={closeMobileMenu}>
+                      <Users className="h-6 w-6 mr-4 text-teal-400" /> Coach Hub
                   </Link>
                   <Link to="/coach-signup" className="flex items-center px-5 py-4 rounded-2xl hover:bg-slate-50 text-slate-700 font-bold" onClick={closeMobileMenu}>
                       <UserPlus className="h-6 w-6 mr-4 text-slate-400" /> Sign Up

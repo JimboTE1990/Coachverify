@@ -1,7 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { adminGetAllCoaches, toggleFlagReview, adminGetProductReviews, adminActionProductReview } from '../services/supabaseService';
 import { Coach, ProductReview } from '../types';
-import { Lock, FileText, Flag, Star, MessageSquare, ChevronLeft, ChevronRight, Download, Copy, Check } from 'lucide-react';
+import { Lock, FileText, Flag, Star, MessageSquare, ChevronLeft, ChevronRight, Download, Copy, Check, BookOpen } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+
+interface ContentSubmission {
+  id: string;
+  coach_name: string;
+  content_type: 'article' | 'video' | 'resource';
+  title: string;
+  description: string;
+  body?: string;
+  url?: string;
+  tag: string;
+  status: 'pending' | 'approved' | 'rejected';
+  rejection_reason?: string;
+  created_at: string;
+}
 
 const COACHES_PER_PAGE = 10;
 const REVIEWS_PER_PAGE = 6;
@@ -12,7 +27,11 @@ export const AdminDashboard: React.FC = () => {
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   const [coachPage, setCoachPage] = useState(1);
-  const [activeTab, setActiveTab] = useState<'reviews' | 'coaches'>('reviews');
+  const [activeTab, setActiveTab] = useState<'reviews' | 'coaches' | 'content'>('reviews');
+  const [contentSubmissions, setContentSubmissions] = useState<ContentSubmission[]>([]);
+  const [contentFilter, setContentFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
   const [pendingProductReviews, setPendingProductReviews] = useState<ProductReview[]>([]);
   const [approvedProductReviews, setApprovedProductReviews] = useState<ProductReview[]>([]);
   const [starFilter, setStarFilter] = useState<number | null>(null);
@@ -28,14 +47,16 @@ export const AdminDashboard: React.FC = () => {
     if (isAuthenticated) {
       const adminPassword = (import.meta as any).env?.VITE_ADMIN_PASSWORD;
       const loadData = async () => {
-        const [coachData, approvedData, pendingData] = await Promise.all([
+        const [coachData, approvedData, pendingData, contentData] = await Promise.all([
           adminGetAllCoaches(),
           adminGetProductReviews('approved', adminPassword),
           adminGetProductReviews('pending', adminPassword),
+          supabase.from('coach_content_submissions').select('*').order('created_at', { ascending: false }),
         ]);
         setCoaches(coachData);
         setApprovedProductReviews(approvedData);
         setPendingProductReviews(pendingData);
+        if (contentData.data) setContentSubmissions(contentData.data as ContentSubmission[]);
       };
       loadData();
     }
@@ -66,6 +87,19 @@ export const AdminDashboard: React.FC = () => {
       setPendingProductReviews(prev => prev.filter(r => r.id !== reviewId));
       setApprovedProductReviews(prev => prev.filter(r => r.id !== reviewId));
     }
+  };
+
+  const handleContentAction = async (id: string, action: 'approved' | 'rejected', reason?: string) => {
+    const update: Partial<ContentSubmission> & { reviewed_at: string } = {
+      status: action,
+      reviewed_at: new Date().toISOString(),
+      rejection_reason: reason || null,
+    };
+    const { error } = await supabase.from('coach_content_submissions').update(update).eq('id', id);
+    if (error) { alert('Update failed — please try again.'); return; }
+    setContentSubmissions(prev => prev.map(s => s.id === id ? { ...s, ...update } : s));
+    setRejectingId(null);
+    setRejectionReason('');
   };
 
   const handleFlag = async (coachId: string, reviewId: string) => {
@@ -218,6 +252,22 @@ export const AdminDashboard: React.FC = () => {
           <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${activeTab === 'coaches' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
             {coaches.length}
           </span>
+        </button>
+        <button
+          onClick={() => setActiveTab('content')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all ${
+            activeTab === 'content'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+              : 'bg-white border border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600'
+          }`}
+        >
+          <BookOpen size={15} />
+          Content
+          {contentSubmissions.filter(s => s.status === 'pending').length > 0 && (
+            <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${activeTab === 'content' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-700'}`}>
+              {contentSubmissions.filter(s => s.status === 'pending').length}
+            </span>
+          )}
         </button>
       </div>
 
@@ -520,6 +570,137 @@ export const AdminDashboard: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── CONTENT REVIEW TAB ── */}
+      {activeTab === 'content' && (
+        <div className="space-y-6">
+          {/* Filter */}
+          <div className="flex gap-2">
+            {(['pending', 'approved', 'rejected'] as const).map(f => (
+              <button
+                key={f}
+                onClick={() => setContentFilter(f)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all capitalize ${
+                  contentFilter === f
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white border border-slate-200 text-slate-600 hover:border-indigo-300'
+                }`}
+              >
+                {f}
+                <span className="ml-1.5 text-xs opacity-70">
+                  ({contentSubmissions.filter(s => s.status === f).length})
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Submissions */}
+          {contentSubmissions.filter(s => s.status === contentFilter).length === 0 ? (
+            <p className="text-slate-400 text-sm py-4">No {contentFilter} submissions.</p>
+          ) : (
+            <div className="space-y-4">
+              {contentSubmissions.filter(s => s.status === contentFilter).map(sub => (
+                <div key={sub.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                  <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                          {sub.content_type}
+                        </span>
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                          {sub.tag}
+                        </span>
+                      </div>
+                      <h3 className="font-bold text-slate-900 text-base">{sub.title}</h3>
+                      <p className="text-sm text-slate-500 mt-0.5">by {sub.coach_name}</p>
+                    </div>
+                    <span className="text-xs text-slate-400">{new Date(sub.created_at).toLocaleDateString('en-GB')}</span>
+                  </div>
+
+                  {sub.description && (
+                    <p className="text-sm text-slate-600 mb-3 leading-relaxed">{sub.description}</p>
+                  )}
+                  {sub.body && (
+                    <div className="bg-slate-50 rounded-xl p-4 mb-3 text-sm text-slate-700 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap">
+                      {sub.body}
+                    </div>
+                  )}
+                  {sub.url && (
+                    <a href={sub.url} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm text-indigo-600 underline mb-3">
+                      {sub.url}
+                    </a>
+                  )}
+
+                  {sub.status === 'rejected' && sub.rejection_reason && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 mb-3">
+                      <span className="font-semibold">Rejection reason: </span>{sub.rejection_reason}
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  {sub.status === 'pending' && (
+                    <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+                      <button
+                        onClick={() => handleContentAction(sub.id, 'approved')}
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold py-2 rounded-xl transition-colors"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => setRejectingId(sub.id)}
+                        className="flex-1 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold py-2 rounded-xl transition-colors border border-red-200"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Reject reason form */}
+                  {rejectingId === sub.id && (
+                    <div className="mt-3 space-y-2">
+                      <textarea
+                        rows={2}
+                        value={rejectionReason}
+                        onChange={e => setRejectionReason(e.target.value)}
+                        placeholder="Reason for rejection (shown to the coach)..."
+                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-300 resize-none"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleContentAction(sub.id, 'rejected', rejectionReason)}
+                          disabled={!rejectionReason.trim()}
+                          className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-semibold py-2 rounded-xl transition-colors"
+                        >
+                          Confirm Rejection
+                        </button>
+                        <button
+                          onClick={() => { setRejectingId(null); setRejectionReason(''); }}
+                          className="px-4 text-sm text-slate-500 hover:text-slate-800"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {sub.status === 'approved' && (
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                      <span className="text-xs font-semibold text-emerald-600">✓ Approved — live in community</span>
+                      <button
+                        onClick={() => handleContentAction(sub.id, 'rejected', 'Removed from community hub.')}
+                        className="text-xs text-slate-400 hover:text-red-500 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

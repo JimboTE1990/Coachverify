@@ -417,6 +417,7 @@ export interface QuestionnaireAnswers {
   experienceLevel?: 'beginner' | 'intermediate' | 'advanced' | 'any'; // Preferred coach experience level
   coachingExpertise?: CoachingExpertise[]; // New: Specific coaching areas (80+ options across 7 categories)
   cpdQualifications?: CPDQualification[]; // New: CPD qualifications (40+ certifications)
+  freeTextQuery?: string; // Optional free-text from questionnaire final step — used for NL search boost
 }
 
 export interface UserState {
