@@ -8,10 +8,25 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import {
-  COLLAB_TYPE_LABELS, COLLAB_TYPE_COLORS,
-  type CollabType,
-} from '../components/experimental/mockData';
+type CollabType = 'podcast_guest' | 'co_host' | 'referral_partner' | 'accountability' | 'content_collab' | 'other';
+
+const COLLAB_TYPE_LABELS: Record<CollabType, string> = {
+  podcast_guest: 'Podcast Guest',
+  co_host: 'Webinar Co-host',
+  referral_partner: 'Referral Partner',
+  accountability: 'Accountability Partner',
+  content_collab: 'Content Collaboration',
+  other: 'Other',
+};
+
+const COLLAB_TYPE_COLORS: Record<CollabType, string> = {
+  podcast_guest: 'bg-purple-100 text-purple-700',
+  co_host: 'bg-blue-100 text-blue-700',
+  referral_partner: 'bg-emerald-100 text-emerald-700',
+  accountability: 'bg-amber-100 text-amber-700',
+  content_collab: 'bg-teal-100 text-teal-700',
+  other: 'bg-slate-100 text-slate-600',
+};
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
