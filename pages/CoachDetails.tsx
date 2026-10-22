@@ -15,6 +15,7 @@ import {
   Calendar, Award, FileText, Bookmark
 } from 'lucide-react';
 import { isBookmarked, addBookmark, removeBookmark, getBookmarkedIds } from '../utils/bookmarks';
+import { ShareButton } from '../components/ShareButton';
 
 export const CoachDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -73,8 +74,6 @@ export const CoachDetails: React.FC = () => {
   const [flagReason, setFlagReason] = useState('');
   const [flagSubmitting, setFlagSubmitting] = useState(false);
 
-  // Share modal state
-  const [showShareOptions, setShowShareOptions] = useState(false);
 
   // Scroll to reviews section
   const scrollToReviews = () => {
@@ -241,44 +240,6 @@ export const CoachDetails: React.FC = () => {
     return window.location.href;
   };
 
-  const handleShare = () => {
-    const canonicalUrl = getCanonicalProfileUrl();
-    if (navigator.share) {
-      navigator.share({
-        title: `${coach.name} - CoachDog`,
-        text: `Check out ${coach.name} on CoachDog`,
-        url: canonicalUrl
-      });
-    } else {
-      setShowShareOptions(true);
-    }
-  };
-
-  const shareVia = (platform: string) => {
-    const canonicalUrl = getCanonicalProfileUrl();
-    const url = encodeURIComponent(canonicalUrl);
-    const title = encodeURIComponent(`${coach.name} - CoachDog`);
-    const text = encodeURIComponent(`Check out ${coach.name} on CoachDog`);
-
-    const shareUrls: Record<string, string> = {
-      whatsapp: `https://wa.me/?text=${text}%20${url}`,
-      facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-      twitter: `https://twitter.com/intent/tweet?url=${url}&text=${text}`,
-      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
-      instagram: '',
-      email: `mailto:?subject=${title}&body=${text}%20${url}`,
-      copy: ''
-    };
-
-    if (platform === 'copy' || platform === 'instagram') {
-      navigator.clipboard.writeText(canonicalUrl);
-      alert(`Link copied to clipboard!${platform === 'instagram' ? ' Open Instagram and paste in your story or bio.' : ''}`);
-      setShowShareOptions(false);
-    } else {
-      window.open(shareUrls[platform], '_blank', 'width=600,height=400');
-      setShowShareOptions(false);
-    }
-  };
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -873,8 +834,10 @@ export const CoachDetails: React.FC = () => {
               </div>
 
               {/* Share Button - TOP RIGHT */}
-              <button
-                onClick={handleShare}
+              <ShareButton
+                url={getCanonicalProfileUrl()}
+                title={`${coach.name} - CoachDog`}
+                text={`Check out ${coach.name} on CoachDog`}
                 className="flex flex-col items-center group"
               >
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-100 to-brand-200 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all">
@@ -883,7 +846,7 @@ export const CoachDetails: React.FC = () => {
                 <span className="text-xs font-bold text-slate-600 mt-2 text-center leading-tight">
                   Tell the<br />Pack<br />(share)
                 </span>
-              </button>
+              </ShareButton>
             </div>
 
             {/* Name */}
@@ -1595,13 +1558,15 @@ export const CoachDetails: React.FC = () => {
 
           {/* Share Button */}
           <div className="px-6 pb-6 flex justify-end">
-            <button
-              onClick={handleShare}
+            <ShareButton
+              url={getCanonicalProfileUrl()}
+              title={`${coach.name} - CoachDog`}
+              text={`Check out ${coach.name} on CoachDog`}
               className="flex items-center gap-2 text-slate-700 font-bold hover:text-slate-900 transition-colors group"
             >
               <Share2 className="h-5 w-5 group-hover:scale-110 transition-transform" />
               <span className="text-lg">Tell the Pack (share)</span>
-            </button>
+            </ShareButton>
           </div>
         </div>
 
@@ -2106,104 +2071,6 @@ export const CoachDetails: React.FC = () => {
       )}
 
       {/* Share Options Modal */}
-      {showShareOptions && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowShareOptions(false)}>
-          <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-200">
-              <h3 className="text-2xl font-black text-slate-900">Share Profile</h3>
-              <button
-                onClick={() => setShowShareOptions(false)}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
-              >
-                <X className="h-6 w-6 text-slate-600" />
-              </button>
-            </div>
-
-            {/* Share Options */}
-            <div className="p-6 grid grid-cols-3 gap-4">
-              {/* WhatsApp */}
-              <button
-                onClick={() => shareVia('whatsapp')}
-                className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:bg-green-50 transition-colors group"
-              >
-                <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <MessageCircle className="h-8 w-8 text-white" />
-                </div>
-                <span className="text-sm font-bold text-slate-700">WhatsApp</span>
-              </button>
-
-              {/* Facebook */}
-              <button
-                onClick={() => shareVia('facebook')}
-                className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:bg-blue-50 transition-colors group"
-              >
-                <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Facebook className="h-8 w-8 text-white" />
-                </div>
-                <span className="text-sm font-bold text-slate-700">Facebook</span>
-              </button>
-
-              {/* Twitter */}
-              <button
-                onClick={() => shareVia('twitter')}
-                className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:bg-sky-50 transition-colors group"
-              >
-                <div className="w-16 h-16 rounded-full bg-black flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <svg className="h-7 w-7 text-white" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                  </svg>
-                </div>
-                <span className="text-sm font-bold text-slate-700">Twitter</span>
-              </button>
-
-              {/* LinkedIn */}
-              <button
-                onClick={() => shareVia('linkedin')}
-                className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:bg-blue-50 transition-colors group"
-              >
-                <div className="w-16 h-16 rounded-full bg-blue-700 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Linkedin className="h-8 w-8 text-white" />
-                </div>
-                <span className="text-sm font-bold text-slate-700">LinkedIn</span>
-              </button>
-
-              {/* Instagram */}
-              <button
-                onClick={() => shareVia('instagram')}
-                className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:bg-pink-50 transition-colors group"
-              >
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Instagram className="h-8 w-8 text-white" />
-                </div>
-                <span className="text-sm font-bold text-slate-700">Instagram</span>
-              </button>
-
-              {/* Email */}
-              <button
-                onClick={() => shareVia('email')}
-                className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:bg-slate-50 transition-colors group"
-              >
-                <div className="w-16 h-16 rounded-full bg-slate-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Mail className="h-8 w-8 text-white" />
-                </div>
-                <span className="text-sm font-bold text-slate-700">Email</span>
-              </button>
-            </div>
-
-            {/* Copy Link */}
-            <div className="px-6 pb-6">
-              <button
-                onClick={() => shareVia('copy')}
-                className="w-full bg-slate-100 text-slate-900 font-bold py-4 rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
-              >
-                <Copy className="h-5 w-5" />
-                Copy Link
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

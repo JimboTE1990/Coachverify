@@ -1,5 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { CoachHubPage } from './pages/CoachHubPage';
+import { CommunityPage } from './pages/CommunityPage';
+import { CommunityThreadPage } from './pages/CommunityThreadPage';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Layout } from './components/Layout';
@@ -147,6 +149,8 @@ const App: React.FC = () => {
               <Route path="/resources/tki-questionnaire" element={<TKIQuestionnaire />} />
               <Route path="/resources/spark" element={<CoachDogSpark />} />
               <Route path="/coach-hub" element={<CoachHubPage />} />
+              <Route path="/community" element={<CommunityPage />} />
+              <Route path="/community/:slug" element={<CommunityThreadPage />} />
             </Routes>
           </Layout>
         </AuthProvider>

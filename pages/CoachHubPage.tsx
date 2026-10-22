@@ -569,7 +569,7 @@ export const CoachHubPage: React.FC = () => {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">Description</label>
-                <textarea required rows={4} value={collabDesc} onChange={e => setCollabDesc(e.target.value)} placeholder="Tell other coaches what you're looking for and what you can offer in return…" className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 transition-all resize-none" />
+                <textarea required rows={5} value={collabDesc} onChange={e => setCollabDesc(e.target.value)} placeholder="Tell other coaches what you're looking for and what you can offer in return. Press Enter twice to start a new paragraph." className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 transition-all resize-y" />
               </div>
               <div className="sm:w-56">
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">Respond by <span className="font-normal text-slate-400">(optional)</span></label>
@@ -714,8 +714,8 @@ export const CoachHubPage: React.FC = () => {
                                     </>
                                   ) : (
                                     <>
-                                      <button onClick={() => handleStartEdit(post)} className="text-slate-400 hover:text-slate-700 transition-colors" title="Edit">
-                                        <Pencil className="h-3.5 w-3.5" />
+                                      <button onClick={() => handleStartEdit(post)} className="flex items-center gap-1 font-semibold px-2 py-1 rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+                                        <Pencil className="h-3 w-3" /> Edit
                                       </button>
                                       <button onClick={() => setFulfillConfirmId(post.id)} className="flex items-center gap-1 font-semibold px-2 py-1 rounded-full border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors">
                                         <CheckCircle className="h-3 w-3" /> Fulfilled
@@ -777,7 +777,7 @@ export const CoachHubPage: React.FC = () => {
                               </div>
                               <div>
                                 <label className="block text-xs font-semibold text-slate-500 mb-1.5">Description</label>
-                                <textarea rows={4} value={editDesc} onChange={e => setEditDesc(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all resize-none" />
+                                <textarea rows={6} value={editDesc} onChange={e => setEditDesc(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all resize-y" placeholder="Describe your request in as much detail as needed. Press Enter twice to start a new paragraph." />
                               </div>
                               <div className="sm:w-48">
                                 <label className="block text-xs font-semibold text-slate-500 mb-1.5">Respond by</label>
@@ -793,7 +793,7 @@ export const CoachHubPage: React.FC = () => {
                           ) : (
                             <>
                               <h3 className="font-display font-bold text-slate-900 text-base leading-snug mb-1.5">{post.title}</h3>
-                              <p className="text-sm text-slate-600 leading-relaxed mb-3">{post.description}</p>
+                              <p className="text-sm text-slate-600 leading-relaxed mb-3 whitespace-pre-wrap">{post.description}</p>
                             </>
                           )}
 

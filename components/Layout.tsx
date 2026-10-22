@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ChevronDown, User, Search, HelpCircle, Mail, CreditCard, LogIn, UserPlus, LayoutDashboard, ClipboardList, BookOpen, Lock, Users } from 'lucide-react';
+import { Menu, X, ChevronDown, User, Search, HelpCircle, Mail, CreditCard, LogIn, UserPlus, LayoutDashboard, ClipboardList, BookOpen, Lock, Users, MessageCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { ProfileDropdown } from './navigation/ProfileDropdown';
 import { ExpiredBanner } from './subscription/ExpiredBanner';
@@ -254,6 +254,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 )}
               </div>
 
+              {/* Community standalone link — dev only until ready to ship */}
+              <Link
+                to="/community"
+                className="text-lg font-display font-bold text-slate-700 hover:text-brand-600 transition-all"
+              >
+                Community
+              </Link>
+
               {/* Action Buttons */}
               <div className="flex items-center gap-3">
                 {/* Upgrade to Premium Button - for trial users only, not lifetime */}
@@ -354,6 +362,16 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   <Link to="/resources/spark" className="flex items-center px-5 py-4 rounded-2xl bg-indigo-50 text-indigo-700 font-bold hover:bg-indigo-100 transition-colors" onClick={closeMobileMenu}>
                     <svg className="h-6 w-6 mr-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                     CoachDog Spark <span className="ml-2 text-xs font-semibold text-indigo-500 bg-indigo-100 px-2 py-0.5 rounded-full">Paid plans</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Mobile Section: Community — dev only until ready to ship */}
+              <div>
+                <h3 className="text-sm font-extrabold uppercase tracking-widest mb-4 flex items-center" style={{ color: '#2D8A7E' }}><MessageCircle className="h-4 w-4 mr-2" /> Community</h3>
+                <div className="space-y-3">
+                  <Link to="/community" className="flex items-center px-5 py-4 rounded-2xl hover:bg-slate-50 text-slate-700 font-bold" onClick={closeMobileMenu}>
+                    <MessageCircle className="h-6 w-6 mr-4 text-slate-400" /> Community Q&amp;A
                   </Link>
                 </div>
               </div>
