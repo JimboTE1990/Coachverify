@@ -130,6 +130,9 @@ export const CoachHubPage: React.FC = () => {
   const [commentCounts, setCommentCounts] = useState<Map<string, number>>(new Map());
   const [newCommentText, setNewCommentText] = useState('');
   const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [commentEditBody, setCommentEditBody] = useState('');
+  const [commentEditSubmitting, setCommentEditSubmitting] = useState(false);
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
 
   // ── Inactive coaches + photos ─────────────────────────────────────────────
@@ -372,6 +375,29 @@ export const CoachHubPage: React.FC = () => {
       setNewCommentText('');
     }
     setCommentSubmitting(false);
+  };
+
+  const handleSaveCommentEdit = async (commentId: string, postId: string) => {
+    if (!commentEditBody.trim()) return;
+    setCommentEditSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('coach_collab_comments')
+        .update({ body: commentEditBody.trim() })
+        .eq('id', commentId);
+      if (!error) {
+        setPostComments(prev => {
+          const updated = new Map(prev);
+          updated.set(postId, (updated.get(postId) ?? []).map(c =>
+            c.id === commentId ? { ...c, body: commentEditBody.trim() } : c
+          ));
+          return updated;
+        });
+        setEditingCommentId(null);
+      }
+    } finally {
+      setCommentEditSubmitting(false);
+    }
   };
 
   // ── Derived data ──────────────────────────────────────────────────────────
@@ -822,6 +848,8 @@ export const CoachHubPage: React.FC = () => {
                           <div className="space-y-3">
                             {comments.map(comment => {
                               const commentInactive = comment.coach_id ? expiredCoachIds.has(comment.coach_id) : false;
+                              const isOwnComment = comment.coach_id === coach.id;
+                              const isEditingThisComment = editingCommentId === comment.id;
                               return (
                                 <div key={comment.id} className={`flex gap-3 ${commentInactive ? 'opacity-60' : ''}`}>
                                   <div className="h-7 w-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold text-white mt-0.5" style={{ backgroundColor: '#2D8A7E' }}>
@@ -836,8 +864,41 @@ export const CoachHubPage: React.FC = () => {
                                       <span className="text-xs text-slate-400">
                                         {new Date(comment.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                                       </span>
+                                      {isOwnComment && !isEditingThisComment && (
+                                        <button
+                                          onClick={() => { setCommentEditBody(comment.body); setEditingCommentId(comment.id); }}
+                                          className="text-slate-300 hover:text-slate-500 transition-colors"
+                                          title="Edit comment"
+                                        >
+                                          <Pencil className="h-3 w-3" />
+                                        </button>
+                                      )}
                                     </div>
-                                    <p className="text-sm text-slate-700 leading-relaxed">{comment.body}</p>
+                                    {isEditingThisComment ? (
+                                      <div className="space-y-2 mt-1">
+                                        <textarea
+                                          autoFocus
+                                          rows={3}
+                                          value={commentEditBody}
+                                          onChange={e => setCommentEditBody(e.target.value)}
+                                          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 resize-none transition-all"
+                                        />
+                                        <div className="flex items-center gap-2">
+                                          <button
+                                            onClick={() => handleSaveCommentEdit(comment.id, post.id)}
+                                            disabled={commentEditSubmitting || !commentEditBody.trim()}
+                                            className="flex items-center gap-1 text-xs font-semibold text-white px-3 py-1.5 rounded-full disabled:opacity-50 transition-opacity hover:opacity-90"
+                                            style={{ backgroundColor: '#2D8A7E' }}
+                                          >
+                                            <Check className="h-3 w-3" />
+                                            {commentEditSubmitting ? 'Saving…' : 'Save'}
+                                          </button>
+                                          <button onClick={() => setEditingCommentId(null)} className="text-xs text-slate-400 hover:text-slate-600 px-2 py-1.5">Cancel</button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{comment.body}</p>
+                                    )}
                                   </div>
                                 </div>
                               );
