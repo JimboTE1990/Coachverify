@@ -4,7 +4,7 @@ import {
   Users, Send, Plus, X, ExternalLink,
   Search, SlidersHorizontal, Clock, Trash2,
   ChevronUp, MessageCircle, Heart, Bookmark,
-  MessageSquare, CheckCircle, AlertCircle, Pencil,
+  MessageSquare, CheckCircle, AlertCircle, Pencil, Check,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
