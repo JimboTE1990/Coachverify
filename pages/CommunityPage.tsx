@@ -38,6 +38,8 @@ export const CommunityPage: React.FC = () => {
   const [postingQuestion, setPostingQuestion] = useState(false);
   const [postError, setPostError] = useState('');
   const [isListening, setIsListening] = useState(false);
+  // Capture ?q= immediately on mount before Supabase's PKCE flow can strip URL params
+  const pendingQRef = useRef<string | null>(new URLSearchParams(window.location.search).get('q'));
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -80,8 +82,10 @@ export const CommunityPage: React.FC = () => {
   };
 
   const postPendingQuestion = async (userId: string) => {
-    const encoded = searchParams.get('q');
+    // Use ref captured on mount — Supabase's PKCE flow may strip URL params before auth fires
+    const encoded = pendingQRef.current ?? new URLSearchParams(window.location.search).get('q');
     if (!encoded) return;
+    pendingQRef.current = null; // consume it so we never double-post
     let raw: string;
     try { raw = atob(encoded); } catch { return; }
     setPostingQuestion(true);
