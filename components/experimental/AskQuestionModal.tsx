@@ -112,7 +112,12 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
       anonymous,
       tag,
     }));
-    const redirectUrl = `${window.location.origin}/community?q=${encodeURIComponent(pendingPayload)}`;
+    // Always redirect to the canonical production domain so the magic link lands on coachdog.co.uk
+    // not the internal Vercel deployment URL (coachverify.vercel.app)
+    const origin = window.location.hostname === 'localhost'
+      ? window.location.origin
+      : 'https://www.coachdog.co.uk';
+    const redirectUrl = `${origin}/community?q=${encodeURIComponent(pendingPayload)}`;
 
     const { error: otpError } = await supabase.auth.signInWithOtp({
       email: email.trim(),
@@ -143,10 +148,13 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
       anonymous,
       tag,
     }));
+    const resendOrigin = window.location.hostname === 'localhost'
+      ? window.location.origin
+      : 'https://www.coachdog.co.uk';
     await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
-        emailRedirectTo: `${window.location.origin}/community?q=${encodeURIComponent(pendingPayload)}`,
+        emailRedirectTo: `${resendOrigin}/community?q=${encodeURIComponent(pendingPayload)}`,
         shouldCreateUser: true,
         data: { role: 'community' },
       },

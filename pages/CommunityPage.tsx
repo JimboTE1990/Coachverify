@@ -35,6 +35,8 @@ export const CommunityPage: React.FC = () => {
   const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
   const [selectedTag, setSelectedTag] = useState<CommunityTag | null>(null);
   const [sortMode, setSortMode] = useState<'newest' | 'most_liked' | 'most_comments'>('newest');
+  const [postingQuestion, setPostingQuestion] = useState(false);
+  const [postError, setPostError] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
@@ -82,6 +84,8 @@ export const CommunityPage: React.FC = () => {
     if (!encoded) return;
     let raw: string;
     try { raw = atob(encoded); } catch { return; }
+    setPostingQuestion(true);
+    setPostError('');
     try {
       const pending = JSON.parse(raw) as {
         title: string; body: string | null;
@@ -89,11 +93,11 @@ export const CommunityPage: React.FC = () => {
       };
 
       const displayName = pending.anonymous ? 'Anonymous' : pending.author_name;
-      const { error: upsertError } = await supabase.from('community_users').upsert(
+      // Non-blocking — failure here must not prevent the question from posting
+      await supabase.from('community_users').upsert(
         { user_id: userId, display_name: displayName, marketing_opt_in: false },
         { onConflict: 'user_id' }
       );
-      if (upsertError) return;
 
       const slug = slugify(pending.title);
       const { error } = await supabase.from('community_threads').insert({
@@ -105,9 +109,15 @@ export const CommunityPage: React.FC = () => {
         user_id: userId,
         tag: pending.tag ?? 'Career',
       });
-      if (!error) navigate(`/community/${slug}`);
-    } catch (e) {
-      console.error('[community] postPendingQuestion threw:', e);
+      if (!error) {
+        navigate(`/community/${slug}`);
+      } else {
+        setPostError('Something went wrong posting your question. Please try submitting it again.');
+        setPostingQuestion(false);
+      }
+    } catch {
+      setPostError('Something went wrong posting your question. Please try submitting it again.');
+      setPostingQuestion(false);
     }
   };
 
@@ -230,6 +240,22 @@ export const CommunityPage: React.FC = () => {
           onClose={() => setShowAskModal(false)}
           onPosted={handleQuestionPosted}
         />
+      )}
+
+      {/* Posting banner — shown while question is being submitted after magic link */}
+      {postingQuestion && (
+        <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
+          <div className="h-10 w-10 rounded-full border-4 border-slate-200 border-t-teal-600 animate-spin" />
+          <p className="text-base font-semibold text-slate-700">Posting your question…</p>
+        </div>
+      )}
+      {postError && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4">
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm font-medium px-4 py-3 rounded-2xl flex items-center justify-between gap-4">
+            <span>{postError}</span>
+            <button onClick={() => setPostError('')} className="text-red-400 hover:text-red-600 flex-shrink-0">✕</button>
+          </div>
+        </div>
       )}
 
       {/* Page header */}
