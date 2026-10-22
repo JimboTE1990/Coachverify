@@ -77,7 +77,9 @@ export const INSIGHT_CHIPS = [
   },
 ];
 
-export const THREADS: MockThread[] = [
+export const THREADS: MockThread[] = [];
+
+const _REMOVED_THREADS: MockThread[] = [
   {
     id: '1',
     slug: 'passed-over-for-promotion',
