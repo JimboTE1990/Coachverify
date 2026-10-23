@@ -12,6 +12,7 @@ interface LiveThread {
   id: string;
   slug: string;
   title: string;
+  body: string | null;
   author_name: string;
   tag: string;
   upvotes: number;
@@ -56,7 +57,7 @@ export const CommunityPage: React.FC = () => {
   const fetchLiveThreads = async () => {
     const { data: threads } = await supabase
       .from('community_threads')
-      .select('id, slug, title, author_name, tag, upvotes, created_at')
+      .select('id, slug, title, body, author_name, tag, upvotes, created_at')
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -182,11 +183,21 @@ export const CommunityPage: React.FC = () => {
 
   const filteredLiveThreads = (() => {
     let threads = showBookmarksOnly ? liveThreads.filter(t => bookmarkedSlugs.has(t.slug)) : liveThreads;
-    if (activeTag) threads = threads.filter(t => t.tag === activeTag);
-    if (searchValue.trim()) {
+    // Apply tag filter (manual selection takes priority over smart tag)
+    if (selectedTag) {
+      threads = threads.filter(t => t.tag === selectedTag);
+    } else if (smartTag) {
+      // Smart tag matched — filter by tag only; the keyword already handled the semantics,
+      // so don't also require the search text to appear verbatim in the title
+      threads = threads.filter(t => t.tag === smartTag);
+    }
+    // Text search only runs when smart tag hasn't already handled it
+    if (searchValue.trim() && !smartTag) {
       const q = searchValue.toLowerCase();
       threads = threads.filter(t =>
-        t.title.toLowerCase().includes(q) || t.author_name.toLowerCase().includes(q)
+        t.title.toLowerCase().includes(q) ||
+        t.author_name.toLowerCase().includes(q) ||
+        (t.body?.toLowerCase().includes(q) ?? false)
       );
     }
     if (sortMode === 'trending') {

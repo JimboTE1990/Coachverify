@@ -34,16 +34,16 @@ export const COMMUNITY_TAG_COLORS: Record<CommunityTag, string> = {
 interface TagKeywordEntry { terms: string[]; tag: CommunityTag; }
 
 export const COMMUNITY_KEYWORD_MAP: TagKeywordEntry[] = [
-  { tag: 'Career', terms: ['career', 'job', 'promotion', 'redundancy', 'interview', 'cv', 'resume', 'salary', 'work', 'profession', 'employment', 'job search', 'career change', 'career advice'] },
+  { tag: 'Career', terms: ['career', 'job', 'promotion', 'redundancy', 'redundant', 'made redundant', 'laid off', 'layoff', 'retrenchment', 'dismissed', 'fired', 'job loss', 'interview', 'cv', 'resume', 'salary', 'pay', 'wage', 'work', 'profession', 'employment', 'job search', 'career change', 'career advice', 'leaving job', 'new job', 'career break', 'returning to work'] },
   { tag: 'Business', terms: ['business', 'startup', 'entrepreneur', 'company', 'revenue', 'growth', 'sales', 'marketing', 'strategy', 'self employed', 'freelance', 'client', 'pricing'] },
   { tag: 'Leadership', terms: ['leadership', 'leader', 'manage', 'manager', 'team', 'staff', 'delegation', 'culture', 'motivation', 'performance', 'conflict', 'difficult conversations'] },
   { tag: 'Executive', terms: ['executive', 'director', 'senior', 'c-suite', 'ceo', 'board', 'stakeholder', 'corporate', 'strategy', 'vp', 'head of'] },
   { tag: 'Life Coaching', terms: ['life', 'purpose', 'values', 'meaning', 'balance', 'goals', 'habits', 'routine', 'vision', 'clarity', 'focus', 'identity', 'change', 'transition'] },
   { tag: 'Relationships', terms: ['relationship', 'partner', 'family', 'friend', 'communication', 'boundary', 'conflict', 'divorce', 'dating', 'social', 'people', 'trust'] },
   { tag: 'Mindset', terms: ['mindset', 'limiting beliefs', 'negative', 'positive', 'growth mindset', 'fixed mindset', 'thoughts', 'reframe', 'perspective', 'mental', 'attitude'] },
-  { tag: 'Confidence', terms: ['confidence', 'self esteem', 'imposter', 'imposter syndrome', 'self doubt', 'assertive', 'public speaking', 'presentation', 'worth', 'visibility'] },
+  { tag: 'Confidence', terms: ['confidence', 'confident', 'self esteem', 'self-esteem', 'imposter', 'imposter syndrome', 'self doubt', 'self-doubt', 'assertive', 'assertiveness', 'public speaking', 'presentation', 'worth', 'self worth', 'visibility', 'speaking up', 'shy', 'introvert', 'fear of failure', 'not good enough'] },
   { tag: 'Health & Wellness', terms: ['health', 'wellness', 'fitness', 'sleep', 'nutrition', 'diet', 'exercise', 'body', 'energy', 'chronic', 'illness', 'physical'] },
-  { tag: 'Stress & Burnout', terms: ['stress', 'burnout', 'anxiety', 'overwhelm', 'pressure', 'exhausted', 'overworked', 'workload', 'panic', 'nervous', 'tension', 'tired'] },
+  { tag: 'Stress & Burnout', terms: ['stress', 'stressed', 'burnout', 'burnt out', 'burned out', 'anxiety', 'anxious', 'overwhelm', 'overwhelmed', 'pressure', 'exhausted', 'exhaustion', 'overworked', 'workload', 'panic', 'nervous', 'tension', 'tired', 'drained', 'depleted', 'cannot cope', 'breaking point'] },
   { tag: 'Wellbeing', terms: ['wellbeing', 'happiness', 'joy', 'fulfillment', 'content', 'gratitude', 'self care', 'mental health', 'emotional', 'resilience', 'calm', 'peace'] },
 ];
 
