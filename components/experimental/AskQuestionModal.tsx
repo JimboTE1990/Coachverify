@@ -22,22 +22,25 @@ function slugify(title: string): string {
   );
 }
 
-type ModalState = 'loading' | 'form' | 'sending' | 'check_email' | 'submitting' | 'error';
+type ModalState = 'loading' | 'email_gate' | 'form' | 'sending' | 'check_email' | 'submitting';
 
 export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
   const [state, setState] = useState<ModalState>('loading');
   const [existingName, setExistingName] = useState('');
 
-  // Form fields
+  // Shared identity fields (used in email_gate and pre-filled in form)
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [anonymous, setAnonymous] = useState(false);
+
+  // Question form fields (only used in authenticated 'form' state)
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [tag, setTag] = useState<CommunityTag>('Career');
-  const [anonymous, setAnonymous] = useState(false);
+
   const [error, setError] = useState('');
 
-  // Check for existing session on open
+  // On open: check for an existing session
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
@@ -50,10 +53,13 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
         if (data?.display_name) {
           setExistingName(data.display_name);
           setName(data.display_name);
-          setEmail(session.user.email ?? '');
         }
+        setEmail(session.user.email ?? '');
+        setState('form');
+      } else {
+        // Not authenticated — show the email verification gate first
+        setState('email_gate');
       }
-      setState('form');
     });
   }, []);
 
@@ -75,54 +81,23 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
     return slug;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim() || (!anonymous && !name.trim())) return;
-
-    setError('');
-
-    // Already authenticated — post directly
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      setState('submitting');
-      const slug = await postQuestion(session.user.id, name.trim() || existingName);
-      if (!slug) {
-        setError('Something went wrong — please try again.');
-        setState('form');
-        return;
-      }
-      onPosted(slug);
-      return;
-    }
-
-    // Not authenticated — need email to send magic link
-    if (!email.trim()) {
-      setError('Please enter your email so we can verify your identity.');
-      return;
-    }
-
-    // Encode question data into the redirect URL so it survives cross-browser redirects
-    // (localStorage is isolated between incognito and regular browser sessions)
-    setState('sending');
-    const pendingPayload = btoa(JSON.stringify({
-      title: title.trim(),
-      body: body.trim() || null,
-      author_name: anonymous ? 'Anonymous' : name.trim(),
-      author_email: email.trim(),
-      anonymous,
-      tag,
-    }));
-    // Always redirect to the canonical production domain so the magic link lands on coachdog.co.uk
-    // not the internal Vercel deployment URL (coachverify.vercel.app)
-    const origin = window.location.hostname === 'localhost'
+  const getOrigin = () =>
+    window.location.hostname === 'localhost'
       ? window.location.origin
       : 'https://www.coachdog.co.uk';
-    const redirectUrl = `${origin}/community?q=${encodeURIComponent(pendingPayload)}`;
+
+  // --- Email gate submit: send magic link, no question data in URL ---
+  const handleGateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) { setError('Please enter your email address.'); return; }
+    if (!anonymous && !name.trim()) { setError('Please enter your name, or choose to post anonymously.'); return; }
+    setError('');
+    setState('sending');
 
     const { error: otpError } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
-        emailRedirectTo: redirectUrl,
+        emailRedirectTo: `${getOrigin()}/community?ask=1`,
         shouldCreateUser: true,
         data: { role: 'community' },
       },
@@ -130,31 +105,19 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
 
     if (otpError) {
       setError('Could not send verification email. Please try again.');
-      setState('form');
+      setState('email_gate');
       return;
     }
-
     setState('check_email');
   };
 
   const handleResend = async () => {
     if (!email.trim()) return;
     setState('sending');
-    const pendingPayload = btoa(JSON.stringify({
-      title: title.trim(),
-      body: body.trim() || null,
-      author_name: anonymous ? 'Anonymous' : name.trim(),
-      author_email: email.trim(),
-      anonymous,
-      tag,
-    }));
-    const resendOrigin = window.location.hostname === 'localhost'
-      ? window.location.origin
-      : 'https://www.coachdog.co.uk';
     await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
-        emailRedirectTo: `${resendOrigin}/community?q=${encodeURIComponent(pendingPayload)}`,
+        emailRedirectTo: `${getOrigin()}/community?ask=1`,
         shouldCreateUser: true,
         data: { role: 'community' },
       },
@@ -162,7 +125,37 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
     setState('check_email');
   };
 
-  const canSubmit = title.trim() && (anonymous || name.trim());
+  // --- Question form submit: user is authenticated, post directly ---
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim() || (!anonymous && !name.trim())) return;
+    setError('');
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setError('Your session expired. Please close this and verify your email again.');
+      return;
+    }
+
+    setState('submitting');
+
+    // Upsert community profile
+    await supabase.from('community_users').upsert(
+      { user_id: session.user.id, display_name: anonymous ? 'Anonymous' : name.trim(), marketing_opt_in: false },
+      { onConflict: 'user_id' }
+    );
+
+    const slug = await postQuestion(session.user.id, name.trim() || existingName);
+    if (!slug) {
+      setError('Something went wrong — please try again.');
+      setState('form');
+      return;
+    }
+    onPosted(slug);
+  };
+
+  const canSubmitGate = email.trim() && (anonymous || name.trim());
+  const canSubmitForm = title.trim() && (anonymous || name.trim());
 
   return (
     <div
@@ -178,12 +171,12 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
           </button>
         </div>
 
-        {/* Loading state */}
+        {/* Loading */}
         {state === 'loading' && (
           <p className="text-sm text-slate-400 text-center py-8">Loading…</p>
         )}
 
-        {/* Check email state */}
+        {/* Check email */}
         {state === 'check_email' && (
           <div className="text-center py-6">
             <div className="h-14 w-14 rounded-full bg-teal-50 flex items-center justify-center mx-auto mb-4">
@@ -194,7 +187,7 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
               We've sent a link to <span className="font-semibold text-slate-700">{email}</span>
             </p>
             <p className="text-sm text-slate-500 mb-6">
-              Click it to verify your identity — your question will be posted automatically.
+              Click it to verify your identity — you'll be brought back here to post your question.
             </p>
             <button
               onClick={handleResend}
@@ -206,9 +199,88 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
           </div>
         )}
 
-        {/* Form */}
-        {(state === 'form' || state === 'sending' || state === 'submitting' || state === 'error') && (
-          <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Email gate — shown when not authenticated */}
+        {(state === 'email_gate' || (state === 'sending' && existingName === '')) && (
+          <form onSubmit={handleGateSubmit} className="space-y-4">
+            <p className="text-sm text-slate-500">
+              Verify your identity first — you'll be brought straight back to write your question.
+            </p>
+
+            {/* Name + anonymous toggle */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-semibold text-slate-700">Your name</label>
+                <button
+                  type="button"
+                  onClick={() => setAnonymous(v => !v)}
+                  className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
+                    anonymous
+                      ? 'bg-slate-800 text-white border-transparent'
+                      : 'border-slate-200 text-slate-500 hover:border-slate-400'
+                  }`}
+                >
+                  <EyeOff className="h-3 w-3" />
+                  Post anonymously
+                </button>
+              </div>
+              <input
+                type="text"
+                required={!anonymous}
+                disabled={anonymous}
+                className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all ${
+                  anonymous
+                    ? 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed'
+                    : 'border-slate-200'
+                }`}
+                placeholder={anonymous ? 'Your name will be hidden' : "How you'll appear in the community"}
+                value={anonymous ? '' : name}
+                onChange={e => setName(e.target.value)}
+                maxLength={80}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email address</label>
+              <input
+                type="email"
+                required
+                autoFocus
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all"
+                placeholder="We'll send a quick verification link"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+              />
+              <p className="text-xs text-slate-400 mt-1.5">Never shown publicly. Used to verify you and notify you of coach replies.</p>
+            </div>
+
+            {error && (
+              <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={state === 'sending' || !canSubmitGate}
+              className="w-full py-3 rounded-full font-bold text-white text-sm transition-opacity disabled:opacity-50 hover:opacity-90"
+              style={{ backgroundColor: '#2D8A7E' }}
+            >
+              {state === 'sending' ? 'Sending…' : 'Send verification link'}
+            </button>
+
+            <p className="text-xs text-center text-slate-400">
+              Your question will be visible to the community and verified coaches.
+            </p>
+          </form>
+        )}
+
+        {/* Question form — shown when authenticated */}
+        {(state === 'form' || state === 'submitting') && (
+          <form onSubmit={handleFormSubmit} className="space-y-4">
+
+            {existingName && (
+              <p className="text-xs font-semibold px-3 py-2 rounded-xl bg-teal-50" style={{ color: '#2D8A7E' }}>
+                ✓ Signed in as {existingName}
+              </p>
+            )}
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">Your question</label>
@@ -258,65 +330,38 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
               />
             </div>
 
-            {/* Name + anonymous toggle */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-sm font-semibold text-slate-700">Your name</label>
-                <button
-                  type="button"
-                  onClick={() => setAnonymous(v => !v)}
-                  className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
-                    anonymous
-                      ? 'bg-slate-800 text-white border-transparent'
-                      : 'border-slate-200 text-slate-500 hover:border-slate-400'
-                  }`}
-                >
-                  <EyeOff className="h-3 w-3" />
-                  Post anonymously
-                </button>
-              </div>
-              <input
-                type="text"
-                required={!anonymous}
-                disabled={anonymous}
-                className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all ${
-                  anonymous
-                    ? 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed'
-                    : 'border-slate-200'
-                }`}
-                placeholder={anonymous ? 'Your name will be hidden' : existingName ? '' : "How you'll appear in the community"}
-                value={anonymous ? '' : name}
-                onChange={e => setName(e.target.value)}
-                maxLength={80}
-              />
-              {anonymous && (
-                <p className="text-xs text-slate-400 mt-1.5 flex items-center gap-1">
-                  <EyeOff className="h-3 w-3" />
-                  Posted as <span className="font-semibold ml-1">Anonymous</span>
-                </p>
-              )}
-              {existingName && !anonymous && (
-                <p className="text-xs mt-1.5" style={{ color: '#2D8A7E' }}>
-                  ✓ Signed in as {existingName}
-                </p>
-              )}
-            </div>
-
-            {/* Email — only shown if not already authenticated */}
+            {/* Name + anonymous toggle (only shown if no existing profile) */}
             {!existingName && (
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  Email {anonymous ? <span className="font-normal text-slate-400">(optional — to get notified of replies)</span> : <span className="font-normal text-slate-400">(to verify your identity)</span>}
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-semibold text-slate-700">Your name</label>
+                  <button
+                    type="button"
+                    onClick={() => setAnonymous(v => !v)}
+                    className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
+                      anonymous
+                        ? 'bg-slate-800 text-white border-transparent'
+                        : 'border-slate-200 text-slate-500 hover:border-slate-400'
+                    }`}
+                  >
+                    <EyeOff className="h-3 w-3" />
+                    Post anonymously
+                  </button>
+                </div>
                 <input
-                  type="email"
+                  type="text"
                   required={!anonymous}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all"
-                  placeholder="We'll send a quick verification link"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  disabled={anonymous}
+                  className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all ${
+                    anonymous
+                      ? 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed'
+                      : 'border-slate-200'
+                  }`}
+                  placeholder={anonymous ? 'Your name will be hidden' : "How you'll appear in the community"}
+                  value={anonymous ? '' : name}
+                  onChange={e => setName(e.target.value)}
+                  maxLength={80}
                 />
-                <p className="text-xs text-slate-400 mt-1.5">Never shown publicly. Used to verify you and notify you of coach replies.</p>
               </div>
             )}
 
@@ -326,15 +371,11 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
 
             <button
               type="submit"
-              disabled={state === 'sending' || state === 'submitting' || !canSubmit}
+              disabled={state === 'submitting' || !canSubmitForm}
               className="w-full py-3 rounded-full font-bold text-white text-sm transition-opacity disabled:opacity-50 hover:opacity-90"
               style={{ backgroundColor: '#2D8A7E' }}
             >
-              {state === 'sending' || state === 'submitting'
-                ? 'One moment…'
-                : existingName
-                ? 'Post Question'
-                : 'Continue'}
+              {state === 'submitting' ? 'Posting…' : 'Post Question'}
             </button>
 
             <p className="text-xs text-center text-slate-400">

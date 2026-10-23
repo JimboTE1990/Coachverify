@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, MessageCircle, ChevronUp, ArrowRight, Bookmark, BookmarkX, Mic, MicOff, ChevronDown, Tag, CheckCircle } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, MessageCircle, ChevronUp, ArrowRight, Bookmark, BookmarkX, Mic, MicOff, ChevronDown, Tag } from 'lucide-react';
 import { THREADS } from '../components/experimental/mockData';
 import { AskQuestionModal } from '../components/experimental/AskQuestionModal';
 import { supabase } from '../lib/supabase';
@@ -28,23 +28,15 @@ function slugify(title: string): string {
 
 export const CommunityPage: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { coach } = useAuth();
   const [searchValue, setSearchValue] = useState('');
   const [showAskModal, setShowAskModal] = useState(false);
   const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
   const [selectedTag, setSelectedTag] = useState<CommunityTag | null>(null);
   const [sortMode, setSortMode] = useState<'newest' | 'most_liked' | 'most_comments'>('newest');
-  const [postingQuestion, setPostingQuestion] = useState(false);
-  const [postError, setPostError] = useState('');
-  const [pendingConfirm, setPendingConfirm] = useState<{
-    title: string; body: string | null; author_name: string;
-    author_email: string; anonymous: boolean; tag?: string;
-  } | null>(null);
-  const confirmedUserIdRef = useRef<string | null>(null);
   const [isListening, setIsListening] = useState(false);
-  // Capture ?q= immediately on mount before Supabase's PKCE flow can strip URL params
-  const pendingQRef = useRef<string | null>(new URLSearchParams(window.location.search).get('q'));
+  // Capture ?ask= on mount before Supabase's implicit flow processes the URL hash
+  const askOnArrival = useRef(new URLSearchParams(window.location.search).has('ask'));
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -86,49 +78,12 @@ export const CommunityPage: React.FC = () => {
     setLiveThreads(threads.map(t => ({ ...t, community_replies: replyMap.get(t.slug) ?? [] })));
   };
 
-  // Decode a ?q= payload and surface the confirmation UI — does NOT post yet
-  const showPendingConfirm = (userId: string) => {
-    const encoded = pendingQRef.current;
-    if (!encoded) return;
-    pendingQRef.current = null;
-    try {
-      const pending = JSON.parse(atob(encoded));
-      confirmedUserIdRef.current = userId;
-      setPendingConfirm(pending);
-    } catch {}
-  };
-
-  // Called when the user taps "Post my question" in the confirmation UI
-  const handleConfirmPost = async () => {
-    if (!pendingConfirm || !confirmedUserIdRef.current) return;
-    setPostingQuestion(true);
-    setPostError('');
-    try {
-      const displayName = pendingConfirm.anonymous ? 'Anonymous' : pendingConfirm.author_name;
-      await supabase.from('community_users').upsert(
-        { user_id: confirmedUserIdRef.current, display_name: displayName, marketing_opt_in: false },
-        { onConflict: 'user_id' }
-      );
-      const slug = slugify(pendingConfirm.title);
-      const { error } = await supabase.from('community_threads').insert({
-        slug,
-        title: pendingConfirm.title,
-        body: pendingConfirm.body,
-        author_name: displayName,
-        author_email: pendingConfirm.author_email,
-        user_id: confirmedUserIdRef.current,
-        tag: pendingConfirm.tag ?? 'Career',
-      });
-      if (!error) {
-        navigate(`/community/${slug}`);
-      } else {
-        setPostError('Something went wrong posting your question. Please try submitting it again.');
-        setPostingQuestion(false);
-      }
-    } catch {
-      setPostError('Something went wrong posting your question. Please try submitting it again.');
-      setPostingQuestion(false);
-    }
+  // Open the modal when the user arrives via magic link (?ask=1) and is authenticated
+  const tryOpenModalOnArrival = () => {
+    if (!askOnArrival.current) return;
+    askOnArrival.current = false; // consume so it only fires once
+    navigate('/community', { replace: true }); // clean ?ask= from URL
+    setShowAskModal(true);
   };
 
   useEffect(() => {
@@ -174,22 +129,14 @@ export const CommunityPage: React.FC = () => {
   }, [coach?.user_id]);
 
   useEffect(() => {
-    let showed = false;
-    const tryShow = (userId: string) => {
-      if (showed) return;
-      showed = true;
-      showPendingConfirm(userId);
-    };
-
-    // Check for an existing session immediately — skips the magic link step for
-    // users who are already authenticated (returning community user / "temp login")
+    // Check for existing session (returning user who already verified)
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) tryShow(session.user.id);
+      if (session?.user) tryOpenModalOnArrival();
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session?.user) {
-        tryShow(session.user.id);
+        tryOpenModalOnArrival();
       }
     });
 
@@ -254,77 +201,6 @@ export const CommunityPage: React.FC = () => {
           onClose={() => setShowAskModal(false)}
           onPosted={handleQuestionPosted}
         />
-      )}
-
-      {/* Posting spinner */}
-      {postingQuestion && (
-        <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
-          <div className="h-10 w-10 rounded-full border-4 border-slate-200 border-t-teal-600 animate-spin" />
-          <p className="text-base font-semibold text-slate-700">Posting your question…</p>
-        </div>
-      )}
-
-      {/* Confirmation overlay — shown after email verification or existing session detected */}
-      {pendingConfirm && !postingQuestion && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-xl p-6 sm:p-8">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="h-10 w-10 rounded-full bg-teal-50 flex items-center justify-center flex-shrink-0">
-                <CheckCircle className="h-5 w-5" style={{ color: '#2D8A7E' }} />
-              </div>
-              <div>
-                <h2 className="text-lg font-display font-bold text-slate-900">Identity verified</h2>
-                <p className="text-sm text-slate-500">Ready to post your question to the community</p>
-              </div>
-            </div>
-
-            <div className="bg-slate-50 rounded-2xl p-4 mb-5">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Your question</p>
-              <p className="font-semibold text-slate-800 text-sm leading-snug mb-1">{pendingConfirm.title}</p>
-              {pendingConfirm.body && (
-                <p className="text-sm text-slate-500 mt-2 whitespace-pre-wrap">{pendingConfirm.body}</p>
-              )}
-              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-200">
-                {pendingConfirm.tag && (
-                  <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${COMMUNITY_TAG_COLORS[pendingConfirm.tag as keyof typeof COMMUNITY_TAG_COLORS] ?? 'bg-slate-100 text-slate-600'}`}>
-                    {pendingConfirm.tag}
-                  </span>
-                )}
-                <span className="text-xs text-slate-400">
-                  Posted as <span className="font-semibold text-slate-600">{pendingConfirm.anonymous ? 'Anonymous' : pendingConfirm.author_name}</span>
-                </span>
-              </div>
-            </div>
-
-            {postError && (
-              <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 mb-4">{postError}</p>
-            )}
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setPendingConfirm(null); confirmedUserIdRef.current = null; setPostError(''); }}
-                className="flex-1 py-3 rounded-full font-semibold text-slate-600 text-sm border border-slate-200 hover:bg-slate-50 transition-colors"
-              >
-                Discard
-              </button>
-              <button
-                onClick={handleConfirmPost}
-                className="flex-1 py-3 rounded-full font-bold text-white text-sm transition-opacity hover:opacity-90"
-                style={{ backgroundColor: '#2D8A7E' }}
-              >
-                Post my question
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {postError && (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4">
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm font-medium px-4 py-3 rounded-2xl flex items-center justify-between gap-4">
-            <span>{postError}</span>
-            <button onClick={() => setPostError('')} className="text-red-400 hover:text-red-600 flex-shrink-0">✕</button>
-          </div>
-        </div>
       )}
 
       {/* Page header */}
