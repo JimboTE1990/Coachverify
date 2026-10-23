@@ -9,4 +9,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    // Implicit flow so magic links work cross-device (PKCE requires code_verifier
+    // in localStorage on the originating device — breaks when link is opened in a
+    // different browser or on a new device)
+    flowType: 'implicit',
+  },
+});
