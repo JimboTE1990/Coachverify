@@ -33,7 +33,7 @@ export const CommunityPage: React.FC = () => {
   const [showAskModal, setShowAskModal] = useState(false);
   const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
   const [selectedTag, setSelectedTag] = useState<CommunityTag | null>(null);
-  const [sortMode, setSortMode] = useState<'newest' | 'most_liked' | 'most_comments'>('newest');
+  const [sortMode, setSortMode] = useState<'newest' | 'trending'>('newest');
   const [isListening, setIsListening] = useState(false);
   // Capture ?ask= on mount before Supabase's implicit flow processes the URL hash
   const askOnArrival = useRef(new URLSearchParams(window.location.search).has('ask'));
@@ -189,8 +189,10 @@ export const CommunityPage: React.FC = () => {
         t.title.toLowerCase().includes(q) || t.author_name.toLowerCase().includes(q)
       );
     }
-    if (sortMode === 'most_liked') return [...threads].sort((a, b) => b.upvotes - a.upvotes);
-    if (sortMode === 'most_comments') return [...threads].sort((a, b) => (b.community_replies?.length ?? 0) - (a.community_replies?.length ?? 0));
+    if (sortMode === 'trending') {
+      const score = (t: typeof threads[0]) => t.upvotes + (t.community_replies?.length ?? 0) * 2;
+      return [...threads].sort((a, b) => score(b) - score(a));
+    }
     return threads;
   })();
 
@@ -306,13 +308,13 @@ export const CommunityPage: React.FC = () => {
             </div>
             {/* Sort pills */}
             <div className="flex items-center bg-slate-100 rounded-full p-0.5 text-xs font-semibold">
-              {(['newest', 'most_liked', 'most_comments'] as const).map(mode => (
+              {(['newest', 'trending'] as const).map(mode => (
                 <button
                   key={mode}
                   onClick={() => setSortMode(mode)}
                   className={`px-3 py-1.5 rounded-full transition-all ${sortMode === mode ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
-                  {mode === 'newest' ? 'Newest' : mode === 'most_liked' ? 'Top' : 'Active'}
+                  {mode === 'newest' ? 'Newest' : 'Trending'}
                 </button>
               ))}
             </div>
