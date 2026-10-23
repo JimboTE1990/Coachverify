@@ -32,6 +32,7 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [anonymous, setAnonymous] = useState(false);
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
 
   // Question form fields (only used in authenticated 'form' state)
   const [title, setTitle] = useState('');
@@ -139,9 +140,14 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
 
     setState('submitting');
 
-    // Upsert community profile
+    // Upsert community profile — save email + opt-in for admin leads view
     await supabase.from('community_users').upsert(
-      { user_id: session.user.id, display_name: anonymous ? 'Anonymous' : name.trim(), marketing_opt_in: false },
+      {
+        user_id: session.user.id,
+        display_name: anonymous ? 'Anonymous' : name.trim(),
+        email: session.user.email ?? null,
+        marketing_opt_in: marketingOptIn,
+      },
       { onConflict: 'user_id' }
     );
 
@@ -252,6 +258,18 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
               />
               <p className="text-xs text-slate-400 mt-1.5">Never shown publicly. Used to verify you and notify you of coach replies.</p>
             </div>
+
+            <label className="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={marketingOptIn}
+                onChange={e => setMarketingOptIn(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-teal-600 flex-shrink-0"
+              />
+              <span className="text-xs text-slate-500 leading-relaxed">
+                Keep me updated with coaching tips, resources, and community news from CoachDog.
+              </span>
+            </label>
 
             {error && (
               <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{error}</p>
