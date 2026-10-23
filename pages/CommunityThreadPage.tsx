@@ -470,7 +470,7 @@ export const CommunityThreadPage: React.FC = () => {
             </div>
           ) : (
             <div className="mb-6">
-              <p className="text-slate-700 leading-relaxed text-sm sm:text-base">{thread.body}</p>
+              <p className="text-slate-700 leading-relaxed text-sm sm:text-base whitespace-pre-wrap">{thread.body}</p>
             </div>
           )}
 
@@ -529,7 +529,7 @@ export const CommunityThreadPage: React.FC = () => {
                   <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full">⭐ Featured Coach Reply</span>
                 </div>
                 <div className="p-6 sm:p-8">
-                  <p className="text-slate-700 leading-relaxed text-sm sm:text-base mb-6">{reply.body}</p>
+                  <p className="text-slate-700 leading-relaxed text-sm sm:text-base mb-6 whitespace-pre-wrap">{reply.body}</p>
                   {reply.coach && (
                     <div className="flex items-center justify-between flex-wrap gap-3 border-t border-slate-100 pt-4">
                       <div className="flex items-center gap-3">
@@ -565,7 +565,7 @@ export const CommunityThreadPage: React.FC = () => {
             </p>
             {mockPublicReplies.map(reply => (
               <div key={reply.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-6">
-                <p className="text-slate-700 text-sm leading-relaxed mb-4">{reply.body}</p>
+                <p className="text-slate-700 text-sm leading-relaxed mb-4 whitespace-pre-wrap">{reply.body}</p>
                 <div className="flex items-center justify-between text-xs text-slate-400">
                   <div className="flex items-center gap-2">
                     <span className="bg-slate-100 rounded-full px-2.5 py-0.5 font-medium">{reply.author}</span>
@@ -674,7 +674,7 @@ export const CommunityThreadPage: React.FC = () => {
                           </div>
                         ) : (
                           <>
-                            <p className="text-slate-700 leading-relaxed text-sm mb-4">{reply.body}</p>
+                            <p className="text-slate-700 leading-relaxed text-sm mb-4 whitespace-pre-wrap">{reply.body}</p>
                             <div className="flex flex-wrap items-center gap-2">
                               {reply.coach_id && (
                                 <Link to={`/coach/${reply.coach_id}`} className="text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors hover:opacity-90" style={{ color: '#2D8A7E', borderColor: '#2D8A7E' }}>
@@ -702,7 +702,7 @@ export const CommunityThreadPage: React.FC = () => {
 
               return (
                 <div key={reply.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-6">
-                  <p className="text-slate-700 text-sm leading-relaxed mb-4">{reply.body}</p>
+                  <p className="text-slate-700 text-sm leading-relaxed mb-4 whitespace-pre-wrap">{reply.body}</p>
                   <div className="flex items-center justify-between text-xs text-slate-400">
                     <div className="flex items-center gap-2">
                       <span className="rounded-full px-2.5 py-0.5 font-medium text-white" style={{ backgroundColor: '#2D8A7E' }}>{reply.display_name}</span>
