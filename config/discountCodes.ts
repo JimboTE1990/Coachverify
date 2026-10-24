@@ -217,9 +217,8 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
   },
 
   // Coaching Minds partner discount — 20% off annual or lifetime
-  // Create one Stripe coupon (20% off) linked to both products, then paste the promo code API ID below
-  'CD20': {
-    code: 'CD20',
+  'CM20': {
+    code: 'CM20',
     type: 'percentage',
     value: 20,
     enabled: true,
