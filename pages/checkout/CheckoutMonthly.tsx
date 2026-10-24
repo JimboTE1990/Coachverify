@@ -67,10 +67,10 @@ export const CheckoutMonthly: React.FC = () => {
       // Check authentication with session first (faster than getUser)
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-      // CRITICAL: If no session or error getting session, redirect to login immediately
+      // No session — show the page so they can see pricing/discount;
+      // the checkout button will redirect to login when they try to pay.
       if (!session || sessionError || !session.user) {
-        console.log('No valid session - redirecting to login');
-        navigate('/for-coaches', { replace: true });
+        setIsLoading(false);
         return;
       }
 
@@ -130,6 +130,12 @@ export const CheckoutMonthly: React.FC = () => {
   };
 
   const handleCheckout = async () => {
+    // Not logged in — redirect to login, return here after
+    if (!currentCoach) {
+      navigate('/coach-login', { state: { from: { pathname: '/checkout/monthly' } } });
+      return;
+    }
+
     setIsProcessing(true);
     setError(null);
 
