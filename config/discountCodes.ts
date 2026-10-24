@@ -216,6 +216,21 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     stripeCouponId: 'E7g5S88d',
   },
 
+  // Coaching Minds partner discount — 20% off annual or lifetime
+  // Create one Stripe coupon (20% off) linked to both products, then paste the promo code API ID below
+  'CD20': {
+    code: 'CD20',
+    type: 'percentage',
+    value: 20,
+    enabled: true,
+    planRestrictions: ['annual', 'lifetime'],
+    source: 'partner_referral',
+    partnerId: 'coaching_minds',
+    displayName: 'Coaching Minds Partner Discount',
+    description: '20% off for Coaching Minds members',
+    stripePromotionCodeId: 'promo_1UUCQQDye3rmKJaDiZGjcod3',
+  },
+
   // Limited Time Offer - £89 lifetime (to be enabled later)
   // Lifetime plan: £149 → £89 with LIMITED60
   'LIMITED60': {
