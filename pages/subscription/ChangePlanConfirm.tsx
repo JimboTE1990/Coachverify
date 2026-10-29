@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { updateCoach } from '../../services/supabaseService';
+import { createBillingPortalSession } from '../../services/stripeService';
 import { ArrowLeft, CheckCircle, Lock } from 'lucide-react';
 
 export const ChangePlanConfirm: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { coach, loading, refreshCoach } = useAuth();
+  const { coach, loading } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const newPlan = searchParams.get('to');
@@ -60,40 +60,17 @@ export const ChangePlanConfirm: React.FC = () => {
   };
 
   const handleConfirmChange = async () => {
+    if (!coach.stripeCustomerId) {
+      alert('Could not find your billing account. Please contact support.');
+      return;
+    }
     setIsProcessing(true);
-
     try {
-      // Create pending plan change object
-      const pendingChange = {
-        newBillingCycle: newPlan,
-        effectiveDate: nextBillingDate.toISOString(),
-        scheduledAt: new Date().toISOString(),
-        previousBillingCycle: currentPlan
-      };
-
-      console.log('[ChangePlanConfirm] Scheduling plan change:', pendingChange);
-
-      // Save to database
-      const success = await updateCoach({
-        ...coach,
-        pendingPlanChange: pendingChange
-      });
-
-      if (!success) {
-        throw new Error('Failed to update coach profile');
-      }
-
-      console.log('[ChangePlanConfirm] Plan change scheduled successfully');
-
-      // Refresh coach data to show pending change in dashboard
-      await refreshCoach();
-
-      // Navigate to success page
-      navigate('/subscription/change-plan/success?from=' + currentPlan + '&to=' + newPlan + '&date=' + formattedDate);
+      // Open Stripe Customer Portal where the plan switch is completed
+      await createBillingPortalSession(coach.stripeCustomerId);
     } catch (error) {
-      console.error('[ChangePlanConfirm] Error scheduling plan change:', error);
-      alert('Failed to schedule plan change. Please try again.');
-    } finally {
+      console.error('[ChangePlanConfirm] Error opening billing portal:', error);
+      alert('Failed to open billing portal. Please try again.');
       setIsProcessing(false);
     }
   };
@@ -113,16 +90,20 @@ export const ChangePlanConfirm: React.FC = () => {
             Confirm Your Plan Change
           </h1>
 
-          {/* Verification checks */}
-          <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-6">
+          {/* Info */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
             <div className="space-y-3">
-              <div className="flex items-center text-green-800">
-                <CheckCircle className="h-5 w-5 mr-3" />
-                <span className="font-medium">Your payment method has been verified</span>
+              <div className="flex items-center text-blue-800">
+                <CheckCircle className="h-5 w-5 mr-3 flex-shrink-0" />
+                <span className="font-medium">
+                  {newPlan === 'annual'
+                    ? 'Switching to Annual takes effect immediately — you\'ll be charged the annual rate with any applicable proration.'
+                    : 'Switching to Monthly takes effect at the end of your current billing period on ' + formattedDate + '.'}
+                </span>
               </div>
-              <div className="flex items-center text-green-800">
-                <CheckCircle className="h-5 w-5 mr-3" />
-                <span className="font-medium">Your plan will change on {formattedDate}</span>
+              <div className="flex items-center text-blue-800">
+                <Lock className="h-5 w-5 mr-3 flex-shrink-0" />
+                <span className="font-medium">You'll be taken to our secure billing page to complete the switch.</span>
               </div>
             </div>
           </div>

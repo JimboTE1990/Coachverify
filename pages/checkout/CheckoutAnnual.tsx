@@ -7,10 +7,13 @@ import { createCheckoutSession, getPriceId } from '../../services/stripeService'
 import type { Coach } from '../../types';
 import { getActivePromoCode, validateDiscountCode, calculateDiscount, DiscountCode } from '../../config/discountCodes';
 
+type CheckoutView = 'checkout' | 'already_covered' | 'already_same_plan' | 'switch_plan';
+
 // Checkout page for annual subscription plan
 export const CheckoutAnnual: React.FC = () => {
   const navigate = useNavigate();
   const [currentCoach, setCurrentCoach] = useState<Coach | null>(null);
+  const [checkoutView, setCheckoutView] = useState<CheckoutView>('checkout');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -97,11 +100,18 @@ export const CheckoutAnnual: React.FC = () => {
         return;
       }
 
-      // Check if already has active PAID subscription - redirect to dashboard to manage
-      // Trial users should be allowed to upgrade!
+      // Lifetime — already on best plan, nothing to upgrade
+      if (coach.subscription_status === 'lifetime') {
+        setCheckoutView('already_covered');
+        setIsLoading(false);
+        return;
+      }
+
+      // Active subscription — show appropriate guard screen
       if (coach.subscription_status === 'active') {
-        console.log('User already has active paid subscription - redirecting to dashboard');
-        navigate('/for-coaches', { replace: true });
+        setCurrentCoach({ id: coach.id, billingCycle: coach.billing_cycle, subscriptionStatus: 'active' } as Coach);
+        setCheckoutView(coach.billing_cycle === 'annual' ? 'already_same_plan' : 'switch_plan');
+        setIsLoading(false);
         return;
       }
 
@@ -175,6 +185,63 @@ export const CheckoutAnnual: React.FC = () => {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
+      </div>
+    );
+  }
+
+  if (checkoutView === 'already_covered') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-10 max-w-md w-full text-center">
+          <div className="text-6xl mb-6">🐾</div>
+          <h1 className="text-2xl font-display font-bold text-slate-900 mb-3">Sit. Stay. Relax.</h1>
+          <p className="text-slate-600 mb-8">
+            You're on the CoachDog Lifetime plan — the best value in the kennel. Your profile is live and there's nothing to upgrade, ever.
+          </p>
+          <button onClick={() => navigate('/for-coaches')} className="w-full py-3 rounded-xl font-bold text-white" style={{ backgroundColor: '#2D8A7E' }}>
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (checkoutView === 'already_same_plan') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-10 max-w-md w-full text-center">
+          <div className="text-6xl mb-6">🐕</div>
+          <h1 className="text-2xl font-display font-bold text-slate-900 mb-3">You're already fetching on the Annual plan!</h1>
+          <p className="text-slate-600 mb-8">
+            Your CoachDog profile is live and doing its thing. Head to your dashboard to manage your subscription.
+          </p>
+          <button onClick={() => navigate('/for-coaches')} className="w-full py-3 rounded-xl font-bold text-white mb-4" style={{ backgroundColor: '#2D8A7E' }}>
+            Back to Dashboard
+          </button>
+          <button onClick={() => navigate('/checkout/monthly')} className="text-sm text-slate-500 hover:text-slate-700 underline">
+            Switch to Monthly instead?
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (checkoutView === 'switch_plan') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-10 max-w-md w-full text-center">
+          <div className="text-6xl mb-6">💡</div>
+          <h1 className="text-2xl font-display font-bold text-slate-900 mb-3">Thinking about switching?</h1>
+          <p className="text-slate-600 mb-8">
+            You're currently on the Monthly plan (£{SUBSCRIPTION_CONSTANTS.MONTHLY_PRICE_GBP}/mo). Switch to Annual (£{SUBSCRIPTION_CONSTANTS.ANNUAL_PRICE_GBP}/yr) and save {SUBSCRIPTION_CONSTANTS.ANNUAL_PRICE_GBP < SUBSCRIPTION_CONSTANTS.MONTHLY_PRICE_GBP * 12 ? `£${(SUBSCRIPTION_CONSTANTS.MONTHLY_PRICE_GBP * 12) - SUBSCRIPTION_CONSTANTS.ANNUAL_PRICE_GBP}` : 'two months'} a year.
+          </p>
+          <button onClick={() => navigate('/subscription/change-plan/confirm?to=annual')} className="w-full py-3 rounded-xl font-bold text-white mb-4" style={{ backgroundColor: '#2D8A7E' }}>
+            See switching options
+          </button>
+          <button onClick={() => navigate('/for-coaches')} className="text-sm text-slate-500 hover:text-slate-700 underline">
+            Back to Dashboard
+          </button>
+        </div>
       </div>
     );
   }

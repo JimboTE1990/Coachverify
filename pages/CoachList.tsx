@@ -360,13 +360,27 @@ export const CoachList: React.FC = () => {
       return score;
     };
 
+    // Profile quality score — used as tiebreaker in default sort and secondary in filtered sort
+    const computeProfileScore = (coach: Coach): number => {
+      let score = 0;
+      if (coach.photoUrl && !coach.photoUrl.includes('placeholder')) score += 25;
+      if ((coach.bio?.length ?? 0) > 20) score += 15;
+      if ((coach.mainCoachingCategories?.length ?? 0) > 0) score += 10;
+      if (coach.emccVerified || coach.icfVerified || coach.acVerified || coach.isVerified) score += 20;
+      if (coach.hourlyRate && coach.hourlyRate > 0) score += 5;
+      score += Math.min(coach.totalReviews ?? 0, 5) * 5; // up to +25 for 5+ reviews
+      return score;
+    };
+
     // Sort by Match Relevance if matchData exists, otherwise by filter match percentage
     if (matchData) {
       result = result.sort((a, b) => {
         const scoreA = calculateMatchScore(a.coach, matchData) + computeNlScore(a.coach);
         const scoreB = calculateMatchScore(b.coach, matchData) + computeNlScore(b.coach);
         if (scoreB !== scoreA) return scoreB - scoreA;
-        return (b.coach.totalReviews || 0) - (a.coach.totalReviews || 0);
+        if ((b.coach.totalReviews || 0) !== (a.coach.totalReviews || 0))
+          return (b.coach.totalReviews || 0) - (a.coach.totalReviews || 0);
+        return computeProfileScore(b.coach) - computeProfileScore(a.coach);
       });
     } else if (isNlActive) {
       result = result.sort((a, b) => {
@@ -378,7 +392,15 @@ export const CoachList: React.FC = () => {
         return (b.coach.totalReviews || 0) - (a.coach.totalReviews || 0);
       });
     } else {
-      result = result.sort((a, b) => b.filterMatch.percentage - a.filterMatch.percentage);
+      // Default: filter match percentage first, then profile quality + reviews as tiebreaker
+      // When no filters are active all coaches tie at 100%, so profile quality determines ranking
+      result = result.sort((a, b) => {
+        const pctDiff = b.filterMatch.percentage - a.filterMatch.percentage;
+        if (pctDiff !== 0) return pctDiff;
+        const rankA = computeProfileScore(a.coach) * 1000 + (a.coach.totalReviews ?? 0) * 10 + (a.coach.averageRating ?? 0);
+        const rankB = computeProfileScore(b.coach) * 1000 + (b.coach.totalReviews ?? 0) * 10 + (b.coach.averageRating ?? 0);
+        return rankB - rankA;
+      });
     }
 
     return result.map(r => r.coach);
