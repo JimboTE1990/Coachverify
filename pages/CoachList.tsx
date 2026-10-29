@@ -363,7 +363,7 @@ export const CoachList: React.FC = () => {
     // Profile quality score — photo and bio are dominant; no photo/bio always ranks below
     const computeProfileScore = (coach: Coach): number => {
       let score = 0;
-      if (coach.photoUrl && !coach.photoUrl.includes('placeholder')) score += 55; // photo outranks everything else
+      if (coach.photoUrl?.includes('supabase.co/storage')) score += 55; // only real uploaded photos count
       if ((coach.bio?.length ?? 0) > 20) score += 25;
       score += Math.min(coach.totalReviews ?? 0, 5) * 4; // up to +20 for 5+ reviews
       return score; // max 100; photo alone (55) always beats bio+5reviews (45)

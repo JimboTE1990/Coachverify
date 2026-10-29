@@ -71,9 +71,9 @@ export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchP
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-xl font-display font-bold text-slate-900 group-hover:text-brand-700 transition-colors">{coach.name}</h3>
-              {coach.accreditationBody === 'EMCC' && coach.emccVerified && coach.accreditationLevel && (
+              {coach.accreditationBody === 'EMCC' && coach.emccVerified && (
                 <span className="text-xs font-semibold text-[#2B4170] bg-[#C9A961]/10 px-2 py-0.5 rounded-md border border-[#C9A961]/30">
-                  EMCC {coach.accreditationLevel}
+                  EMCC{coach.accreditationLevel ? ` ${coach.accreditationLevel}` : ''}
                 </span>
               )}
               {coach.accreditationBody === 'ICF' && coach.icfVerified && coach.icfAccreditationLevel && (
