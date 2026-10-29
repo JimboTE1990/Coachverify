@@ -238,7 +238,7 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     type: 'percentage',
     value: 20, // TODO: confirm this matches the Stripe coupon value
     enabled: true,
-    planRestrictions: ['monthly', 'annual', 'lifetime'],
+    planRestrictions: ['annual', 'lifetime'],
     maxUses: 100,
     usesRemaining: 100,
     source: 'founding_100',
