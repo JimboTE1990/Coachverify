@@ -230,6 +230,23 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     stripePromotionCodeId: 'promo_1UUCQQDye3rmKJaDiZGjcod3',
   },
 
+  // Founding 100 — first 100 members promo, includes Founder badge (badge asset TBC)
+  // Stripe promo code: F100 | API ID: promo_1UVwk5Dye3rmKJaDwY2iNh0x
+  // TODO: confirm discount type/value matches Stripe coupon setup
+  'F100': {
+    code: 'F100',
+    type: 'percentage',
+    value: 20, // TODO: confirm this matches the Stripe coupon value
+    enabled: true,
+    planRestrictions: ['monthly', 'annual', 'lifetime'],
+    maxUses: 100,
+    usesRemaining: 100,
+    source: 'founding_100',
+    displayName: 'Founding 100 Member',
+    description: 'Exclusive discount for our first 100 members',
+    stripePromotionCodeId: 'promo_1UVwk5Dye3rmKJaDwY2iNh0x',
+  },
+
   // Limited Time Offer - £89 lifetime (to be enabled later)
   // Lifetime plan: £149 → £89 with LIMITED60
   'LIMITED60': {
