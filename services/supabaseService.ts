@@ -4,7 +4,7 @@ import { Coach, Review, SocialLink, Specialty, Format, ProductReview } from '../
 // Hidden test/internal profiles — excluded from all public directory listings
 const HIDDEN_PROFILE_IDS = [
   '78fcccb5-95e1-4412-87ec-5ee1d0456d92',
-  'ac50acfe-a493-4559-b1a2-fd56a6eac0d5', // Ania James — inactive, unverified accreditation
+  // Ania James (ac50acfe-a493-4559-b1a2-fd56a6eac0d5) — visible until end of Dec 2026, then re-hide
 ];
 
 // Re-export supabase for use in other components
