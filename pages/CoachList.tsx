@@ -360,16 +360,14 @@ export const CoachList: React.FC = () => {
       return score;
     };
 
-    // Profile quality score — used as tiebreaker in default sort and secondary in filtered sort
+    // Profile quality score — photo and bio are dominant; no photo/bio always ranks below
     const computeProfileScore = (coach: Coach): number => {
       let score = 0;
-      if (coach.photoUrl && !coach.photoUrl.includes('placeholder')) score += 25;
-      if ((coach.bio?.length ?? 0) > 20) score += 15;
-      if ((coach.mainCoachingCategories?.length ?? 0) > 0) score += 10;
+      if (coach.photoUrl && !coach.photoUrl.includes('placeholder')) score += 40; // most important
+      if ((coach.bio?.length ?? 0) > 20) score += 30;                             // second most important
       if (coach.emccVerified || coach.icfVerified || coach.acVerified || coach.isVerified) score += 20;
-      if (coach.hourlyRate && coach.hourlyRate > 0) score += 5;
-      score += Math.min(coach.totalReviews ?? 0, 5) * 5; // up to +25 for 5+ reviews
-      return score;
+      score += Math.min(coach.totalReviews ?? 0, 5) * 2; // up to +10 for 5+ reviews
+      return score; // max 100; photo+bio alone = 70, so always beats no-photo/no-bio
     };
 
     // Sort by Match Relevance if matchData exists, otherwise by filter match percentage
