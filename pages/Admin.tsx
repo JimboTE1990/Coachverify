@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminGetAllCoaches, toggleFlagReview, adminGetProductReviews, adminActionProductReview } from '../services/supabaseService';
 import { Coach, ProductReview } from '../types';
-import { Lock, FileText, Flag, Star, MessageSquare, ChevronLeft, ChevronRight, Download, Copy, Check, BookOpen, Users } from 'lucide-react';
+import { Lock, FileText, Flag, Star, MessageSquare, ChevronLeft, ChevronRight, Download, Copy, Check, BookOpen, Users, XCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface ContentSubmission {
@@ -27,7 +27,7 @@ export const AdminDashboard: React.FC = () => {
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   const [coachPage, setCoachPage] = useState(1);
-  const [activeTab, setActiveTab] = useState<'reviews' | 'coaches' | 'content' | 'leads'>('reviews');
+  const [activeTab, setActiveTab] = useState<'reviews' | 'coaches' | 'content' | 'leads' | 'expired'>('reviews');
   const [communityLeads, setCommunityLeads] = useState<{ id: string; display_name: string; email: string | null; marketing_opt_in: boolean; created_at: string }[]>([]);
   const [contentSubmissions, setContentSubmissions] = useState<ContentSubmission[]>([]);
   const [contentFilter, setContentFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
@@ -284,6 +284,20 @@ export const AdminDashboard: React.FC = () => {
           Leads
           <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${activeTab === 'leads' ? 'bg-white/20 text-white' : 'bg-teal-100 text-teal-700'}`}>
             {communityLeads.filter(l => l.marketing_opt_in).length}
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveTab('expired')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all ${
+            activeTab === 'expired'
+              ? 'bg-red-600 text-white shadow-md shadow-red-200'
+              : 'bg-white border border-slate-200 text-slate-600 hover:border-red-300 hover:text-red-600'
+          }`}
+        >
+          <XCircle size={15} />
+          Expired Trials
+          <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${activeTab === 'expired' ? 'bg-white/20 text-white' : 'bg-red-100 text-red-600'}`}>
+            {coaches.filter(c => c.subscriptionStatus === 'expired').length}
           </span>
         </button>
       </div>
@@ -830,6 +844,60 @@ export const AdminDashboard: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
+        );
+      })()}
+
+      {/* ── EXPIRED TRIALS TAB ── */}
+      {activeTab === 'expired' && (() => {
+        const expiredCoaches = coaches.filter(c => c.subscriptionStatus === 'expired');
+        return (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <XCircle className="h-5 w-5 text-red-400" />
+              <h2 className="text-lg font-display font-bold text-slate-900">Expired Trials</h2>
+              <span className="text-sm text-slate-400">{expiredCoaches.length} coach{expiredCoaches.length !== 1 ? 'es' : ''}</span>
+            </div>
+            <p className="text-sm text-slate-500 mb-6">
+              These accounts had their trial expire or were manually ended. Do not send renewal emails to coaches on this list without first reviewing their status.
+            </p>
+            {expiredCoaches.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">No expired trials.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="text-left py-2.5 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
+                      <th className="text-left py-2.5 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Email</th>
+                      <th className="text-left py-2.5 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Accreditation</th>
+                      <th className="text-left py-2.5 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Visible in Directory</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {expiredCoaches.map(coach => {
+                      const isHidden = !['trial', 'active', 'lifetime'].includes(coach.subscriptionStatus ?? '');
+                      return (
+                        <tr key={coach.id} className="border-b border-slate-50 hover:bg-slate-50">
+                          <td className="py-3 px-4 font-medium text-slate-900">{coach.name}</td>
+                          <td className="py-3 px-4 text-slate-600">{coach.email}</td>
+                          <td className="py-3 px-4 text-slate-600">
+                            {coach.accreditationBody
+                              ? `${coach.accreditationBody}${coach.accreditationLevel ? ` — ${coach.accreditationLevel}` : ''}`
+                              : <span className="text-slate-400 italic">Not set</span>}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isHidden ? 'bg-slate-100 text-slate-500' : 'bg-green-100 text-green-700'}`}>
+                              {isHidden ? 'Hidden' : 'Visible'}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         );
       })()}
