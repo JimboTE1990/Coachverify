@@ -363,11 +363,11 @@ export const CoachList: React.FC = () => {
     // Profile quality score — photo and bio are dominant; no photo/bio always ranks below
     const computeProfileScore = (coach: Coach): number => {
       let score = 0;
-      if (coach.photoUrl && !coach.photoUrl.includes('placeholder')) score += 40; // most important
-      if ((coach.bio?.length ?? 0) > 20) score += 30;                             // second most important
-      if (coach.emccVerified || coach.icfVerified || coach.acVerified || coach.isVerified) score += 20;
+      if (coach.photoUrl && !coach.photoUrl.includes('placeholder')) score += 55; // photo outranks everything else
+      if ((coach.bio?.length ?? 0) > 20) score += 20;
+      if (coach.emccVerified || coach.icfVerified || coach.acVerified || coach.isVerified) score += 15;
       score += Math.min(coach.totalReviews ?? 0, 5) * 2; // up to +10 for 5+ reviews
-      return score; // max 100; photo+bio alone = 70, so always beats no-photo/no-bio
+      return score; // max 100; photo alone (55) always beats bio+accred+5reviews (45)
     };
 
     // Sort by Match Relevance if matchData exists, otherwise by filter match percentage
