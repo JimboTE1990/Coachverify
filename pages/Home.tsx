@@ -232,10 +232,10 @@ export const Home: React.FC = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10 pt-8 pb-16 lg:pb-20">
 
           {/* Updated subtitle */}
-          <p className="mx-auto text-base font-bold text-slate-800 sm:text-lg md:text-xl whitespace-nowrap">
+          <p className="mx-auto text-base font-bold text-slate-800 sm:text-lg md:text-xl sm:whitespace-nowrap">
             Find a life, career or executive coach you can trust, from the very first click.
           </p>
-          <p className="mx-auto mt-2 text-base text-slate-600 sm:text-lg md:text-xl whitespace-nowrap">
+          <p className="mx-auto mt-2 text-base text-slate-600 sm:text-lg md:text-xl sm:whitespace-nowrap">
             Every coach is verified and accredited, so you're always barking up the right tree.
           </p>
 
