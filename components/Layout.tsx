@@ -290,26 +290,26 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   </Link>
                 )}
 
-                {/* Coach Login Button - for unauthenticated users */}
-                {!isAuthenticated && (
-                  <Link
-                    to="/coach-login"
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 transition-all border border-slate-200 shadow-sm"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    Coach Login
+                {/* Get Matched Button or Profile Dropdown */}
+                {isAuthenticated ? (
+                  <ProfileDropdown />
+                ) : (
+                  <Link to="/questionnaire" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 transition-all border border-slate-200 shadow-sm">
+                    <span className="flex items-center text-base">Get Matched <ClipboardList className="ml-2 h-4 w-4" /></span>
                   </Link>
                 )}
 
                 {/* Review prompt pill — shown to authenticated coaches who haven't reviewed */}
                 <ReviewPromptBanner />
 
-                {/* Profile Dropdown or Get Matched Button */}
-                {isAuthenticated ? (
-                  <ProfileDropdown />
-                ) : (
-                  <Link to="/questionnaire" className="relative overflow-hidden group bg-brand-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-brand-500/30 hover:bg-brand-700 transition-all hover:-translate-y-0.5">
-                    <span className="relative z-10 flex items-center text-base">Get Matched <ClipboardList className="ml-2 h-5 w-5" /></span>
+                {/* Coach Login Button - for unauthenticated users */}
+                {!isAuthenticated && (
+                  <Link
+                    to="/coach-login"
+                    className="relative overflow-hidden group bg-brand-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-brand-500/30 hover:bg-brand-700 transition-all hover:-translate-y-0.5 flex items-center gap-2"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    Coach Login
                   </Link>
                 )}
               </div>

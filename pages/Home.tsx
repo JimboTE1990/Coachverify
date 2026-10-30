@@ -21,12 +21,13 @@ interface StackCard {
 }
 
 const CarouselSection: React.FC<{
-  id?:        string;
-  sectionCls: string;
-  title:      string;
-  subtitle?:  string;
-  cards:      StackCard[];
-}> = ({ id, sectionCls, title, subtitle, cards }) => {
+  id?:          string;
+  sectionCls:   string;
+  title:        string;
+  subtitle?:    string;
+  cards:        StackCard[];
+  cardMaxWidth?: string;
+}> = ({ id, sectionCls, title, subtitle, cards, cardMaxWidth }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const n = cards.length;
@@ -80,7 +81,7 @@ const CarouselSection: React.FC<{
           </div>
 
           {/* Carousel viewport */}
-          <div className="relative flex-1 w-full min-h-0" style={{ maxWidth: '620px' }}>
+          <div className="relative flex-1 w-full min-h-0" style={{ maxWidth: cardMaxWidth ?? '620px' }}>
             {cards.map((card, i) => (
               <div
                 key={i}
@@ -370,6 +371,7 @@ export const Home: React.FC = () => {
         sectionCls="bg-slate-50"
         title="Why Use CoachDog?"
         subtitle="Simple, trustworthy, effective."
+        cardMaxWidth="380px"
         cards={[
           {
             cardCls:        'bg-gradient-to-br from-trust-50 to-green-50 border-2 border-trust-100',
@@ -378,7 +380,7 @@ export const Home: React.FC = () => {
             imageSrc:       '/verified-professionals-icon.png',
             imageContain:   true,
             imageBg:        'bg-white/60',
-            imageHeightPct: 52,
+            imageHeightPct: 38,
             title:    'Verified Professionals',
             body:     "Every coach is vetted for certifications and experience. We verify EMCC and ICF credentials to ensure you're working with qualified professionals.",
           },
@@ -389,7 +391,7 @@ export const Home: React.FC = () => {
             imageSrc:       '/trusted-reviews-icon.png',
             imageContain:   true,
             imageBg:        'bg-white/60',
-            imageHeightPct: 52,
+            imageHeightPct: 38,
             title:    'Trusted Reviews',
             body:     'Transparent feedback from verified clients. Read honest reviews and ratings to make informed decisions about your coaching journey.',
           },
@@ -400,7 +402,7 @@ export const Home: React.FC = () => {
             imageSrc:       '/perfect-fit-icon-two-tone.png',
             imageContain:   true,
             imageBg:        'bg-white/60',
-            imageHeightPct: 52,
+            imageHeightPct: 38,
             title:    'Perfect Fit',
             body:     'Our smart matching algorithm considers your goals, preferences, and coaching style to find coaches who truly align with your needs.',
           },
