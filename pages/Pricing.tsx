@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle, Zap, Clock, Infinity } from 'lucide-react';
+import { CheckCircle, Infinity, Shield, Star, Users } from 'lucide-react';
 import { ProductReviewWidget } from '../components/ProductReviewWidget';
 import { useAuth } from '../hooks/useAuth';
 import { PRICING_CONFIG } from '../config/pricing';
 import { SUBSCRIPTION_CONSTANTS } from '../constants/subscription';
+import { supabase } from '../lib/supabase';
 
 export const Pricing: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +19,18 @@ export const Pricing: React.FC = () => {
 
   // Get current billing cycle for premium users
   const currentBillingCycle = coach?.billingCycle; // 'monthly' or 'annual'
+
+  // Live count of founding (lifetime) members — progress bar shown only at 60+
+  const [foundingCount, setFoundingCount] = useState<number | null>(null);
+  useEffect(() => {
+    supabase
+      .from('coaches')
+      .select('*', { count: 'exact', head: true })
+      .eq('subscription_status', 'lifetime')
+      .then(({ count }) => setFoundingCount(count ?? 0));
+  }, []);
+  const PROGRESS_THRESHOLD = 60;
+  const showProgress = foundingCount !== null && foundingCount >= PROGRESS_THRESHOLD;
 
   const handlePlanSelection = (plan: 'monthly' | 'annual' | 'lifetime') => {
     // Already on this plan
@@ -36,40 +49,56 @@ export const Pricing: React.FC = () => {
     navigate(`/checkout/${plan}`);
   };
 
-  // Calculate final prices
-  const monthlyPrice = PRICING_CONFIG.plans.monthly.price;
   const annualPrice = PRICING_CONFIG.plans.annual.price;
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
 
-      {/* Light Hero Section */}
-      <div className="relative pt-24 pb-16 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <div className="inline-flex items-center bg-gradient-to-r from-rose-500 to-orange-500 text-white px-4 py-1.5 rounded-full text-sm font-bold mb-8 shadow-lg animate-pulse">
-             <Clock className="h-4 w-4 mr-2" /> Limited Time: 50% Off Monthly & Annual Plans
+      {/* Hero */}
+      <div className="relative pt-24 pb-12 overflow-hidden">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center relative z-10">
+          <div className="inline-flex items-center bg-[#1e3a5f] text-white px-4 py-1.5 rounded-full text-sm font-bold mb-6 shadow-md">
+            Limited founding pricing — closes at 100 coaches or 31 Dec 2026
           </div>
-          <h1 className="text-5xl md:text-6xl font-display font-extrabold text-slate-900 mb-6 tracking-tight">
-             Start Your Journey <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600">Risk-Free.</span>
+          <h1 className="text-4xl md:text-5xl font-display font-extrabold text-slate-900 mb-4 tracking-tight">
+            Secure your place in the{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1e3a5f] to-[#2B4170]">
+              original cohort.
+            </span>
           </h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            Join the verified network today. Experience the full platform before committing to a plan.
+          <p className="text-lg text-slate-600 max-w-xl mx-auto leading-relaxed">
+            A small group of coaches are locking in lifetime membership at founding pricing before it closes forever. After that, standard subscription plans apply.
           </p>
+
+          {/* Progress bar — only shown at 60+ */}
+          {showProgress && (
+            <div className="mt-8 max-w-sm mx-auto">
+              <div className="flex justify-between text-sm font-semibold text-slate-700 mb-2">
+                <span>{foundingCount} of 100 places taken</span>
+                <span className="text-[#2B4170]">{100 - foundingCount!} remaining</span>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                <div
+                  className="h-3 rounded-full bg-gradient-to-r from-[#1e3a5f] to-[#2B4170] transition-all duration-700"
+                  style={{ width: `${(foundingCount! / 100) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Animated Blobs */}
-        <div className="absolute top-0 left-1/2 w-full -translate-x-1/2 h-full z-0 opacity-40 pointer-events-none">
-             <div className="absolute top-0 right-1/4 -mt-20 w-96 h-96 rounded-full bg-rose-100 blur-3xl animate-blob"></div>
-             <div className="absolute bottom-0 left-1/4 -mb-20 w-80 h-80 rounded-full bg-brand-100 blur-3xl animate-blob" style={{ animationDelay: '2s' }}></div>
+        {/* Background blobs */}
+        <div className="absolute top-0 left-1/2 w-full -translate-x-1/2 h-full z-0 opacity-20 pointer-events-none">
+          <div className="absolute top-0 right-1/4 -mt-20 w-96 h-96 rounded-full bg-blue-200 blur-3xl animate-blob" />
+          <div className="absolute bottom-0 left-1/4 -mb-20 w-80 h-80 rounded-full bg-indigo-200 blur-3xl animate-blob" style={{ animationDelay: '2s' }} />
         </div>
       </div>
 
       <div className="pb-24 relative z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          {/* STEP 1: Free Trial Block (Hero Card) */}
+          {/* Trial / Expired status for logged-in users */}
           {(() => {
-            // Calculate trial end date for display
             const trialEndDate = coach?.trialEndsAt ? new Date(coach.trialEndsAt) : null;
             const formattedTrialEnd = trialEndDate?.toLocaleDateString('en-GB', {
               day: 'numeric', month: 'long', year: 'numeric'
@@ -79,37 +108,164 @@ export const Pricing: React.FC = () => {
               ? Math.max(0, Math.ceil((trialEndDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
               : 0;
 
-            // Logged-in trial user: show status, not CTA
             if (isAuthenticated && coach?.subscriptionStatus === 'trial') {
               return (
-                <div className="bg-white rounded-3xl shadow-xl border-2 border-green-300 overflow-hidden mb-16">
-                  <div className="md:flex">
-                    <div className="p-10 md:w-2/3">
-                      <div className="flex items-center mb-6">
-                        <span className="bg-green-100 text-green-700 font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wide mr-3 border border-green-200">Active</span>
-                        <h2 className="text-3xl font-display font-bold text-slate-900">Free Trial Active</h2>
+                <div className="bg-white rounded-2xl shadow border border-green-200 p-6 mb-10 flex items-center gap-4">
+                  <div className="bg-green-100 rounded-full p-3 flex-shrink-0">
+                    <CheckCircle className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-slate-900">Your free trial is active</p>
+                    <p className="text-sm text-slate-500">
+                      {formattedTrialEnd ? `Ends ${formattedTrialEnd}` : 'Full platform access'}{daysRemaining > 0 ? ` · ${daysRemaining} days remaining` : ''}
+                      {' '}— upgrade below to lock in founding pricing before it closes.
+                    </p>
+                  </div>
+                </div>
+              );
+            }
+
+            if (isAuthenticated && coach?.subscriptionStatus === 'expired') {
+              return (
+                <div className="bg-white rounded-2xl shadow border border-red-200 p-6 mb-10 flex items-center gap-4">
+                  <div className="bg-red-100 rounded-full p-3 flex-shrink-0">
+                    <Shield className="h-6 w-6 text-red-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-slate-900">Your trial has ended</p>
+                    <p className="text-sm text-slate-500">
+                      Your profile is currently hidden. Claim your founding place below to become visible to clients again.
+                    </p>
+                  </div>
+                </div>
+              );
+            }
+
+            if (isAuthenticated && (coach?.subscriptionStatus === 'active' || coach?.subscriptionStatus === 'lifetime')) {
+              return null;
+            }
+
+            return null;
+          })()}
+
+          {/* Main cards */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
+
+            {/* Lifetime Card — dark navy, hero */}
+            <div className="md:col-span-3 bg-[#111c32] rounded-3xl shadow-xl p-8 flex flex-col relative overflow-hidden">
+              {/* Subtle glow */}
+              <div className="absolute inset-0 opacity-10 pointer-events-none">
+                <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-yellow-300 blur-3xl" />
+                <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-blue-400 blur-3xl" />
+              </div>
+
+              <div className="relative z-10">
+                {/* Annual strikethrough anchor — above the heading */}
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm font-semibold text-blue-300/60 line-through">Annual Membership &nbsp;£{annualPrice}/yr</span>
+                </div>
+
+                {/* Heading + badge */}
+                <div className="flex justify-between items-center mb-5">
+                  <div className="flex items-center gap-2">
+                    <Infinity className="h-5 w-5 text-yellow-400" />
+                    <h2 className="text-2xl font-bold text-white">Lifetime Membership</h2>
+                  </div>
+                  <span className="bg-yellow-400 text-[#111c32] text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center justify-center text-center">
+                    Founding offer
+                  </span>
+                </div>
+
+                {/* Price */}
+                <div className="flex items-baseline gap-3 mb-2">
+                  <span className="text-6xl font-display font-black text-white">
+                    £{SUBSCRIPTION_CONSTANTS.LIFETIME_PRICE_GBP}
+                  </span>
+                  <span className="text-lg font-bold text-blue-200">once, for life</span>
+                </div>
+                <p className="text-sm text-blue-300/80 mb-6 leading-relaxed">
+                  No renewals, no annual fees. Full access to every feature, including everything we build in future.
+                </p>
+
+                {/* Founder badge highlight */}
+                <div className="bg-white/8 border border-yellow-400/30 rounded-2xl p-4 mb-6 flex items-center gap-4">
+                  <div className="w-20 h-20 flex-shrink-0 rounded-full border-2 border-yellow-400 bg-yellow-400/10 flex flex-col items-center justify-center gap-0.5">
+                    <span className="text-yellow-400 text-[9px] font-black uppercase tracking-widest leading-none">FOUNDER</span>
+                    <span className="text-yellow-400 text-2xl font-black leading-tight">100</span>
+                  </div>
+                  <div>
+                    <p className="text-white font-bold text-sm">A permanent Founder badge</p>
+                    <p className="text-blue-300/70 text-xs">Shown on your profile for good. Only 100 will ever exist.</p>
+                    <p className="text-blue-300/50 text-xs mt-1">Badges added to profiles once all founding places are filled.</p>
+                  </div>
+                </div>
+
+                {/* Feature list — 2 column */}
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 mb-8">
+                  <li className="flex items-start gap-2.5 text-sm text-blue-100">
+                    <CheckCircle className="h-4 w-4 text-yellow-400 flex-shrink-0 mt-0.5" />
+                    <span>Accreditation verified and shown on your profile</span>
+                  </li>
+                  <li className="flex items-start gap-2.5 text-sm text-blue-100">
+                    <CheckCircle className="h-4 w-4 text-yellow-400 flex-shrink-0 mt-0.5" />
+                    <span>Your own link:<br />coachdog.co.uk/yourname</span>
+                  </li>
+                  <li className="flex items-start gap-2.5 text-sm text-blue-100">
+                    <CheckCircle className="h-4 w-4 text-yellow-400 flex-shrink-0 mt-0.5" />
+                    <span>Open, transparent client ratings</span>
+                  </li>
+                  <li className="flex items-start gap-2.5 text-sm text-blue-100">
+                    <CheckCircle className="h-4 w-4 text-yellow-400 flex-shrink-0 mt-0.5" />
+                    <span>Client Q&A community</span>
+                  </li>
+                  <li className="flex items-start gap-2.5 text-sm text-blue-100">
+                    <CheckCircle className="h-4 w-4 text-yellow-400 flex-shrink-0 mt-0.5" />
+                    <span>Collaboration space for coach projects</span>
+                  </li>
+                  <li className="flex items-start gap-2.5 text-sm text-blue-100">
+                    <CheckCircle className="h-4 w-4 text-yellow-400 flex-shrink-0 mt-0.5" />
+                    <span>Every future feature, included</span>
+                  </li>
+                </ul>
+
+                <button
+                  onClick={() => handlePlanSelection('lifetime')}
+                  disabled={coach?.subscriptionStatus === 'lifetime'}
+                  className="w-full bg-yellow-400 text-[#111c32] py-4 rounded-xl font-bold text-lg hover:bg-yellow-300 transition-all shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {coach?.subscriptionStatus === 'lifetime'
+                    ? "You're a Founding Member 🐾"
+                    : 'Claim your founding place'}
+                </button>
+                <p className="text-center text-blue-300/60 text-xs mt-3">
+                  Closes at 100 coaches or 31 December 2026
+                </p>
+
+                <p className="mt-3 text-xs text-blue-300/40 text-center leading-relaxed">
+                  *Lifetime access refers to the lifetime of the platform, not the purchaser. Subject to our Terms of Service.
+                </p>
+              </div>
+            </div>
+
+            {/* Free Trial card — secondary, takes 2/5 width on desktop */}
+            <div className="md:col-span-2 flex flex-col gap-6">
+
+              {/* Trial/Expired/Active state overrides */}
+              {(() => {
+                const trialEndDate = coach?.trialEndsAt ? new Date(coach.trialEndsAt) : null;
+                const formattedTrialEnd = trialEndDate?.toLocaleDateString('en-GB', {
+                  day: 'numeric', month: 'long', year: 'numeric'
+                });
+
+                if (isAuthenticated && coach?.subscriptionStatus === 'trial') {
+                  return (
+                    <div className="bg-white rounded-2xl shadow-sm border-2 border-green-300 p-6 flex flex-col">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full text-xs border border-green-200">Active</span>
+                        <h3 className="text-lg font-bold text-slate-900">Free Trial</h3>
                       </div>
-                      <p className="text-slate-600 mb-6 text-lg leading-relaxed">
-                        Your free trial is running. Enjoy full platform access — your profile is visible to clients and you're receiving matches.
-                      </p>
-                      <ul className="space-y-3">
-                        <li className="flex items-center text-slate-700 font-medium">
-                          <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
-                          Verified Profile
-                        </li>
-                        <li className="flex items-center text-slate-700 font-medium">
-                          <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
-                          Unlimited Matches
-                        </li>
-                        <li className="flex items-center text-slate-700 font-medium">
-                          <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
-                          Full Platform Access
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-10 md:w-1/3 flex flex-col justify-center items-center border-t md:border-t-0 md:border-l border-green-100">
-                      <div className="text-center w-full">
-                        <div className="w-full bg-green-100 border-2 border-green-300 text-green-800 text-center py-4 rounded-xl font-bold shadow-lg mb-4">
+                      <div className="text-center py-4">
+                        <div className="w-full bg-green-100 border-2 border-green-300 text-green-800 text-center py-3 rounded-xl font-bold mb-3">
                           ✓ Trial Active
                         </div>
                         {formattedTrialEnd && (
@@ -117,225 +273,114 @@ export const Pricing: React.FC = () => {
                             Ends <span className="text-rose-600">{formattedTrialEnd}</span>
                           </p>
                         )}
-                        {daysRemaining > 0 && (
-                          <p className="text-xs text-slate-500 mt-1">{daysRemaining} {daysRemaining === 1 ? 'day' : 'days'} remaining</p>
-                        )}
-                        <p className="text-xs text-slate-400 mt-4">Select a plan below to upgrade before your trial ends.</p>
+                        <p className="text-xs text-slate-400 mt-3">Upgrade to lock in founding pricing before it closes.</p>
                       </div>
                     </div>
-                  </div>
-                </div>
-              );
-            }
+                  );
+                }
 
-            // Logged-in expired user: show expired status
-            if (isAuthenticated && coach?.subscriptionStatus === 'expired') {
-              return (
-                <div className="bg-white rounded-3xl shadow-xl border-2 border-red-200 overflow-hidden mb-16">
-                  <div className="md:flex">
-                    <div className="p-10 md:w-2/3">
-                      <div className="flex items-center mb-6">
-                        <span className="bg-red-100 text-red-700 font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wide mr-3 border border-red-200">Expired</span>
-                        <h2 className="text-3xl font-display font-bold text-slate-900">Free Trial Ended</h2>
+                if (isAuthenticated && coach?.subscriptionStatus === 'expired') {
+                  return (
+                    <div className="bg-white rounded-2xl shadow-sm border-2 border-red-200 p-6 flex flex-col">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="bg-red-100 text-red-700 font-bold px-2 py-0.5 rounded-full text-xs border border-red-200">Expired</span>
+                        <h3 className="text-lg font-bold text-slate-900">Free Trial</h3>
                       </div>
-                      <p className="text-slate-600 mb-6 text-lg leading-relaxed">
-                        Your free trial has ended and your profile is currently hidden from clients. Upgrade to a paid plan to become visible again.
-                      </p>
-                      <ul className="space-y-3">
-                        <li className="flex items-center text-slate-700 font-medium">
-                          <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
-                          Profile visible to clients
-                        </li>
-                        <li className="flex items-center text-slate-700 font-medium">
-                          <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
-                          Unlimited Matches
-                        </li>
-                        <li className="flex items-center text-slate-700 font-medium">
-                          <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
-                          Full Platform Access
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="bg-gradient-to-br from-red-50 to-orange-50 p-10 md:w-1/3 flex flex-col justify-center items-center border-t md:border-t-0 md:border-l border-red-100">
-                      <div className="text-center w-full">
-                        <div className="w-full bg-red-100 border-2 border-red-300 text-red-800 text-center py-4 rounded-xl font-bold shadow-lg mb-4">
+                      <div className="text-center py-4">
+                        <div className="w-full bg-red-100 border-2 border-red-300 text-red-800 text-center py-3 rounded-xl font-bold mb-3">
                           Trial Ended
                         </div>
-                        {formattedTrialEnd && (
-                          <p className="text-sm font-semibold text-slate-700">
-                            Ended <span className="text-rose-600">{formattedTrialEnd}</span>
-                          </p>
-                        )}
-                        <p className="text-xs text-slate-400 mt-4">Select a plan below to reactivate your profile.</p>
+                        <p className="text-xs text-slate-400 mt-3">Claim founding access to reactivate your profile.</p>
                       </div>
                     </div>
-                  </div>
-                </div>
-              );
-            }
+                  );
+                }
 
-            // Logged-in active subscriber or lifetime: hide the trial section entirely
-            if (isAuthenticated && (coach?.subscriptionStatus === 'active' || coach?.subscriptionStatus === 'lifetime')) {
-              return null;
-            }
+                if (isAuthenticated && (coach?.subscriptionStatus === 'active' || coach?.subscriptionStatus === 'lifetime')) {
+                  return null;
+                }
 
-            // Not logged in (or onboarding): show the standard "Start Free Trial" card
-            return (
-              <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden mb-16 transform hover:-translate-y-1 transition-transform duration-300">
-                <div className="md:flex">
-                  <div className="p-10 md:w-2/3">
-                    <div className="flex items-center mb-6">
-                      <span className="bg-brand-100 text-brand-700 font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wide mr-3 border border-brand-200">All plans include</span>
-                      <h2 className="text-3xl font-display font-bold text-slate-900">30-Day Free Trial</h2>
+                // Default: unauthenticated or onboarding
+                return (
+                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">30-Day Free Trial</h3>
+                    <p className="text-sm text-slate-500 mb-4">Not ready to commit? Try first.</p>
+
+                    <div className="text-center mb-5">
+                      <span className="text-5xl font-display font-black text-slate-900">£0</span>
+                      <span className="block text-xs text-slate-500 font-bold uppercase tracking-wide mt-1">for 30 days</span>
                     </div>
-                    <p className="text-slate-600 mb-8 text-lg leading-relaxed">
-                      Sign up now - no payment required. Your trial activates automatically when you verify your email. Build your profile, get verified, and receive matches with zero risk.
-                    </p>
-                    <ul className="space-y-3">
-                      <li className="flex items-center text-slate-700 font-medium">
-                        <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
-                        Verified Accreditation Badge: Proof of your expertise, authenticated for every client to see
+
+                    <ul className="space-y-2.5 mb-6 flex-1">
+                      <li className="flex items-center gap-2.5 text-sm text-slate-600">
+                        <CheckCircle className="h-4 w-4 text-brand-500 flex-shrink-0" />
+                        Full verified profile and listing
                       </li>
-                      <li className="flex items-center text-slate-700 font-medium">
-                        <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
-                        Professional landing page with shareable link for social media channels
+                      <li className="flex items-center gap-2.5 text-sm text-slate-600">
+                        <CheckCircle className="h-4 w-4 text-brand-500 flex-shrink-0" />
+                        Ratings, Q&A and collaboration space
                       </li>
-                      <li className="flex items-center text-slate-700 font-medium">
-                        <div className="bg-green-100 p-1 rounded-full mr-3"><CheckCircle className="h-4 w-4 text-green-600" /></div>
-                        Client reviews to enhance credibility and build trust
+                      <li className="flex items-center gap-2.5 text-sm text-slate-600">
+                        <CheckCircle className="h-4 w-4 text-brand-500 flex-shrink-0" />
+                        Clients can book free intro calls
                       </li>
                     </ul>
+
+                    <Link
+                      to="/coach-signup"
+                      className="block w-full bg-[#1e3a5f] text-white text-center py-3.5 rounded-xl font-bold hover:bg-[#2B4170] transition-colors shadow-sm"
+                    >
+                      Start free trial
+                    </Link>
+                    <p className="text-xs text-slate-400 text-center mt-3">No credit card required</p>
+                    <p className="text-xs text-slate-500 text-center mt-2 font-medium">
+                      Upgrade to founding pricing any time before 31 December
+                    </p>
                   </div>
-                  <div className="bg-gradient-to-br from-brand-50 to-indigo-50 p-10 md:w-1/3 flex flex-col justify-center items-center border-t md:border-t-0 md:border-l border-slate-100">
-                    <div className="text-center w-full">
-                      <p className="text-slate-400 text-sm line-through mb-1">Standard: £30</p>
-                      <p className="text-5xl font-display font-black text-slate-900 mb-2">£0</p>
-                      <p className="text-sm text-slate-500 font-bold uppercase tracking-wide mb-8">for 30 days</p>
-                      <Link
-                        to="/coach-signup"
-                        className="block w-full bg-slate-900 text-white text-center py-4 rounded-xl font-bold hover:bg-slate-800 shadow-lg hover:shadow-xl transition-all"
-                      >
-                        Start Free Trial
-                      </Link>
-                      <p className="text-xs text-slate-400 mt-4">No credit card required</p>
-                    </div>
-                  </div>
+                );
+              })()}
+
+              {/* Trust signals */}
+              <div className="bg-white rounded-2xl border border-slate-100 p-5">
+                <div className="flex items-start gap-3 mb-4">
+                  <Shield className="h-5 w-5 text-[#2B4170] flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-slate-600 font-medium">
+                    Every coach is verified against EMCC, ICF or AC accreditation
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Users className="h-5 w-5 text-[#2B4170] flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-slate-600 font-medium">
+                    Trusted by coaches across the UK
+                  </p>
                 </div>
               </div>
-            );
-          })()}
-
-          {/* STEP 2: Paid Plans Section */}
-          <div className="text-center mb-12">
-             <span className="text-brand-600 font-bold text-sm uppercase tracking-widest">Choose Your Plan</span>
-             <h3 className="text-3xl font-display font-bold text-slate-900 mt-2">Lock in your price anytime</h3>
-             <p className="text-slate-500 mt-2">Add payment during your trial - billing starts after your 30 days end. Lock in the Early Bird 50% discount for life.</p>
+            </div>
           </div>
 
-          {/* Paid Plans Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-
-            {/* Lifetime Plan */}
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl shadow-xl border-2 border-amber-400 p-8 flex flex-col items-center relative transform md:-translate-y-4">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-4 py-1.5 rounded-full font-bold uppercase tracking-wider shadow-md animate-pulse">
-                ⚡ Limited Offer
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mt-2">Lifetime Access</h3>
-              <p className="text-sm text-slate-600 mt-1 flex items-center">
-                Pay once, own forever
-                <Infinity className="h-4 w-4 ml-1 text-amber-600" />
-              </p>
-
-              <div className="mt-8 flex flex-col items-center justify-center">
-                <div className="flex items-baseline">
-                  <span className="text-5xl font-display font-black text-slate-900">
-                    £{SUBSCRIPTION_CONSTANTS.LIFETIME_PRICE_GBP}
-                  </span>
-                </div>
-                <span className="text-xs text-slate-500 mt-2">one-time payment</span>
-              </div>
-
-              <div className="mt-6 bg-gradient-to-r from-amber-100 to-orange-100 rounded-lg px-3 py-2 border-2 border-amber-300">
-                <p className="text-xs text-amber-900 font-bold text-center">
-                  🔥 Limited time & quantity - won't return at this price!
-                </p>
-              </div>
-
-              <div className="mt-8 border-t border-amber-200 w-full pt-8">
-                 <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4 text-center">Everything included</p>
-                 <ul className="space-y-4 text-left text-sm text-slate-600">
-                    <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3 flex-shrink-0" />
-                      Verified Accreditation Badge: Proof of your expertise, authenticated for every client to see
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3 flex-shrink-0" />
-                      Professional landing page with shareable link for social media channels
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3 flex-shrink-0" />
-                      Client reviews to enhance credibility and build trust
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-amber-600 mr-3 flex-shrink-0" />
-                      <span className="font-bold text-amber-900">Never pay again - lifetime access!</span>
-                    </li>
-                 </ul>
-              </div>
-
-              <button
-                onClick={() => handlePlanSelection('lifetime')}
-                disabled={coach?.subscriptionStatus === 'lifetime'}
-                className="mt-8 w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-4 rounded-xl font-bold hover:from-amber-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {coach?.subscriptionStatus === 'lifetime'
-                  ? 'Current Plan'
-                  : 'Secure Lifetime Access'}
-              </button>
-
-              {/* Legal Disclaimer */}
-              <p className="mt-4 text-xs text-slate-400 text-center leading-relaxed">
-                *Lifetime access refers to the lifetime of the software platform, not the purchaser's lifetime. Access is subject to our Terms of Service.
-              </p>
-            </div>
-
-            {/* Monthly Plan */}
+          {/* Monthly & Annual plans — re-enable after founding offer closes (all logic retained) */}
+          {false && (
+            /* Monthly Plan */
             <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 flex flex-col items-center hover:shadow-md transition-shadow">
               <h3 className="text-xl font-bold text-slate-900">Monthly</h3>
               <p className="text-sm text-slate-500 mt-1">Pay as you go</p>
-
               <div className="mt-8 flex flex-col items-center justify-center">
                 <span className="text-sm text-slate-400 font-medium line-through">Standard: £30/mo</span>
                 <div className="flex items-baseline mt-2">
                   <span className="text-5xl font-display font-black text-slate-900">
-                    £{monthlyPrice}
+                    £{PRICING_CONFIG.plans.monthly.price}
                   </span>
                   <span className="ml-1 text-base font-medium text-slate-500">/mo</span>
                 </div>
               </div>
-
               <div className="mt-8 border-t border-slate-100 w-full pt-8">
-                 <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4 text-center">Includes</p>
-                 <ul className="space-y-4 text-left text-sm text-slate-600">
-                    <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
-                      Verified Accreditation Badge: Proof of your expertise, authenticated for every client to see
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
-                      Professional landing page with shareable link for social media channels
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
-                      Client reviews to enhance credibility and build trust
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
-                      No long contract / flexible monthly option
-                    </li>
-                 </ul>
+                <ul className="space-y-4 text-left text-sm text-slate-600">
+                  <li className="flex items-center"><CheckCircle className="h-5 w-5 text-brand-500 mr-3" />Verified Accreditation Badge</li>
+                  <li className="flex items-center"><CheckCircle className="h-5 w-5 text-brand-500 mr-3" />Professional landing page with shareable link</li>
+                  <li className="flex items-center"><CheckCircle className="h-5 w-5 text-brand-500 mr-3" />Client reviews</li>
+                  <li className="flex items-center"><CheckCircle className="h-5 w-5 text-brand-500 mr-3" />No long contract / flexible monthly option</li>
+                </ul>
               </div>
-
               <button
                 onClick={() => handlePlanSelection('monthly')}
                 disabled={coach?.subscriptionStatus === 'lifetime' || (hasActiveSubscription && currentBillingCycle === 'monthly')}
@@ -352,15 +397,13 @@ export const Pricing: React.FC = () => {
                   : 'Select Monthly'}
               </button>
             </div>
+          )}
 
-            {/* Annual Plan */}
-            <div className="bg-white rounded-3xl shadow-xl border-2 border-brand-500 p-8 flex flex-col items-center relative transform md:-translate-y-4">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-brand-600 to-indigo-600 text-white text-xs px-4 py-1.5 rounded-full font-bold uppercase tracking-wider shadow-md">
-                Best Value
-              </div>
+          {false && (
+            /* Annual Plan */
+            <div className="bg-white rounded-3xl shadow-xl border-2 border-brand-500 p-8 flex flex-col items-center relative">
               <h3 className="text-xl font-bold text-slate-900 mt-2">Annual</h3>
               <p className="text-sm text-slate-500 mt-1">Commit & Save</p>
-
               <div className="mt-8 flex flex-col items-center justify-center">
                 <span className="text-sm text-slate-400 font-medium line-through">Standard: £300/yr</span>
                 <div className="flex items-baseline mt-2">
@@ -371,29 +414,14 @@ export const Pricing: React.FC = () => {
                 </div>
                 <span className="text-xs text-green-600 font-bold mt-2 bg-green-50 px-2 py-1 rounded-md">Save £30/year</span>
               </div>
-
               <div className="mt-8 border-t border-slate-100 w-full pt-8">
-                 <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4 text-center">Everything in Monthly, plus</p>
-                 <ul className="space-y-4 text-left text-sm text-slate-600">
-                    <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
-                      Verified Accreditation Badge: Proof of your expertise, authenticated for every client to see
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
-                      Professional landing page with shareable link for social media channels
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
-                      Client reviews to enhance credibility and build trust
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-brand-500 mr-3" />
-                      Fixed plan for 12 months - with 2 months saving vs monthly plan
-                    </li>
-                 </ul>
+                <ul className="space-y-4 text-left text-sm text-slate-600">
+                  <li className="flex items-center"><CheckCircle className="h-5 w-5 text-brand-500 mr-3" />Verified Accreditation Badge</li>
+                  <li className="flex items-center"><CheckCircle className="h-5 w-5 text-brand-500 mr-3" />Professional landing page with shareable link</li>
+                  <li className="flex items-center"><CheckCircle className="h-5 w-5 text-brand-500 mr-3" />Client reviews</li>
+                  <li className="flex items-center"><CheckCircle className="h-5 w-5 text-brand-500 mr-3" />Fixed plan for 12 months, 2 months saving vs monthly</li>
+                </ul>
               </div>
-
               <button
                 onClick={() => handlePlanSelection('annual')}
                 disabled={coach?.subscriptionStatus === 'lifetime' || (hasActiveSubscription && currentBillingCycle === 'annual')}
@@ -410,28 +438,7 @@ export const Pricing: React.FC = () => {
                   : 'Select Annual'}
               </button>
             </div>
-          </div>
-
-          {/* Lock in Price Guarantee */}
-          <div className="mt-16 flex justify-center">
-             <div className="bg-yellow-50 rounded-2xl border border-yellow-100 p-6 inline-flex items-center space-x-4 max-w-2xl">
-                <div className="bg-yellow-100 p-3 rounded-full flex-shrink-0 text-yellow-600">
-                   <Zap className="h-6 w-6" />
-                </div>
-                <div className="text-left">
-                   <p className="font-bold text-slate-900">Lock in Your Price Today</p>
-                   <p className="text-sm text-slate-600">
-                     {isAuthenticated && coach?.subscriptionStatus === 'trial' ? (
-                       <>Upgrade now and continue using your trial. Payment will be charged after your trial ends. Lock in the 50% Early Bird discount for life.</>
-                     ) : isAuthenticated && coach?.subscriptionStatus === 'expired' ? (
-                       <>Your trial has ended. Payment starts today when you select a plan. Lock in the 50% Early Bird discount for life.</>
-                     ) : (
-                       <>Select a paid plan during your 30-day free trial and get this 50% discount locked in for life. Payment starts after your trial ends.</>
-                     )}
-                   </p>
-                </div>
-             </div>
-          </div>
+          )}
 
         </div>
       </div>
