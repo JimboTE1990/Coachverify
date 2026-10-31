@@ -558,6 +558,17 @@ export const CoachDashboard: React.FC = () => {
     }
   }, [currentCoach?.reviews]);
 
+  // Warn before refresh/close when there are unsaved changes
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [hasUnsavedChanges]);
+
   // Update local profile state (doesn't save to database)
   const updateLocalProfile = (updates: Partial<Coach>) => {
     setLocalProfile(prev => ({ ...prev, ...updates }));
@@ -995,6 +1006,31 @@ export const CoachDashboard: React.FC = () => {
 
   return (
     <div className="bg-slate-50 min-h-screen">
+
+      {/* Unsaved changes banner */}
+      {hasUnsavedChanges && (
+        <div className="fixed bottom-0 left-0 right-0 z-[9999] flex items-center justify-between gap-4 bg-amber-50 border-t-2 border-amber-300 px-4 py-3 sm:px-6 shadow-lg">
+          <div className="flex items-center gap-2 text-amber-800 text-sm font-medium">
+            <svg className="h-4 w-4 flex-shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            </svg>
+            You have unsaved changes — save before leaving this page.
+          </div>
+          <button
+            onClick={handleSaveProfile}
+            disabled={isSaving}
+            className="flex-shrink-0 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold px-4 py-2 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {isSaving ? (
+              <>
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Saving...
+              </>
+            ) : (
+              'Save Now'
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Toast Notification */}
       {toast && (
