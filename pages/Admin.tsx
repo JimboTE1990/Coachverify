@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { adminGetAllCoaches, toggleFlagReview, adminGetProductReviews, adminActionProductReview } from '../services/supabaseService';
+import { adminGetAllCoaches, toggleFlagReview, adminGetProductReviews, adminActionProductReview, adminGetEventRegistrations } from '../services/supabaseService';
 import { Coach, ProductReview } from '../types';
-import { Lock, FileText, Flag, Star, MessageSquare, ChevronLeft, ChevronRight, Download, Copy, Check, BookOpen, Users, XCircle } from 'lucide-react';
+import { Lock, FileText, Flag, Star, MessageSquare, ChevronLeft, ChevronRight, Download, Copy, Check, BookOpen, Users, XCircle, CalendarDays } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface ContentSubmission {
@@ -27,8 +27,10 @@ export const AdminDashboard: React.FC = () => {
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   const [coachPage, setCoachPage] = useState(1);
-  const [activeTab, setActiveTab] = useState<'reviews' | 'coaches' | 'content' | 'leads' | 'expired'>('reviews');
+  const [activeTab, setActiveTab] = useState<'reviews' | 'coaches' | 'content' | 'leads' | 'expired' | 'campaigns'>('reviews');
   const [communityLeads, setCommunityLeads] = useState<{ id: string; display_name: string; email: string | null; marketing_opt_in: boolean; created_at: string }[]>([]);
+  const [eventRegistrations, setEventRegistrations] = useState<{ id: string; campaign_id: string; name: string; email: string; source: string | null; created_at: string }[]>([]);
+  const [campaignFilter, setCampaignFilter] = useState<string>('all');
   const [contentSubmissions, setContentSubmissions] = useState<ContentSubmission[]>([]);
   const [contentFilter, setContentFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const [rejectingId, setRejectingId] = useState<string | null>(null);
@@ -48,18 +50,20 @@ export const AdminDashboard: React.FC = () => {
     if (isAuthenticated) {
       const adminPassword = (import.meta as any).env?.VITE_ADMIN_PASSWORD;
       const loadData = async () => {
-        const [coachData, approvedData, pendingData, contentData, leadsData] = await Promise.all([
+        const [coachData, approvedData, pendingData, contentData, leadsData, eventRegsData] = await Promise.all([
           adminGetAllCoaches(),
           adminGetProductReviews('approved', adminPassword),
           adminGetProductReviews('pending', adminPassword),
           supabase.from('coach_content_submissions').select('*').order('created_at', { ascending: false }),
           supabase.from('community_users').select('id, display_name, email, marketing_opt_in, created_at').order('created_at', { ascending: false }),
+          adminGetEventRegistrations(),
         ]);
         setCoaches(coachData);
         setApprovedProductReviews(approvedData);
         setPendingProductReviews(pendingData);
         if (contentData.data) setContentSubmissions(contentData.data as ContentSubmission[]);
         if (leadsData.data) setCommunityLeads(leadsData.data as typeof communityLeads);
+        setEventRegistrations(eventRegsData);
       };
       loadData();
     }
@@ -298,6 +302,20 @@ export const AdminDashboard: React.FC = () => {
           Expired Trials
           <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${activeTab === 'expired' ? 'bg-white/20 text-white' : 'bg-red-100 text-red-600'}`}>
             {coaches.filter(c => c.subscriptionStatus === 'expired').length}
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveTab('campaigns')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all ${
+            activeTab === 'campaigns'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+              : 'bg-white border border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600'
+          }`}
+        >
+          <CalendarDays size={15} />
+          Campaigns
+          <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${activeTab === 'campaigns' ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-600'}`}>
+            {eventRegistrations.length}
           </span>
         </button>
       </div>
@@ -901,6 +919,86 @@ export const AdminDashboard: React.FC = () => {
           </div>
         );
       })()}
+      {/* ── CAMPAIGNS TAB ── */}
+      {activeTab === 'campaigns' && (() => {
+        const campaignIds = ['all', ...Array.from(new Set(eventRegistrations.map(r => r.campaign_id)))];
+        const filtered = campaignFilter === 'all' ? eventRegistrations : eventRegistrations.filter(r => r.campaign_id === campaignFilter);
+
+        const downloadCsv = () => {
+          const header = 'Name,Email,Campaign,Source,Registered';
+          const body = filtered.map(r =>
+            `"${r.name.replace(/"/g, '""')}","${r.email.replace(/"/g, '""')}","${r.campaign_id}","${r.source ?? ''}","${new Date(r.created_at).toLocaleDateString('en-GB')}"`
+          ).join('\n');
+          const blob = new Blob([header + '\n' + body], { type: 'text/csv' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = `coachdog_campaign_${campaignFilter}.csv`; a.click();
+          URL.revokeObjectURL(url);
+        };
+
+        return (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+              <div>
+                <h3 className="font-bold text-slate-900 text-base">Event registrations</h3>
+                <p className="text-sm text-slate-500 mt-0.5">Name and email captures from event landing pages</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={campaignFilter}
+                  onChange={e => setCampaignFilter(e.target.value)}
+                  className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                >
+                  {campaignIds.map(id => (
+                    <option key={id} value={id}>{id === 'all' ? 'All campaigns' : id}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={downloadCsv}
+                  disabled={filtered.length === 0}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:border-indigo-300 hover:text-indigo-600 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Download size={14} /> Export CSV
+                </button>
+              </div>
+            </div>
+
+            {filtered.length === 0 ? (
+              <p className="text-slate-400 text-sm py-4">No registrations yet — they'll appear here once people submit the form on the event page.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Name</th>
+                      <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Email</th>
+                      <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Campaign</th>
+                      <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Source</th>
+                      <th className="text-left py-2 font-semibold text-slate-500 text-xs uppercase tracking-wide">Registered</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map(reg => (
+                      <tr key={reg.id} className="border-b border-slate-50 hover:bg-slate-50">
+                        <td className="py-2.5 pr-4 font-medium text-slate-800">{reg.name}</td>
+                        <td className="py-2.5 pr-4 text-slate-600">{reg.email}</td>
+                        <td className="py-2.5 pr-4">
+                          <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full">{reg.campaign_id}</span>
+                        </td>
+                        <td className="py-2.5 pr-4 text-slate-400 text-xs">{reg.source ?? '—'}</td>
+                        <td className="py-2.5 text-slate-400 whitespace-nowrap">
+                          {new Date(reg.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
     </div>
   );
 };

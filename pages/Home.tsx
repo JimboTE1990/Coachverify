@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, HeartHandshake, ArrowRight, PawPrint, Mic, Award, Star, Link2, Users, HelpCircle, Briefcase } from 'lucide-react';
+import { Search, HeartHandshake, ArrowRight, PawPrint, Mic, Award, Star, Link2, Users, HelpCircle, Briefcase, X } from 'lucide-react';
 import { ProductReviewWidget } from '../components/ProductReviewWidget';
 
 // ─── Horizontal rotary carousel section ──────────────────────────────────────
@@ -168,6 +168,13 @@ export const Home: React.FC = () => {
   const recognitionRef = useRef<any>(null);
   const [speechSupported, setSpeechSupported] = useState(false);
   const [activeReasonCard, setActiveReasonCard] = useState<number | null>(null);
+  const [eventBannerDismissed, setEventBannerDismissed] = useState<boolean>(() => {
+    try { return localStorage.getItem('event-banner-jan-2027') === 'dismissed'; } catch { return false; }
+  });
+  const dismissEventBanner = () => {
+    setEventBannerDismissed(true);
+    try { localStorage.setItem('event-banner-jan-2027', 'dismissed'); } catch { /* ignore */ }
+  };
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -224,6 +231,32 @@ export const Home: React.FC = () => {
 
   return (
     <div className="flex flex-col">
+
+      {/* ── Event banner ─────────────────────────────────────────────────── */}
+      {!eventBannerDismissed && (
+        <div className="bg-brand-600 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-sm min-w-0">
+              <span className="flex-shrink-0 text-base">📅</span>
+              <span className="truncate">
+                <span className="font-semibold">Live workshop · 13 Jan 2027</span>
+                <span className="hidden sm:inline text-white/80"> · Strategy, Not Resolutions — £19</span>
+              </span>
+            </div>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <Link
+                to="/events/strategy-not-resolutions"
+                className="text-xs font-bold bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+              >
+                Find out more →
+              </Link>
+              <button onClick={dismissEventBanner} className="text-white/60 hover:text-white transition-colors" aria-label="Dismiss">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <div className="relative bg-gradient-to-br from-brand-50 via-indigo-50 to-purple-50 overflow-hidden">

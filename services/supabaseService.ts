@@ -1839,3 +1839,35 @@ export const deleteTKIResult = async (resultId: string): Promise<boolean> => {
   }
   return true;
 };
+
+// ── Event registrations ───────────────────────────────────────────────────────
+
+export const registerForEvent = async (
+  name: string,
+  email: string,
+  campaignId: string,
+  source?: string
+): Promise<boolean> => {
+  const { error } = await supabase
+    .from('event_registrations')
+    .insert({ campaign_id: campaignId, name, email, source: source ?? null });
+  if (error) {
+    console.error('[registerForEvent]', error);
+    return false;
+  }
+  return true;
+};
+
+export const adminGetEventRegistrations = async (): Promise<
+  { id: string; campaign_id: string; name: string; email: string; source: string | null; created_at: string }[]
+> => {
+  const { data, error } = await supabase
+    .from('event_registrations')
+    .select('id, campaign_id, name, email, source, created_at')
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('[adminGetEventRegistrations]', error);
+    return [];
+  }
+  return data ?? [];
+};

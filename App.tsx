@@ -41,6 +41,7 @@ import { StreamsOfLife } from './pages/resources/StreamsOfLife';
 import { PremiumResources } from './pages/PremiumResources';
 import { TKIQuestionnaire } from './pages/resources/TKIQuestionnaire';
 import { CoachDogSpark } from './pages/resources/CoachDogSpark';
+import StrategyNotResolutions from './pages/events/StrategyNotResolutions';
 
 interface ErrorBoundaryProps {
   children?: ReactNode;
@@ -151,6 +152,7 @@ const App: React.FC = () => {
               <Route path="/coach-hub" element={<CoachHubPage />} />
               <Route path="/community" element={<CommunityPage />} />
               <Route path="/community/:slug" element={<CommunityThreadPage />} />
+              <Route path="/events/strategy-not-resolutions" element={<StrategyNotResolutions />} />
             </Routes>
           </Layout>
         </AuthProvider>
