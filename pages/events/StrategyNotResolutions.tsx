@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle, Calendar, Clock, Monitor, ChevronDown, ChevronUp, ArrowRight } from 'lucide-react';
-import { Layout } from '../../components/Layout';
 import { registerForEvent } from '../../services/supabaseService';
 
 // Swap this for the real Eventbrite / Zoom URL when confirmed
@@ -101,8 +100,7 @@ const FaqItem: React.FC<{ q: string; a: string }> = ({ q, a }) => {
 
 const StrategyNotResolutions: React.FC = () => {
   return (
-    <Layout>
-      <div className="bg-slate-50 min-h-screen">
+    <div className="bg-slate-50 min-h-screen">
 
         {/* ── Hero ───────────────────────────────────────────────────────── */}
         <div className="relative overflow-hidden" style={{ background: '#111c32' }}>
@@ -344,8 +342,7 @@ const StrategyNotResolutions: React.FC = () => {
           </div>
         </div>
 
-      </div>
-    </Layout>
+    </div>
   );
 };
 
