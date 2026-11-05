@@ -32,7 +32,7 @@ export const PrivacyPolicy: React.FC = () => {
           </p>
           <div className="bg-slate-50 rounded-xl p-4 text-slate-700">
             <p className="font-medium">CoachDog Ltd</p>
-            <p>Email: <a href="mailto:legal@coachdog.co.uk" className="text-brand-600 hover:underline">legal@coachdog.co.uk</a></p>
+            <p>Email: <a href="mailto:coachdogverify@gmail.com" className="text-brand-600 hover:underline">coachdogverify@gmail.com</a></p>
           </div>
         </section>
 
@@ -234,7 +234,7 @@ export const PrivacyPolicy: React.FC = () => {
           </ul>
           <p className="text-slate-600 text-sm">
             You have the right to request a copy of the relevant safeguards by contacting us at{' '}
-            <a href="mailto:legal@coachdog.co.uk" className="text-brand-600 hover:underline">legal@coachdog.co.uk</a>.
+            <a href="mailto:coachdogverify@gmail.com" className="text-brand-600 hover:underline">coachdogverify@gmail.com</a>.
           </p>
         </section>
 
@@ -319,7 +319,7 @@ export const PrivacyPolicy: React.FC = () => {
           </div>
           <div className="bg-brand-50 border border-brand-200 rounded-xl p-4">
             <p className="font-bold text-slate-900 mb-2">How to Exercise Your Rights</p>
-            <p className="text-slate-700 text-sm mb-2">To exercise any of your rights, please submit a request to: <a href="mailto:legal@coachdog.co.uk" className="text-brand-600 hover:underline font-medium">legal@coachdog.co.uk</a></p>
+            <p className="text-slate-700 text-sm mb-2">To exercise any of your rights, please submit a request to: <a href="mailto:coachdogverify@gmail.com" className="text-brand-600 hover:underline font-medium">coachdogverify@gmail.com</a></p>
             <ul className="ml-4 list-disc space-y-1 text-slate-600 text-sm">
               <li><strong>Identity Verification:</strong> We may require proof of identity before processing your request.</li>
               <li><strong>Response Timeframe:</strong> We will respond to all legitimate requests within one month. This may be extended by a further two months if the request is complex; we will notify you if this applies.</li>
@@ -344,7 +344,7 @@ export const PrivacyPolicy: React.FC = () => {
           </div>
           <p className="text-slate-600 text-sm">
             We would, however, appreciate the opportunity to address your concerns before you approach the ICO. Please contact us first at{' '}
-            <a href="mailto:legal@coachdog.co.uk" className="text-brand-600 hover:underline">legal@coachdog.co.uk</a>{' '}
+            <a href="mailto:coachdogverify@gmail.com" className="text-brand-600 hover:underline">coachdogverify@gmail.com</a>{' '}
             and we will do our utmost to resolve the matter.
           </p>
         </section>
@@ -374,8 +374,8 @@ export const PrivacyPolicy: React.FC = () => {
             <p className="text-slate-900 font-bold mb-1">CoachDog Ltd</p>
             <p className="text-slate-700">
               Email:{' '}
-              <a href="mailto:legal@coachdog.co.uk" className="text-brand-600 hover:underline font-medium">
-                legal@coachdog.co.uk
+              <a href="mailto:coachdogverify@gmail.com" className="text-brand-600 hover:underline font-medium">
+                coachdogverify@gmail.com
               </a>
             </p>
           </div>

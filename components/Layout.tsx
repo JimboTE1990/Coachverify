@@ -399,7 +399,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                <h4 className="font-bold text-slate-900 mb-4">Support</h4>
                <ul className="space-y-2 text-sm text-slate-500 font-medium">
                  <li><Link to="/contact" className="hover:text-brand-600">Contact Us</Link></li>
-                 <li><a href="mailto:accounts@coachdog.co.uk" className="hover:text-brand-600">accounts@coachdog.co.uk</a></li>
+                 <li><a href="mailto:coachdogverify@gmail.com" className="hover:text-brand-600">coachdogverify@gmail.com</a></li>
                </ul>
             </div>
 

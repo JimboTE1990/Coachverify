@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   CheckCircle, Calendar, Clock, Monitor, ChevronDown, ChevronUp, ArrowRight,
-  FileText, Eye, Zap, PlayCircle, Users, TrendingUp, Compass, Briefcase, X,
+  FileText, Eye, Zap, PlayCircle, Users, TrendingUp, Compass, Briefcase, X, Ticket,
 } from 'lucide-react';
 import { registerForEvent } from '../../services/supabaseService';
 
@@ -262,29 +262,72 @@ const StrategyNotResolutions: React.FC = () => {
     <div className="bg-slate-50 min-h-screen">
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden" style={{ background: '#111c32' }}>
-        <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full opacity-10" style={{ background: '#0d9488', filter: 'blur(80px)' }} />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full opacity-10" style={{ background: '#6366f1', filter: 'blur(80px)' }} />
-        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center z-10">
-          <span className="inline-flex items-center bg-white/10 border border-white/20 text-white/90 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6">
-            Live online workshop for coaches
-          </span>
-          <h1 className="font-display font-extrabold text-4xl sm:text-5xl text-white tracking-tight mb-5 leading-tight">
-            Strategy, not resolutions.
-          </h1>
-          <p className="text-white/80 text-lg sm:text-xl leading-relaxed mb-8 max-w-2xl mx-auto">
-            In two focused hours, build a clear, practical strategy for your coaching practice in 2027, so this is the year the right clients find you.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-10 text-sm text-white/70">
-            <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4 text-yellow-400" /> Wednesday 13 January 2027</span>
-            <span className="flex items-center gap-1.5"><Clock className="h-4 w-4 text-yellow-400" /> 7–9pm UK time</span>
-            <span className="flex items-center gap-1.5"><Monitor className="h-4 w-4 text-yellow-400" /> Live on Zoom, replay included</span>
-          </div>
-          <div className="max-w-sm mx-auto">
-            <RegisterForm source="hero" dark />
-            <p className="mt-3 text-xs text-white/50 leading-relaxed">
-              An interactive, hands-on workshop. Your £19 comes off CoachDog membership if you join within 72 hours of the event.
-            </p>
+      <div className="relative overflow-hidden bg-white">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 lg:pt-20 lg:pb-20 z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+
+            {/* Copy + form */}
+            <div>
+              <span className="inline-flex items-center gap-2 bg-brand-50 text-brand-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6">
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
+                Live online workshop
+              </span>
+              <h1 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl tracking-tight mb-5 leading-tight">
+                <span className="text-brand-600">Strategy,</span><br />
+                <span className="text-slate-900">not resolutions.</span>
+              </h1>
+              <p className="text-slate-500 text-lg sm:text-xl leading-relaxed mb-8 max-w-md">
+                Build your 2027 coaching practice plan in one focused, two-hour workshop.
+              </p>
+
+              {/* Info strip */}
+              <div className="inline-flex flex-wrap items-center gap-6 sm:gap-8 bg-white border border-slate-100 shadow-sm rounded-2xl px-6 py-4 mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-brand-50 text-brand-600 flex-shrink-0">
+                    <Calendar className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900 leading-tight">Wed 13 Jan</p>
+                    <p className="text-xs text-slate-400">2027</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 flex-shrink-0">
+                    <Clock className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900 leading-tight">7–9pm</p>
+                    <p className="text-xs text-slate-400">UK time, on Zoom</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-amber-50 text-amber-500 flex-shrink-0">
+                    <Ticket className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900 leading-tight">£19</p>
+                    <p className="text-xs text-slate-400">Replay included</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="max-w-sm">
+                <RegisterForm source="hero" />
+                <p className="mt-3 text-xs text-slate-400 leading-relaxed">
+                  An interactive, hands-on workshop. Your £19 comes off CoachDog membership if you join within 72 hours of the event.
+                </p>
+              </div>
+            </div>
+
+            {/* Illustration */}
+            <div className="relative">
+              <img
+                src="/events/strategy-workshop-illustration.png"
+                alt="A CoachDog coach planning their 2027 strategy on a laptop"
+                className="w-full h-auto"
+              />
+            </div>
+
           </div>
         </div>
       </div>
@@ -473,7 +516,7 @@ const StrategyNotResolutions: React.FC = () => {
               { q: 'Will I be put on the spot?', a: "No. You'll work through the workbook at your own pace, and the breakout pairs are relaxed and supportive. Cameras are encouraged but optional." },
               { q: 'Is this a sales pitch?', a: "It's a working session first. Almost all of the two hours is spent building your strategy. At the end, we'll share a short, attendee-only offer for CoachDog, and there's no obligation to take it." },
               { q: 'What do I need?', a: 'Zoom on a laptop or tablet, the workbook (sent before the event) and a quiet two hours.' },
-              { q: "What's your refund policy?", a: '[Confirm the policy before publishing - e.g. full refund up to 48 hours before the event.]' },
+              { q: "What's your refund policy?", a: "Full refund if you cancel at least 48 hours before the event. Email coachdogverify@gmail.com and we'll sort it." },
             ].map((item, i) => <FaqItem key={i} q={item.q} a={item.a} />)}
           </div>
         </div>

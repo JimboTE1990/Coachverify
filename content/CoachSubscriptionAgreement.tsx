@@ -228,8 +228,8 @@ export const CoachSubscriptionAgreement: React.FC = () => {
           <p className="text-slate-900 font-medium mb-2">CoachDog Legal Team</p>
           <p className="text-slate-700 mb-1">
             <strong>Email:</strong>{' '}
-            <a href="mailto:legal@coachdog.co.uk" className="text-brand-600 hover:underline">
-              legal@coachdog.co.uk
+            <a href="mailto:coachdogverify@gmail.com" className="text-brand-600 hover:underline">
+              coachdogverify@gmail.com
             </a>
           </p>
           <p className="text-slate-700">

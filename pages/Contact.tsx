@@ -94,7 +94,7 @@ export const Contact: React.FC = () => {
 
           <div className="mt-10 pt-6 border-t border-slate-100 text-center">
             <p className="text-sm text-slate-500">
-              Direct Email Support: <a href="mailto:accounts@coachdog.co.uk" className="text-brand-600 font-medium hover:underline">accounts@coachdog.co.uk</a>
+              Direct Email Support: <a href="mailto:coachdogverify@gmail.com" className="text-brand-600 font-medium hover:underline">coachdogverify@gmail.com</a>
             </p>
           </div>
         </div>
