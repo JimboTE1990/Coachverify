@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, FileText, ArrowRight, Lock } from 'lucide-react';
+import { BookOpen, FileText, ArrowRight } from 'lucide-react';
+import { ResourceTabs } from '../components/resources/ResourceTabs';
 
 const FREE_RESOURCES = [
   {
@@ -45,6 +46,8 @@ export const Resources: React.FC = () => {
       {/* Article listing */}
       <section className="py-14 lg:py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
+
+          <ResourceTabs />
 
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-xl font-display font-extrabold text-slate-900">Free Resources</h2>
@@ -109,16 +112,6 @@ export const Resources: React.FC = () => {
                 </div>
               </article>
             ))}
-          </div>
-
-          {/* Premium note */}
-          <div className="mt-10 pt-8 border-t border-slate-100 flex items-center gap-2 text-sm text-slate-500">
-            <Lock className="h-4 w-4 text-amber-500 flex-shrink-0" />
-            CoachDog members can also access{' '}
-            <Link to="/resources/premium" className="text-amber-600 hover:text-amber-700 font-semibold underline underline-offset-2">
-              premium resources
-            </Link>
-            .
           </div>
         </div>
       </section>

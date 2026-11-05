@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Lock, Sparkles, BookOpen, ChevronRight, ArrowRight, Play } from 'lucide-react';
+import { Lock, Sparkles, ChevronRight, ArrowRight, Play } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { ResourceTabs } from '../components/resources/ResourceTabs';
 
 const isPaidMember = (coach: any) =>
   coach && ['trial', 'active', 'lifetime'].includes(coach.subscriptionStatus || '');
@@ -50,6 +51,8 @@ export const PremiumResources: React.FC = () => {
       {/* Resources grid */}
       <section className="py-14 lg:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
+
+          <ResourceTabs />
 
           <div className="grid sm:grid-cols-2 gap-6 mb-12">
             {/* CoachDog Spark card */}
@@ -100,14 +103,6 @@ export const PremiumResources: React.FC = () => {
                   Open tool <ArrowRight className="h-4 w-4" />
                 </span>
               </div>
-            </Link>
-          </div>
-
-          {/* Back link */}
-          <div>
-            <Link to="/resources" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-emerald-700 transition-colors">
-              <BookOpen className="h-4 w-4" />
-              Back to free resources
             </Link>
           </div>
         </div>

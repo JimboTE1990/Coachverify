@@ -25,10 +25,11 @@ const CarouselSection: React.FC<{
   sectionCls:     string;
   title:          string;
   subtitle?:      string;
+  headingAction?: React.ReactNode;
   cards:          StackCard[];
   cardMaxWidth?:  string;
   cardMaxHeight?: string;
-}> = ({ id, sectionCls, title, subtitle, cards, cardMaxWidth, cardMaxHeight }) => {
+}> = ({ id, sectionCls, title, subtitle, headingAction, cards, cardMaxWidth, cardMaxHeight }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const n = cards.length;
@@ -76,9 +77,10 @@ const CarouselSection: React.FC<{
         <div className="flex flex-col items-center h-full px-4 pt-10 pb-6">
 
           {/* Heading */}
-          <div className="text-center mb-6 flex-shrink-0">
+          <div className="relative text-center mb-6 flex-shrink-0">
             <h2 className="text-3xl font-display font-extrabold text-slate-900 sm:text-4xl">{title}</h2>
             {subtitle && <p className="mt-2 text-base text-slate-500 max-w-lg mx-auto">{subtitle}</p>}
+            {headingAction}
           </div>
 
           {/* Carousel viewport */}
@@ -153,6 +155,47 @@ const CarouselSection: React.FC<{
 
         </div>
       </div>
+    </div>
+  );
+};
+
+// ─── "Unsure what is meant by a certified coach?" info popover ────────────────
+
+const CertifiedCoachInfoPopover: React.FC = () => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="inline-block relative mt-2">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        aria-label="What does certified coach mean?"
+        className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-trust-100 text-trust-700 hover:bg-trust-200 transition-colors"
+      >
+        <HelpCircle className="h-4 w-4" />
+      </button>
+      {open && (
+        <div className="absolute z-20 left-1/2 -translate-x-1/2 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 p-4 text-left animate-fade-in-up">
+          <Link
+            to="/how-to-find-a-certified-verified-coach"
+            className="text-sm font-medium text-slate-700 hover:text-trust-700 leading-snug inline-flex items-start gap-1.5"
+            onClick={() => setOpen(false)}
+          >
+            <span>Unsure what is meant by a certified coach? Read this article.</span>
+            <ArrowRight className="h-4 w-4 flex-shrink-0 mt-0.5" />
+          </Link>
+        </div>
+      )}
     </div>
   );
 };
@@ -240,7 +283,8 @@ export const Home: React.FC = () => {
               <span className="flex-shrink-0 text-base">📅</span>
               <span className="truncate">
                 <span className="font-semibold">Live workshop · 13 Jan 2027</span>
-                <span className="hidden sm:inline text-white/80"> · Strategy, Not Resolutions — £19</span>
+                <span className="hidden sm:inline text-white/80"> · Strategy, Not Resolutions</span>
+                <span className="hidden lg:inline text-white/80"> - Build a clear, practical strategy for your coaching practice in 2027.</span>
               </span>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
@@ -405,6 +449,7 @@ export const Home: React.FC = () => {
         sectionCls="bg-slate-50"
         title="Why Use CoachDog?"
         subtitle="Simple, trustworthy, effective."
+        headingAction={<CertifiedCoachInfoPopover />}
         cardMaxWidth="480px"
         cardMaxHeight="55vh"
         cards={[

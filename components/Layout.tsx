@@ -201,53 +201,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                         colorClass="bg-teal-50 text-teal-700 group-hover:bg-teal-600 group-hover:text-white"
                       />
                       <div className="border-t border-slate-100 my-2 mx-3"></div>
-                      {!isAuthenticated && (
-                        <>
-                          <NavMenuItem
-                            to="/coach-login"
-                            icon={LayoutDashboard}
-                            label="Coach Portal Log In"
-                            colorClass="bg-slate-100 text-slate-700 group-hover:bg-slate-800 group-hover:text-white"
-                          />
-                          <NavMenuItem
-                            to="/coach-signup"
-                            icon={UserPlus}
-                            label="Join as a Coach"
-                            colorClass="bg-brand-50 text-brand-600 group-hover:bg-brand-600 group-hover:text-white"
-                          />
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Resources Dropdown */}
-              <div className="relative group">
-                <button
-                  className={`flex items-center text-lg font-display font-bold transition-all focus:outline-none group ${openDropdown === 'resources' ? 'text-brand-600' : 'text-slate-700 hover:text-brand-600'}`}
-                  onClick={() => toggleDropdown('resources')}
-                >
-                  Resources
-                  <ChevronDown className={`ml-1.5 h-5 w-5 transition-transform duration-200 ${openDropdown === 'resources' ? 'rotate-180 text-brand-600' : 'text-slate-400 group-hover:text-brand-600'}`} />
-                </button>
-                {openDropdown === 'resources' && (
-                  <div className="absolute left-1/2 -translate-x-1/2 mt-6 w-96 rounded-3xl shadow-2xl bg-white border border-slate-100 ring-1 ring-black ring-opacity-5 animate-fade-in-up overflow-hidden z-50">
-                    <div className="h-1.5 bg-gradient-to-r from-emerald-400 to-teal-500"></div>
-                    <div className="p-3 space-y-1">
                       <NavMenuItem
                         to="/resources"
                         icon={BookOpen}
-                        label="Coaching Resources"
-                        desc="Free tools and worksheets for coaches and clients"
+                        label="Resources"
+                        desc="Free and premium tools, guides and worksheets"
                         colorClass="bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white"
-                      />
-                      <NavMenuItem
-                        to="/resources/premium"
-                        icon={Lock}
-                        label="Premium Resources"
-                        desc="For paid plan users and free trial coaches"
-                        colorClass="bg-amber-50 text-amber-500 group-hover:bg-amber-500 group-hover:text-white"
                       />
                     </div>
                   </div>
@@ -290,28 +249,30 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   </Link>
                 )}
 
-                {/* Get Matched Button or Profile Dropdown */}
+                {/* Login / Join Buttons or Profile Dropdown */}
                 {isAuthenticated ? (
                   <ProfileDropdown />
                 ) : (
-                  <Link to="/questionnaire" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 transition-all border border-slate-200 shadow-sm">
-                    <span className="flex items-center text-base">Get Matched <ClipboardList className="ml-2 h-4 w-4" /></span>
-                  </Link>
+                  <>
+                    <Link
+                      to="/coach-login"
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 transition-all border border-slate-200 shadow-sm"
+                    >
+                      <LogIn className="h-4 w-4" />
+                      Login
+                    </Link>
+                    <Link
+                      to="/coach-signup"
+                      className="relative overflow-hidden group bg-brand-600 text-white px-6 py-2.5 rounded-full font-bold shadow-lg hover:shadow-brand-500/30 hover:bg-brand-700 transition-all hover:-translate-y-0.5 flex items-center gap-2"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      Join
+                    </Link>
+                  </>
                 )}
 
                 {/* Review prompt pill — shown to authenticated coaches who haven't reviewed */}
                 <ReviewPromptBanner />
-
-                {/* Coach Login Button - for unauthenticated users */}
-                {!isAuthenticated && (
-                  <Link
-                    to="/coach-login"
-                    className="relative overflow-hidden group bg-brand-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-brand-500/30 hover:bg-brand-700 transition-all hover:-translate-y-0.5 flex items-center gap-2"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    Coach Login
-                  </Link>
-                )}
               </div>
             </nav>
 
@@ -354,10 +315,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 <h3 className="text-sm font-extrabold text-emerald-600 uppercase tracking-widest mb-4 flex items-center"><BookOpen className="h-4 w-4 mr-2" /> Resources</h3>
                 <div className="space-y-3">
                   <Link to="/resources" className="flex items-center px-5 py-4 rounded-2xl hover:bg-slate-50 text-slate-700 font-bold" onClick={closeMobileMenu}>
-                    <BookOpen className="h-6 w-6 mr-4 text-slate-400" /> Coaching Resources
-                  </Link>
-                  <Link to="/resources/premium" className="flex items-center px-5 py-4 rounded-2xl bg-amber-50 text-amber-700 font-bold hover:bg-amber-100 transition-colors" onClick={closeMobileMenu}>
-                    <Lock className="h-6 w-6 mr-4 text-amber-400" /> Premium Resources <span className="ml-2 text-xs font-semibold text-amber-500 bg-amber-100 px-2 py-0.5 rounded-full">Paid plans</span>
+                    <BookOpen className="h-6 w-6 mr-4 text-slate-400" /> Resources <span className="ml-2 text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">Free &amp; premium</span>
                   </Link>
                   <Link to="/resources/spark" className="flex items-center px-5 py-4 rounded-2xl bg-indigo-50 text-indigo-700 font-bold hover:bg-indigo-100 transition-colors" onClick={closeMobileMenu}>
                     <svg className="h-6 w-6 mr-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
