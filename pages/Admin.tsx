@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { adminGetAllCoaches, toggleFlagReview, adminGetProductReviews, adminActionProductReview, adminGetEventRegistrations } from '../services/supabaseService';
+import { adminGetAllCoaches, toggleFlagReview, adminGetProductReviews, adminActionProductReview, adminGetEventRegistrations, EventRegistrationRow } from '../services/supabaseService';
 import { Coach, ProductReview } from '../types';
 import { Lock, FileText, Flag, Star, MessageSquare, ChevronLeft, ChevronRight, Download, Copy, Check, BookOpen, Users, XCircle, CalendarDays } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+
+// Friendly display names for event campaign IDs - falls back to the raw
+// campaign_id for anything not listed here, so new campaigns never break.
+const EVENT_CAMPAIGN_NAMES: Record<string, string> = {
+  'strategy-not-resolutions-jan-2027': 'Strategy, Not Resolutions (13 Jan 2027)',
+};
+const getCampaignDisplayName = (campaignId: string): string => EVENT_CAMPAIGN_NAMES[campaignId] ?? campaignId;
 
 interface ContentSubmission {
   id: string;
@@ -29,10 +36,7 @@ export const AdminDashboard: React.FC = () => {
   const [coachPage, setCoachPage] = useState(1);
   const [activeTab, setActiveTab] = useState<'reviews' | 'coaches' | 'content' | 'leads' | 'expired' | 'campaigns'>('reviews');
   const [communityLeads, setCommunityLeads] = useState<{ id: string; display_name: string; email: string | null; marketing_opt_in: boolean; created_at: string }[]>([]);
-  const [eventRegistrations, setEventRegistrations] = useState<{
-    id: string; campaign_id: string; name: string | null; email: string; source: string | null;
-    status: string; amount_paid_pence: number | null; paid_at: string | null; created_at: string;
-  }[]>([]);
+  const [eventRegistrations, setEventRegistrations] = useState<EventRegistrationRow[]>([]);
   const [campaignFilter, setCampaignFilter] = useState<string>('all');
   const [contentSubmissions, setContentSubmissions] = useState<ContentSubmission[]>([]);
   const [contentFilter, setContentFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
@@ -59,7 +63,7 @@ export const AdminDashboard: React.FC = () => {
           adminGetProductReviews('pending', adminPassword),
           supabase.from('coach_content_submissions').select('*').order('created_at', { ascending: false }),
           supabase.from('community_users').select('id, display_name, email, marketing_opt_in, created_at').order('created_at', { ascending: false }),
-          adminGetEventRegistrations(),
+          adminGetEventRegistrations(adminPassword),
         ]);
         setCoaches(coachData);
         setApprovedProductReviews(approvedData);
@@ -928,9 +932,9 @@ export const AdminDashboard: React.FC = () => {
         const filtered = campaignFilter === 'all' ? eventRegistrations : eventRegistrations.filter(r => r.campaign_id === campaignFilter);
 
         const downloadCsv = () => {
-          const header = 'Name,Email,Campaign,Source,Status,Amount,Registered';
+          const header = 'Name,Email,Event,Source,Status,Amount,Registered';
           const body = filtered.map(r =>
-            `"${(r.name ?? '').replace(/"/g, '""')}","${r.email.replace(/"/g, '""')}","${r.campaign_id}","${r.source ?? ''}","${r.status}","${r.amount_paid_pence != null ? (r.amount_paid_pence / 100).toFixed(2) : ''}","${new Date(r.created_at).toLocaleDateString('en-GB')}"`
+            `"${(r.coach?.name ?? r.name ?? '').replace(/"/g, '""')}","${r.email.replace(/"/g, '""')}","${getCampaignDisplayName(r.campaign_id).replace(/"/g, '""')}","${r.source ?? ''}","${r.status}","${r.amount_paid_pence != null ? (r.amount_paid_pence / 100).toFixed(2) : ''}","${new Date(r.created_at).toLocaleDateString('en-GB')}"`
           ).join('\n');
           const blob = new Blob([header + '\n' + body], { type: 'text/csv' });
           const url = URL.createObjectURL(blob);
@@ -944,7 +948,7 @@ export const AdminDashboard: React.FC = () => {
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
               <div>
                 <h3 className="font-bold text-slate-900 text-base">Event registrations</h3>
-                <p className="text-sm text-slate-500 mt-0.5">Paid ticket purchases from event landing pages</p>
+                <p className="text-sm text-slate-500 mt-0.5">Paid ticket purchases and free member claims from event landing pages</p>
               </div>
               <div className="flex items-center gap-2">
                 <select
@@ -953,7 +957,7 @@ export const AdminDashboard: React.FC = () => {
                   className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
                 >
                   {campaignIds.map(id => (
-                    <option key={id} value={id}>{id === 'all' ? 'All campaigns' : id}</option>
+                    <option key={id} value={id}>{id === 'all' ? 'All events' : getCampaignDisplayName(id)}</option>
                   ))}
                 </select>
                 <button
@@ -973,8 +977,9 @@ export const AdminDashboard: React.FC = () => {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-100">
+                      <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Name</th>
                       <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Email</th>
-                      <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Campaign</th>
+                      <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Event</th>
                       <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Source</th>
                       <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Status</th>
                       <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Amount</th>
@@ -984,14 +989,19 @@ export const AdminDashboard: React.FC = () => {
                   <tbody>
                     {filtered.map(reg => (
                       <tr key={reg.id} className="border-b border-slate-50 hover:bg-slate-50">
+                        <td className="py-2.5 pr-4 font-medium text-slate-800">{reg.coach?.name ?? reg.name ?? ' - '}</td>
                         <td className="py-2.5 pr-4 text-slate-600">{reg.email}</td>
                         <td className="py-2.5 pr-4">
-                          <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full">{reg.campaign_id}</span>
+                          <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full">{getCampaignDisplayName(reg.campaign_id)}</span>
                         </td>
                         <td className="py-2.5 pr-4 text-slate-400 text-xs">{reg.source ?? ' - '}</td>
                         <td className="py-2.5 pr-4">
-                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${reg.status === 'paid' ? 'text-green-700 bg-green-50' : 'text-slate-500 bg-slate-100'}`}>
-                            {reg.status === 'paid' ? 'Paid' : reg.status}
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                            reg.status === 'paid' ? 'text-green-700 bg-green-50'
+                            : reg.status === 'free' ? 'text-blue-700 bg-blue-50'
+                            : 'text-slate-500 bg-slate-100'
+                          }`}>
+                            {reg.status === 'paid' ? 'Paid' : reg.status === 'free' ? 'Free' : reg.status}
                           </span>
                         </td>
                         <td className="py-2.5 pr-4 text-slate-600">

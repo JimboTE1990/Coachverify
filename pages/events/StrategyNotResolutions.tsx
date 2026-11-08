@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   CheckCircle, Calendar, Clock, Monitor, ChevronDown, ChevronUp, ArrowRight,
   FileText, Eye, Zap, PlayCircle, Users, TrendingUp, Compass, Briefcase, X, Ticket,
 } from 'lucide-react';
-import { createEventCheckoutSession } from '../../services/eventCheckoutService';
+import { createEventCheckoutSession, createEventFreeBooking } from '../../services/eventCheckoutService';
+import { useAuth } from '../../hooks/useAuth';
 
 const CAMPAIGN_ID = 'strategy-not-resolutions-jan-2027';
 
@@ -27,17 +28,25 @@ const useScrollReveal = (threshold = 0.12) => {
 
 // ── Buy ticket CTA - straight to Stripe Checkout, no form ─────────────────────
 // On success Stripe redirects to a dedicated success page (not an inline card).
+// Paying CoachDog members (active or lifetime subscription) see a free-claim
+// button instead - trial/expired/onboarding/anonymous visitors still pay.
 
-const TicketCTA: React.FC<{ source: string; dark?: boolean }> = ({ source, dark = false }) => {
+const TicketCTA: React.FC<{ source: string; dark?: boolean; isFreeEligible: boolean }> = ({ source, dark = false, isFreeEligible }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleClick = async () => {
     setLoading(true);
     setError(null);
     try {
-      await createEventCheckoutSession({ campaignId: CAMPAIGN_ID, source });
-      // Note: Stripe will redirect; this code won't execute after that.
+      if (isFreeEligible) {
+        await createEventFreeBooking({ campaignId: CAMPAIGN_ID, source });
+        navigate('/events/strategy-not-resolutions/success');
+      } else {
+        await createEventCheckoutSession({ campaignId: CAMPAIGN_ID, source });
+        // Note: Stripe will redirect; this code won't execute after that.
+      }
     } catch (err) {
       setLoading(false);
       setError(err instanceof Error ? err.message : 'Failed to start checkout. Please try again.');
@@ -48,7 +57,11 @@ const TicketCTA: React.FC<{ source: string; dark?: boolean }> = ({ source, dark 
     <div>
       <button type="button" onClick={handleClick} disabled={loading}
         className="w-full flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-[#111c32] font-bold px-6 py-3.5 rounded-xl shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed text-sm">
-        {loading ? 'Redirecting to checkout…' : <>Buy Ticket - £19 <ArrowRight className="h-4 w-4" /></>}
+        {loading
+          ? (isFreeEligible ? 'Claiming your ticket…' : 'Redirecting to checkout…')
+          : isFreeEligible
+            ? <>Claim Your Free Ticket <ArrowRight className="h-4 w-4" /></>
+            : <>Buy Ticket - £19 <ArrowRight className="h-4 w-4" /></>}
       </button>
       {error && (
         <p className={`mt-2 text-xs ${dark ? 'text-red-300' : 'text-red-600'}`}>{error}</p>
@@ -190,6 +203,8 @@ const StrategyNotResolutions: React.FC = () => {
   const [activePersona, setActivePersona] = useState<number | null>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const ticketIncludes = useScrollReveal();
+  const { isAuthenticated, coach } = useAuth();
+  const isFreeEligible = isAuthenticated && (coach?.subscriptionStatus === 'active' || coach?.subscriptionStatus === 'lifetime');
 
   const personas = [
     { icon: Users, label: 'Building a client base', text: 'An accredited or training coach who wants a steadier flow of the right clients' },
@@ -297,7 +312,7 @@ const StrategyNotResolutions: React.FC = () => {
               </div>
 
               <div className="max-w-sm">
-                <TicketCTA source="hero" />
+                <TicketCTA source="hero" isFreeEligible={isFreeEligible} />
                 <p className="mt-3 text-xs text-slate-400 leading-relaxed">
                   An interactive, hands-on workshop. Your £19 comes off CoachDog membership if you join within 72 hours of the event.
                 </p>
@@ -515,7 +530,7 @@ const StrategyNotResolutions: React.FC = () => {
             Make 2027 the year it all fits together.
           </h2>
           <p className="text-white/70 text-base mb-8">Two hours. One clear strategy. A practice the right clients can find.</p>
-          <TicketCTA source="closing-cta" dark />
+          <TicketCTA source="closing-cta" dark isFreeEligible={isFreeEligible} />
         </div>
       </div>
 

@@ -5,6 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
+import { createClient } from '@supabase/supabase-js';
 
 // Load environment variables
 dotenv.config();
@@ -162,6 +163,77 @@ app.post('/api/create-event-checkout-session', async (req, res) => {
     console.error('[Dev API] Error creating event ticket checkout session:', error);
     return res.status(500).json({
       error: error.message || 'Failed to create checkout session',
+    });
+  }
+});
+
+// Claim a free event ticket - logged-in coaches with an active or lifetime
+// subscription only. Eligibility is re-checked against the database here,
+// never trusted from the client, same posture as the production function.
+app.post('/api/create-event-free-booking', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const supabaseUrl = process.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseAnonKey || !serviceRoleKey) {
+      throw new Error('Missing Supabase env vars (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY)');
+    }
+
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // coaches.id is its own PK, distinct from the auth user id - look up by
+    // user_id and use the returned id for the event_registrations FK below.
+    const { data: coachRow, error: coachError } = await userClient
+      .from('coaches')
+      .select('id, subscription_status')
+      .eq('user_id', user.id)
+      .single();
+
+    if (coachError || !coachRow || !['active', 'lifetime'].includes(coachRow.subscription_status)) {
+      return res.status(403).json({ error: 'Not eligible for a free ticket' });
+    }
+
+    const { campaignId, source } = req.body;
+    if (!campaignId) {
+      return res.status(400).json({ error: 'Missing required field: campaignId' });
+    }
+
+    console.log('[Dev API] Granting free event ticket:', { coachId: coachRow.id, campaignId, source });
+
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    const { error: insertError } = await adminClient.from('event_registrations').insert({
+      campaign_id: campaignId,
+      email: user.email,
+      source: source || 'unknown',
+      status: 'free',
+      coach_id: coachRow.id,
+      amount_paid_pence: 0,
+      stripe_session_id: null,
+      paid_at: new Date().toISOString(),
+    });
+
+    // 23505 = unique violation - already claimed this campaign, treat as success
+    if (insertError && insertError.code !== '23505') {
+      throw insertError;
+    }
+
+    return res.status(200).json({ ok: true });
+
+  } catch (error) {
+    console.error('[Dev API] Error granting free event ticket:', error);
+    return res.status(500).json({
+      error: error.message || 'Failed to claim free ticket',
     });
   }
 });

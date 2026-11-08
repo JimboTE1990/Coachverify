@@ -1842,19 +1842,30 @@ export const deleteTKIResult = async (resultId: string): Promise<boolean> => {
 
 // ── Event registrations ───────────────────────────────────────────────────────
 
-export const adminGetEventRegistrations = async (): Promise<
-  {
-    id: string; campaign_id: string; name: string | null; email: string; source: string | null;
-    status: string; amount_paid_pence: number | null; paid_at: string | null; created_at: string;
-  }[]
-> => {
-  const { data, error } = await supabase
-    .from('event_registrations')
-    .select('id, campaign_id, name, email, source, status, amount_paid_pence, paid_at, created_at')
-    .order('created_at', { ascending: false });
-  if (error) {
-    console.error('[adminGetEventRegistrations]', error);
+export interface EventRegistrationRow {
+  id: string; campaign_id: string; name: string | null; email: string; source: string | null;
+  status: string; amount_paid_pence: number | null; paid_at: string | null; created_at: string;
+  coach_id: string | null; coach: { name: string } | null;
+}
+
+/**
+ * Reads event_registrations via a password-verified edge function (service
+ * role), same pattern as adminGetProductReviews - the admin dashboard's
+ * "auth" is just a shared password, not a real Supabase login, so it can't
+ * rely on RLS policies scoped to the authenticated role.
+ */
+export const adminGetEventRegistrations = async (adminPassword: string): Promise<EventRegistrationRow[]> => {
+  const { data, error } = await supabase.functions.invoke('admin-event-registrations', {
+    body: {},
+    headers: {
+      'x-admin-password': adminPassword,
+      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+    },
+  });
+
+  if (error || !data?.registrations) {
+    console.error('[adminGetEventRegistrations]', error || data);
     return [];
   }
-  return data ?? [];
+  return data.registrations as EventRegistrationRow[];
 };
