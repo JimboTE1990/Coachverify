@@ -617,7 +617,7 @@ export const CommunityThreadPage: React.FC = () => {
                       </div>
                     )}
                     <div className="p-5 sm:p-6 flex gap-4">
-                      {/* Avatar — links to coach profile */}
+                      {/* Avatar - links to coach profile */}
                       <div className="flex-shrink-0">
                         {reply.coach_id ? (
                           <Link to={`/coach/${reply.coach_id}`}>
@@ -743,7 +743,7 @@ export const CommunityThreadPage: React.FC = () => {
               </div>
               {!currentUser && (
                 <p className="text-xs text-amber-600 mt-2 bg-amber-50 px-4 py-2 rounded-xl">
-                  Your coach session is loading — if this persists, try refreshing the page.
+                  Your coach session is loading - if this persists, try refreshing the page.
                 </p>
               )}
             </>
@@ -753,7 +753,7 @@ export const CommunityThreadPage: React.FC = () => {
                 <ShieldCheck className="h-6 w-6" style={{ color: '#2D8A7E' }} />
               </div>
               <p className="text-sm font-semibold text-slate-700 mb-1">Only verified CoachDog coaches can reply</p>
-              <p className="text-xs text-slate-400 mb-4">Replies come from accredited, vetted coaches — so you know the advice is legit.</p>
+              <p className="text-xs text-slate-400 mb-4">Replies come from accredited, vetted coaches - so you know the advice is legit.</p>
               <Link to="/coach-login" className="inline-block text-sm font-semibold text-white px-5 py-2.5 rounded-full transition-opacity hover:opacity-90" style={{ backgroundColor: '#2D8A7E' }}>
                 Log in as a Coach →
               </Link>

@@ -97,7 +97,7 @@ export const ChangePlanConfirm: React.FC = () => {
                 <CheckCircle className="h-5 w-5 mr-3 flex-shrink-0" />
                 <span className="font-medium">
                   {newPlan === 'annual'
-                    ? 'Switching to Annual takes effect immediately — you\'ll be charged the annual rate with any applicable proration.'
+                    ? 'Switching to Annual takes effect immediately - you\'ll be charged the annual rate with any applicable proration.'
                     : 'Switching to Monthly takes effect at the end of your current billing period on ' + formattedDate + '.'}
                 </span>
               </div>

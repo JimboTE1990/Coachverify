@@ -7,7 +7,7 @@ const FREE_RESOURCES = [
   {
     slug: '/how-to-find-a-certified-verified-coach',
     title: 'How to Find a Certified Coach',
-    excerpt: 'The complete 6-step guide to finding a qualified, verified coaching professional — what accreditation means, how to check credentials, and what to ask before you commit.',
+    excerpt: 'The complete 6-step guide to finding a qualified, verified coaching professional - what accreditation means, how to check credentials, and what to ask before you commit.',
     tags: ['Guide', 'Client Resource', 'Accreditation'],
     type: 'Article',
     readTime: '8 min read',
@@ -16,7 +16,7 @@ const FREE_RESOURCES = [
   {
     slug: 'streams-of-life',
     title: 'Streams of Life',
-    excerpt: 'A reflective coaching tool exploring the key streams of life — career, relationships, health, purpose and more — to help clients gain perspective and identify where to focus energy.',
+    excerpt: 'A reflective coaching tool exploring the key streams of life - career, relationships, health, purpose and more - to help clients gain perspective and identify where to focus energy.',
     tags: ['Self-discovery', 'Life Coaching', 'Reflection Tool'],
     type: 'Worksheet',
     readTime: '5 min read',

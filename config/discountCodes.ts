@@ -35,7 +35,7 @@ export interface DiscountCode {
  * Add new codes here
  */
 export const DISCOUNT_CODES: Record<string, DiscountCode> = {
-  // EMCC member referral code — 15% off once
+  // EMCC member referral code - 15% off once
   'EMCC15': {
     code: 'EMCC15',
     type: 'percentage',
@@ -109,7 +109,7 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
   // LIFETIME PLAN DISCOUNTS
   // ============================================================================
 
-  // Beta Tester Exclusive — £100 off lifetime, limited to 15 uses, expires 19 Apr 2026
+  // Beta Tester Exclusive - £100 off lifetime, limited to 15 uses, expires 19 Apr 2026
   // Stripe coupon ID: E7g5S88d | Promo code: BETA49 | API ID: promo_1TBanXDye3rmKJ... (update with full ID)
   'BETA49': {
     code: 'BETA49',
@@ -127,7 +127,7 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     stripePromotionCodeId: 'promo_1TBanXDye3rmKJaDlq8eKosB',
   },
 
-  // EMCC/ICF Exclusive Discount — £50 off lifetime (£149 → £99)
+  // EMCC/ICF Exclusive Discount - £50 off lifetime (£149 → £99)
   // Stripe coupon: "EMCC/ICF Exclusive Discount" | Promo code: EMCC50 | API ID: promo_1THRejDye3rmKJaDiMbHLFwr
   'EMCC50': {
     code: 'EMCC50',
@@ -142,7 +142,7 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     stripePromotionCodeId: 'promo_1THRejDye3rmKJaDiMbHLFwr',
   },
 
-  // Founding Member Discount — £100 off lifetime (£149 → £49)
+  // Founding Member Discount - £100 off lifetime (£149 → £49)
   // Stripe coupon: "Founding Member Discount" | Promo code: FETCH100 | API ID: promo_1Tk1xSDye3rmKJaDofzG4okT
   'FETCH100': {
     code: 'FETCH100',
@@ -156,7 +156,7 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     stripePromotionCodeId: 'promo_1Tk1xSDye3rmKJaDofzG4okT',
   },
 
-  // EMCC/ICF Exclusive Discount — ICF variant (same coupon, different promo code)
+  // EMCC/ICF Exclusive Discount - ICF variant (same coupon, different promo code)
   // Stripe coupon: "EMCC/ICF Exclusive Discount" | Promo code: ICF50 | API ID: promo_1Tg2a9Dye3rmKJaDPaDOoCxX
   'ICF50': {
     code: 'ICF50',
@@ -171,7 +171,7 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     stripePromotionCodeId: 'promo_1Tg2a9Dye3rmKJaDPaDOoCxX',
   },
 
-  // Referral — Rina — £100 off lifetime (£149 → £49), capped at 10 uses
+  // Referral - Rina - £100 off lifetime (£149 → £49), capped at 10 uses
   'RINA100': {
     code: 'RINA100',
     type: 'lifetime_fixed',
@@ -187,7 +187,7 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     stripePromotionCodeId: 'promo_1U96UsDye3rmKJaDK2z8I4BZ',
   },
 
-  // Referral — Stacia — £50 off lifetime (£149 → £99), capped at 10 uses
+  // Referral - Stacia - £50 off lifetime (£149 → £99), capped at 10 uses
   'STACIA50': {
     code: 'STACIA50',
     type: 'lifetime_fixed',
@@ -203,7 +203,7 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     stripePromotionCodeId: 'promo_1U96TCDye3rmKJaDixiVOF0P',
   },
 
-  // Legacy code — kept disabled, superseded by BETA49
+  // Legacy code - kept disabled, superseded by BETA49
   'BETA100': {
     code: 'BETA100',
     type: 'lifetime_fixed',
@@ -216,7 +216,7 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     stripeCouponId: 'E7g5S88d',
   },
 
-  // Coaching Minds partner discount — 20% off annual or lifetime
+  // Coaching Minds partner discount - 20% off annual or lifetime
   'CM20': {
     code: 'CM20',
     type: 'percentage',
@@ -230,7 +230,7 @@ export const DISCOUNT_CODES: Record<string, DiscountCode> = {
     stripePromotionCodeId: 'promo_1UUCQQDye3rmKJaDiZGjcod3',
   },
 
-  // Founding 100 — first 100 members promo, includes Founder badge (badge asset TBC)
+  // Founding 100 - first 100 members promo, includes Founder badge (badge asset TBC)
   // Stripe promo code: F100 | API ID: promo_1UVwk5Dye3rmKJaDwY2iNh0x
   // TODO: confirm discount type/value matches Stripe coupon setup
   'F100': {

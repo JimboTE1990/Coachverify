@@ -254,7 +254,7 @@ export const CoachSignup: React.FC = () => {
         confidence: 0,
         extractedData: { eiaNumber: null, fullName: null, accreditationLevel: null, expiryDate: null },
         matchDetails: { nameMatch: false, eiaMatch: false, levelMatch: false },
-        reason: 'Upload failed — please try again',
+        reason: 'Upload failed - please try again',
       });
     } finally {
       setOcrLoading(false);
@@ -300,7 +300,7 @@ export const CoachSignup: React.FC = () => {
         confidence: 0,
         extractedData: { credentialNumber: null, fullName: null, credentialLevel: null, expiryDate: null },
         matchDetails: { nameMatch: false, levelMatch: false, notExpired: false },
-        reason: 'Upload failed — please try again',
+        reason: 'Upload failed - please try again',
       });
     } finally {
       setIcfOcrLoading(false);
@@ -1017,7 +1017,7 @@ export const CoachSignup: React.FC = () => {
                    </div>
                  )}
 
-                 {/* ICF Verification — OCR certificate upload (fallback for lapsed directory access) */}
+                 {/* ICF Verification - OCR certificate upload (fallback for lapsed directory access) */}
                  {formData.body === 'ICF' && !verified && (
                    <div className="bg-blue-50 border border-blue-300 rounded-xl p-4 mb-4 space-y-3">
                      <p className="text-sm font-semibold text-blue-900">Can't access the ICF directory?</p>
@@ -1083,7 +1083,7 @@ export const CoachSignup: React.FC = () => {
                    </div>
                  )}
 
-                 {/* EMCC Verification — OCR certificate upload */}
+                 {/* EMCC Verification - OCR certificate upload */}
                 {formData.body === 'EMCC' && !verified && (
                   <div className="bg-violet-50 border border-violet-300 rounded-xl p-4 mb-4 space-y-3">
                     <p className="text-sm font-semibold text-violet-900">Upload your EMCC Certificate</p>

@@ -90,7 +90,7 @@ function buildWordHTML(
   </style>
 </head>
 <body>
-  <h1>Thomas-Kilmann TKI Questionnaire — Results</h1>
+  <h1>Thomas-Kilmann TKI Questionnaire - Results</h1>
   <p style="color:#64748b;margin:0 0 24px">${coachName ? `Completed by: <strong>${coachName}</strong> &nbsp;|&nbsp; ` : ''}Date: <strong>${date}</strong></p>
 
   <h2>Score Summary</h2>
@@ -199,7 +199,7 @@ export const TKIQuestionnaire: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Breadcrumb — hidden in print */}
+      {/* Breadcrumb - hidden in print */}
       <div className="bg-slate-50 border-b border-slate-100 print:hidden">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-1.5 text-sm text-slate-500">
           <Link to="/resources" className="hover:text-emerald-700 transition-colors font-medium">Resources</Link>
@@ -210,7 +210,7 @@ export const TKIQuestionnaire: React.FC = () => {
         </div>
       </div>
 
-      {/* Dark hero — hidden in print */}
+      {/* Dark hero - hidden in print */}
       <header className="bg-slate-900 py-10 lg:py-14 print:hidden">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <div className="flex flex-wrap justify-center gap-2 mb-4">
@@ -229,14 +229,14 @@ export const TKIQuestionnaire: React.FC = () => {
 
         {/* Print-only title header */}
         <div className="hidden print:block border-b-2 border-teal-500 pb-4 mb-2">
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">Thomas-Kilmann TKI Questionnaire — Results</h1>
+          <h1 className="text-2xl font-bold text-slate-900 mb-1">Thomas-Kilmann TKI Questionnaire - Results</h1>
           <p className="text-sm text-slate-500">
             {coach?.name && <><span className="font-semibold text-slate-700">{coach.name}</span> · </>}
             {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
         </div>
 
-        {/* Instructions — hidden in print */}
+        {/* Instructions - hidden in print */}
         <div className="border-l-4 border-teal-500 bg-slate-50 rounded-r-2xl px-5 py-4 print:hidden">
           <p className="text-sm font-semibold text-slate-800 mb-1">📋 Instructions</p>
           <p className="text-slate-600 text-sm leading-relaxed">
@@ -245,7 +245,7 @@ export const TKIQuestionnaire: React.FC = () => {
           </p>
         </div>
 
-        {/* Questions — hidden in print */}
+        {/* Questions - hidden in print */}
         <div className="space-y-6 print:hidden">
           {QUESTIONS.map((q) => {
             const selected = answers[q.pair];
@@ -319,13 +319,13 @@ export const TKIQuestionnaire: React.FC = () => {
 
             {answeredCount > 0 && !allAnswered && (
               <p className="text-xs text-center text-slate-400 mt-3 print:hidden">
-                {answeredCount} of 15 pairs answered — complete all pairs to see your result.
+                {answeredCount} of 15 pairs answered - complete all pairs to see your result.
               </p>
             )}
           </div>
         </div>
 
-        {/* Download + Save buttons — hidden in print */}
+        {/* Download + Save buttons - hidden in print */}
         {allAnswered && (
           <div className="flex flex-wrap items-center gap-3 print:hidden">
             <button
@@ -409,7 +409,7 @@ export const TKIQuestionnaire: React.FC = () => {
           </ol>
         </div>
 
-        {/* Reset — hidden in print */}
+        {/* Reset - hidden in print */}
         {answeredCount > 0 && (
           <div className="text-center print:hidden">
             <button
@@ -421,7 +421,7 @@ export const TKIQuestionnaire: React.FC = () => {
           </div>
         )}
 
-        {/* Back link — hidden in print */}
+        {/* Back link - hidden in print */}
         <div className="pb-8 print:hidden">
           <Link to="/resources/premium" className="text-sm text-slate-400 hover:text-emerald-700 transition-colors">
             &larr; Back to Premium Resources

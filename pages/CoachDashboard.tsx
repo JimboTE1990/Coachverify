@@ -213,7 +213,7 @@ export const CoachDashboard: React.FC = () => {
     }
   }, [currentCoach?.customUrl]);
 
-  // New Link State (legacy — kept for backwards compat with addLink fn)
+  // New Link State (legacy - kept for backwards compat with addLink fn)
   const [newLink, setNewLink] = useState<{ platform: string; url: string; type: 'url' | 'email' | 'tel' }>({ platform: '', url: '', type: 'url' });
 
   // Structured link input state
@@ -691,7 +691,7 @@ export const CoachDashboard: React.FC = () => {
       setDashCertOcrResult(result);
       if (result.verified || result.pendingManualReview) {
         await refreshCoach();
-        showToast(result.verified ? 'Certificate verified successfully' : 'Certificate submitted — pending manual review', result.verified ? 'success' : 'success');
+        showToast(result.verified ? 'Certificate verified successfully' : 'Certificate submitted - pending manual review', result.verified ? 'success' : 'success');
       }
     } catch (err) {
       console.error('[DashboardCertUpload] Error:', err);
@@ -699,7 +699,7 @@ export const CoachDashboard: React.FC = () => {
         verified: false, confidence: 0,
         extractedData: { eiaNumber: null, fullName: null, accreditationLevel: null, expiryDate: null },
         matchDetails: { nameMatch: false, eiaMatch: false, levelMatch: false },
-        reason: 'Upload failed — please try again',
+        reason: 'Upload failed - please try again',
         pendingManualReview: true,
       });
     } finally {
@@ -1014,7 +1014,7 @@ export const CoachDashboard: React.FC = () => {
             <svg className="h-4 w-4 flex-shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
             </svg>
-            You have unsaved changes — save before leaving this page.
+            You have unsaved changes - save before leaving this page.
           </div>
           <button
             onClick={handleSaveProfile}
@@ -1795,7 +1795,7 @@ export const CoachDashboard: React.FC = () => {
                           <p className="text-xs text-green-600 font-semibold mt-1">Available</p>
                         )}
                         {customUrlStatus === 'taken' && (
-                          <p className="text-xs text-red-500 font-semibold mt-1">Already taken — try a different slug</p>
+                          <p className="text-xs text-red-500 font-semibold mt-1">Already taken - try a different slug</p>
                         )}
                         {customUrlStatus === 'invalid' && (
                           <p className="text-xs text-amber-600 font-semibold mt-1">3–50 characters, lowercase letters, numbers and hyphens only</p>
@@ -1821,7 +1821,7 @@ export const CoachDashboard: React.FC = () => {
                             }
                             alert('Profile URL updated! Share coachdog.co.uk/coach/' + customUrlInput);
                           } catch {
-                            alert('Failed to save URL — please try again.');
+                            alert('Failed to save URL - please try again.');
                           } finally {
                             setCustomUrlSaving(false);
                           }
@@ -2424,7 +2424,7 @@ export const CoachDashboard: React.FC = () => {
                           <Shield className="h-4 w-4 text-indigo-600" />
                           Additional Accreditations
                         </h3>
-                        <p className="text-xs text-slate-500 mb-3">Hold accreditation from more than one body? Add your additional credentials here — they'll appear as badges on your profile.</p>
+                        <p className="text-xs text-slate-500 mb-3">Hold accreditation from more than one body? Add your additional credentials here - they'll appear as badges on your profile.</p>
 
                         {/* Existing secondary accreditations */}
                         {(localProfile?.secondaryAccreditations || []).length > 0 && (
@@ -2649,7 +2649,7 @@ export const CoachDashboard: React.FC = () => {
                       return (
                         <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                           <p className="text-xs font-semibold text-amber-700 mb-2">
-                            {orphaned.length} expertise area{orphaned.length !== 1 ? 's' : ''} belong to categories you haven't selected — these will be removed when you save
+                            {orphaned.length} expertise area{orphaned.length !== 1 ? 's' : ''} belong to categories you haven't selected - these will be removed when you save
                           </p>
                           <div className="flex flex-wrap gap-1.5">
                             {orphaned.map(item => (
@@ -2682,7 +2682,7 @@ export const CoachDashboard: React.FC = () => {
                             const current = localProfile?.coachingExpertise || [];
                             const selectedCats = localProfile?.mainCoachingCategories || [];
                             const otherItems = current.filter(e => !options.includes(e as any));
-                            // Only count items from other selected categories toward the cap — orphaned items must not reduce available slots
+                            // Only count items from other selected categories toward the cap - orphaned items must not reduce available slots
                             const validOtherCount = otherItems.filter(e =>
                               Object.entries(COACHING_EXPERTISE_BY_CATEGORY).some(
                                 ([cat, items]) => selectedCats.includes(cat as CoachingExpertiseCategory) && (items as string[]).includes(e)

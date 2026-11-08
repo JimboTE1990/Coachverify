@@ -1,4 +1,4 @@
-// DEV POC — not linked from nav, dev server only
+// DEV POC - not linked from nav, dev server only
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, MessageCircle, ChevronUp, ArrowRight } from 'lucide-react';
@@ -39,7 +39,7 @@ export const InsightsHubPOC: React.FC = () => {
 
     if (!threads) return;
 
-    // Separate query for replies — avoids PostgREST FK resolution issues on text columns
+    // Separate query for replies - avoids PostgREST FK resolution issues on text columns
     const slugs = threads.map(t => t.slug);
     const { data: replies } = await supabase
       .from('community_replies')
@@ -215,7 +215,7 @@ export const InsightsHubPOC: React.FC = () => {
             </div>
 
             <div className="space-y-3">
-              {/* Live threads from DB — shown first (newest) */}
+              {/* Live threads from DB - shown first (newest) */}
               {filteredLiveThreads.map(thread => {
                 const replyCount = thread.community_replies?.length ?? 0;
                 const hasCoachReply = thread.community_replies?.some(r => r.coach_id !== null) ?? false;

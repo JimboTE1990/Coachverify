@@ -500,7 +500,7 @@ export const CoachHubPage: React.FC = () => {
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div>
                   <p className="font-display font-bold text-slate-900 text-base">
-                    👋 Welcome back — here's what happened in the last {dayCount} day{dayCount !== 1 ? 's' : ''}
+                    👋 Welcome back - here's what happened in the last {dayCount} day{dayCount !== 1 ? 's' : ''}
                   </p>
                   <p className="text-xs text-slate-500 mt-0.5">Since your last visit</p>
                 </div>
@@ -680,7 +680,7 @@ export const CoachHubPage: React.FC = () => {
                       {isInactive && (
                         <div className="flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-3">
                           <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
-                          Posted by an inactive coach account — content is still visible
+                          Posted by an inactive coach account - content is still visible
                         </div>
                       )}
 
@@ -781,7 +781,7 @@ export const CoachHubPage: React.FC = () => {
                             {isOwn && <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-teal-50 text-teal-700">Your post</span>}
                           </div>
 
-                          {/* Content — edit form or read view */}
+                          {/* Content - edit form or read view */}
                           {editingPostId === post.id ? (
                             <div className="space-y-3 mb-3">
                               <div>
@@ -905,7 +905,7 @@ export const CoachHubPage: React.FC = () => {
                             })}
                           </div>
                         ) : (
-                          <p className="text-xs text-slate-400 text-center py-1">No comments yet — be the first.</p>
+                          <p className="text-xs text-slate-400 text-center py-1">No comments yet - be the first.</p>
                         )}
 
                         <div className="flex gap-3 items-start pt-1 border-t border-slate-200">

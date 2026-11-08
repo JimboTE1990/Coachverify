@@ -12,7 +12,7 @@ interface SearchableLocationSelectProps {
   /** Show an "Other (custom)" option at the bottom */
   showOtherOption?: boolean;
   className?: string;
-  /** Slightly smaller text/padding — for filter sidebar */
+  /** Slightly smaller text/padding - for filter sidebar */
   compact?: boolean;
 }
 
@@ -131,7 +131,7 @@ export const SearchableLocationSelect: React.FC<SearchableLocationSelectProps> =
         </span>
       </button>
 
-      {/* Dropdown panel — fixed so it escapes overflow-y:auto parent containers */}
+      {/* Dropdown panel - fixed so it escapes overflow-y:auto parent containers */}
       {isOpen && (
         <div ref={dropdownRef} style={dropdownStyle} className="bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
           {/* Search box */}

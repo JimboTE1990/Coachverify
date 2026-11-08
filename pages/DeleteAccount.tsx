@@ -11,7 +11,7 @@ export const DeleteAccount: React.FC = () => {
   const [deleteReason, setDeleteReason] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Only redirect once auth has finished loading — avoids premature redirect race condition
+  // Only redirect once auth has finished loading - avoids premature redirect race condition
   useEffect(() => {
     if (!loading && !coach) {
       navigate('/dashboard');
@@ -148,7 +148,7 @@ export const DeleteAccount: React.FC = () => {
 
           {/* Content */}
           <div className="p-8">
-            {/* Active subscription notice — informational only, does not block deletion */}
+            {/* Active subscription notice - informational only, does not block deletion */}
             {hasActiveSubscription && (
               <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6 mb-8">
                 <div className="flex items-start gap-4">
@@ -160,7 +160,7 @@ export const DeleteAccount: React.FC = () => {
                     <p className="text-sm text-yellow-800">
                       You have an active subscription
                       {coach.subscriptionEndsAt && ` paid until ${formatDate(new Date(coach.subscriptionEndsAt))}`}.
-                      You can still delete your account — your profile will remain visible until the end of your billing period, then be permanently removed. No further charges will be made.
+                      You can still delete your account - your profile will remain visible until the end of your billing period, then be permanently removed. No further charges will be made.
                     </p>
                   </div>
                 </div>

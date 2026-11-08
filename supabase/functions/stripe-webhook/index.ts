@@ -133,7 +133,7 @@ async function verifyStripeSignature(body: string, signature: string, secret: st
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
 
-  // Stripe may rotate secrets — check all v1 signatures provided
+  // Stripe may rotate secrets - check all v1 signatures provided
   const isValid = v1Signatures.some(sig => sig === expectedSig);
   if (!isValid) {
     throw new Error('Webhook signature verification failed');
@@ -144,6 +144,11 @@ async function verifyStripeSignature(body: string, signature: string, secret: st
 
 async function handleCheckoutCompleted(session: any, supabase: any) {
   console.log('[Webhook] Checkout completed:', session.id);
+
+  if (session.metadata?.purchaseType === 'event_ticket') {
+    await handleEventTicketPurchase(session, supabase);
+    return;
+  }
 
   const coachId = session.client_reference_id || session.metadata?.coachId;
   const billingCycle = session.metadata?.billingCycle;
@@ -183,6 +188,40 @@ async function handleCheckoutCompleted(session: any, supabase: any) {
     status: subscriptionStatus,
     billingCycle,
   });
+}
+
+async function handleEventTicketPurchase(session: any, supabase: any) {
+  const campaignId = session.metadata?.campaignId;
+  const source = session.metadata?.source ?? null;
+  const email = session.customer_details?.email;
+
+  if (!campaignId || !email) {
+    console.error('[Webhook] Event ticket session missing campaignId or email:', session.id);
+    return;
+  }
+
+  const { error } = await supabase
+    .from('event_registrations')
+    .upsert(
+      {
+        campaign_id: campaignId,
+        email,
+        source,
+        status: 'paid',
+        stripe_session_id: session.id,
+        stripe_payment_intent_id: session.payment_intent,
+        amount_paid_pence: session.amount_total,
+        paid_at: new Date().toISOString(),
+      },
+      { onConflict: 'stripe_session_id' }
+    );
+
+  if (error) {
+    console.error('[Webhook] Error recording event ticket purchase:', error);
+    throw error;
+  }
+
+  console.log('[Webhook] Event ticket purchase recorded:', { sessionId: session.id, campaignId, email });
 }
 
 async function handleSubscriptionUpdated(subscription: any, supabase: any) {

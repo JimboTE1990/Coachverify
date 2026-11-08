@@ -27,7 +27,7 @@ const LESSONS: Lesson[] = [
   {
     number: 1,
     title: 'How to Set Up a Professional Profile Photo',
-    description: 'A step-by-step guide to uploading and setting your profile picture on CoachDog — make a great first impression with clients browsing the directory.',
+    description: 'A step-by-step guide to uploading and setting your profile picture on CoachDog - make a great first impression with clients browsing the directory.',
     duration: '9:27',
     youtubeId: 'mMm8pXcmhxo',
     available: true,
@@ -216,7 +216,7 @@ export const CoachDogSpark: React.FC = () => {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
 
-          {/* Lesson list — sidebar */}
+          {/* Lesson list - sidebar */}
           <div className="mb-8 lg:mb-0">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Lessons</h2>
@@ -284,7 +284,7 @@ export const CoachDogSpark: React.FC = () => {
             </div>
           </div>
 
-          {/* Video player — main content */}
+          {/* Video player - main content */}
           <div className="lg:col-span-2">
             {activeLesson.youtubeId ? (
               <div className="rounded-2xl overflow-hidden shadow-xl mb-6 aspect-video">
@@ -305,7 +305,7 @@ export const CoachDogSpark: React.FC = () => {
               </div>
             )}
 
-            {/* Next lesson prompt — shown when video ends */}
+            {/* Next lesson prompt - shown when video ends */}
             {showNextPrompt && nextLesson && (
               <div className="mb-5 bg-teal-50 border border-teal-200 rounded-xl p-4 flex items-center justify-between gap-4 animate-fade-in">
                 <div>

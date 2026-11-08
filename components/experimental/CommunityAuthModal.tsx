@@ -1,4 +1,4 @@
-// DEV POC — community magic-link sign-in modal
+// DEV POC - community magic-link sign-in modal
 import React, { useState } from 'react';
 import { X, Mail, Loader } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -22,7 +22,7 @@ export const CommunityAuthModal: React.FC<Props> = ({ onClose }) => {
 
     setStep('sending');
 
-    // Store name + opt-in in localStorage — read back after magic link redirect
+    // Store name + opt-in in localStorage - read back after magic link redirect
     localStorage.setItem('cd_community_name', displayName.trim());
     localStorage.setItem('cd_community_optin', String(marketingOptIn));
 
@@ -89,7 +89,7 @@ export const CommunityAuthModal: React.FC<Props> = ({ onClose }) => {
           {(step === 'form' || step === 'sending') && (
             <form onSubmit={handleSubmit} className="space-y-4">
               <p className="text-sm text-slate-500">
-                No password needed — we'll send you a one-click link.
+                No password needed - we'll send you a one-click link.
               </p>
 
               <div>
@@ -149,7 +149,7 @@ export const CommunityAuthModal: React.FC<Props> = ({ onClose }) => {
                     Sending your link…
                   </>
                 ) : (
-                  'Continue — send me a link →'
+                  'Continue - send me a link →'
                 )}
               </button>
 

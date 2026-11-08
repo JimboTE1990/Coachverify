@@ -31,10 +31,10 @@ export const Contact: React.FC = () => {
               </p>
               <div className="space-y-2 text-sm text-amber-800">
                 <p>
-                  <strong>Platform complaints:</strong> Issues with your account, billing, profile visibility, verification status, or platform functionality — please use this form.
+                  <strong>Platform complaints:</strong> Issues with your account, billing, profile visibility, verification status, or platform functionality - please use this form.
                 </p>
                 <p>
-                  <strong>Coaching-related issues:</strong> Concerns about coaching quality, session content, coach conduct, or disputes arising from coaching services — please contact the coach directly. We do not mediate coaching relationships or take responsibility for the actions of coaches listed on our platform.
+                  <strong>Coaching-related issues:</strong> Concerns about coaching quality, session content, coach conduct, or disputes arising from coaching services - please contact the coach directly. We do not mediate coaching relationships or take responsibility for the actions of coaches listed on our platform.
                 </p>
               </div>
             </div>

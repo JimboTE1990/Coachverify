@@ -20,7 +20,7 @@ export const Pricing: React.FC = () => {
   // Get current billing cycle for premium users
   const currentBillingCycle = coach?.billingCycle; // 'monthly' or 'annual'
 
-  // Live count of founding (lifetime) members — progress bar shown only at 60+
+  // Live count of founding (lifetime) members - progress bar shown only at 60+
   const [foundingCount, setFoundingCount] = useState<number | null>(null);
   useEffect(() => {
     supabase
@@ -45,7 +45,7 @@ export const Pricing: React.FC = () => {
       return;
     }
 
-    // Everyone else (including unauthenticated) goes to checkout — checkout handles auth
+    // Everyone else (including unauthenticated) goes to checkout - checkout handles auth
     navigate(`/checkout/${plan}`);
   };
 
@@ -58,7 +58,7 @@ export const Pricing: React.FC = () => {
       <div className="relative pt-24 pb-12 overflow-hidden">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center relative z-10">
           <div className="inline-flex items-center bg-[#1e3a5f] text-white px-4 py-1.5 rounded-full text-sm font-bold mb-6 shadow-md">
-            Limited founding pricing — closes at 100 coaches or 31 Dec 2026
+            Limited founding pricing - closes at 100 coaches or 31 Dec 2026
           </div>
           <h1 className="text-4xl md:text-5xl font-display font-extrabold text-slate-900 mb-4 tracking-tight">
             Secure your place in the{' '}
@@ -70,7 +70,7 @@ export const Pricing: React.FC = () => {
             A small group of coaches are locking in lifetime membership at founding pricing before it closes forever. After that, standard subscription plans apply.
           </p>
 
-          {/* Progress bar — only shown at 60+ */}
+          {/* Progress bar - only shown at 60+ */}
           {showProgress && (
             <div className="mt-8 max-w-sm mx-auto">
               <div className="flex justify-between text-sm font-semibold text-slate-700 mb-2">
@@ -118,7 +118,7 @@ export const Pricing: React.FC = () => {
                     <p className="font-bold text-slate-900">Your free trial is active</p>
                     <p className="text-sm text-slate-500">
                       {formattedTrialEnd ? `Ends ${formattedTrialEnd}` : 'Full platform access'}{daysRemaining > 0 ? ` · ${daysRemaining} days remaining` : ''}
-                      {' '}— upgrade below to lock in founding pricing before it closes.
+                      {' '} - upgrade below to lock in founding pricing before it closes.
                     </p>
                   </div>
                 </div>
@@ -151,7 +151,7 @@ export const Pricing: React.FC = () => {
           {/* Main cards */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
 
-            {/* Lifetime Card — dark navy, hero */}
+            {/* Lifetime Card - dark navy, hero */}
             <div className="md:col-span-3 bg-[#111c32] rounded-3xl shadow-xl p-8 flex flex-col relative overflow-hidden">
               {/* Subtle glow */}
               <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -160,7 +160,7 @@ export const Pricing: React.FC = () => {
               </div>
 
               <div className="relative z-10">
-                {/* Annual strikethrough anchor — above the heading */}
+                {/* Annual strikethrough anchor - above the heading */}
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-sm font-semibold text-blue-300/60 line-through">Annual Membership &nbsp;£{annualPrice}/yr</span>
                 </div>
@@ -200,7 +200,7 @@ export const Pricing: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Feature list — 2 column */}
+                {/* Feature list - 2 column */}
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 mb-8">
                   <li className="flex items-start gap-2.5 text-sm text-blue-100">
                     <CheckCircle className="h-4 w-4 text-yellow-400 flex-shrink-0 mt-0.5" />
@@ -247,7 +247,7 @@ export const Pricing: React.FC = () => {
               </div>
             </div>
 
-            {/* Free Trial card — secondary, takes 2/5 width on desktop */}
+            {/* Free Trial card - secondary, takes 2/5 width on desktop */}
             <div className="md:col-span-2 flex flex-col gap-6">
 
               {/* Trial/Expired/Active state overrides */}
@@ -358,7 +358,7 @@ export const Pricing: React.FC = () => {
             </div>
           </div>
 
-          {/* Monthly & Annual plans — re-enable after founding offer closes (all logic retained) */}
+          {/* Monthly & Annual plans - re-enable after founding offer closes (all logic retained) */}
           {false && (
             /* Monthly Plan */
             <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 flex flex-col items-center hover:shadow-md transition-shadow">

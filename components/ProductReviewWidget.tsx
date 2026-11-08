@@ -84,7 +84,7 @@ export const ProductReviewWidget: React.FC = () => {
     setSubmitting(false);
 
     if (!result) {
-      setFormError('Something went wrong — please try again.');
+      setFormError('Something went wrong - please try again.');
       return;
     }
 
@@ -139,7 +139,7 @@ export const ProductReviewWidget: React.FC = () => {
 
         {reviews.length === 0 ? (
           <p className="text-center text-slate-400 py-8">
-            No reviews yet — be the first to share your experience.
+            No reviews yet - be the first to share your experience.
           </p>
         ) : (
           <div

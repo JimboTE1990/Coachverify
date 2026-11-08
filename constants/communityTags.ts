@@ -14,7 +14,7 @@ export const COMMUNITY_TAGS = [
 
 export type CommunityTag = typeof COMMUNITY_TAGS[number];
 
-// Tag colours — used for badges on cards and filter chips
+// Tag colours - used for badges on cards and filter chips
 export const COMMUNITY_TAG_COLORS: Record<CommunityTag, string> = {
   'Career':           'bg-blue-100 text-blue-700',
   'Business':         'bg-indigo-100 text-indigo-700',

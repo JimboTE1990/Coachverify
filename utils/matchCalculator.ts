@@ -224,7 +224,7 @@ export const calculateMatchScore = (coach: Coach, answers: QuestionnaireAnswers)
     totalPoints += 8;
   }
 
-  // 9. Location (7 points — only relevant when user wants in-person)
+  // 9. Location (7 points - only relevant when user wants in-person)
   maxPoints += 7;
   if (answers.preferredFormat.includes('In-Person') && answers.preferredLocation) {
     if (coach.locationCity && coach.locationCity === answers.preferredLocation) {

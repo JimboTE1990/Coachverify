@@ -352,7 +352,7 @@ export const Questionnaire: React.FC = () => {
                   </button>
                 )}
               </div>
-              <p className="text-xs text-slate-400 mb-2">Describe your situation in your own words — we'll use this to refine your matches.</p>
+              <p className="text-xs text-slate-400 mb-2">Describe your situation in your own words - we'll use this to refine your matches.</p>
               <textarea
                 className="block w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all resize-none text-sm placeholder-slate-400"
                 rows={3}

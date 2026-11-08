@@ -1,10 +1,10 @@
 import { supabase } from '../lib/supabase';
 import { Coach, Review, SocialLink, Specialty, Format, ProductReview } from '../types';
 
-// Hidden test/internal profiles — excluded from all public directory listings
+// Hidden test/internal profiles - excluded from all public directory listings
 const HIDDEN_PROFILE_IDS = [
   '78fcccb5-95e1-4412-87ec-5ee1d0456d92',
-  // Ania James (ac50acfe-a493-4559-b1a2-fd56a6eac0d5) — visible until end of Dec 2026, then re-hide
+  // Ania James (ac50acfe-a493-4559-b1a2-fd56a6eac0d5) - visible until end of Dec 2026, then re-hide
 ];
 
 // Re-export supabase for use in other components
@@ -108,7 +108,7 @@ export const getCoachById = async (id: string): Promise<Coach | null> => {
 
   const resolvedId = coach.id;
 
-  // Fetch reviews separately (review_token intentionally excluded — never expose to client)
+  // Fetch reviews separately (review_token intentionally excluded - never expose to client)
   const { data: reviews } = await supabase
     .from('reviews')
     .select('id,coach_id,author_name,rating,review_text,is_flagged,created_at,is_verified_client,coach_reply,coach_reply_date,coaching_period,verification_status,verified_at,reviewer_location,spam_score,spam_reasons,is_spam,spam_category')
@@ -166,7 +166,7 @@ export const getCoachByUserId = async (userId: string): Promise<Coach | null> =>
 
   if (!coach) return null;
 
-  // Fetch reviews separately (review_token intentionally excluded — never expose to client)
+  // Fetch reviews separately (review_token intentionally excluded - never expose to client)
   const { data: reviews } = await supabase
     .from('reviews')
     .select('id,coach_id,author_name,rating,review_text,is_flagged,created_at,is_verified_client,coach_reply,coach_reply_date,coaching_period,verification_status,verified_at,reviewer_location,spam_score,spam_reasons,is_spam,spam_category')
@@ -198,7 +198,7 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
 
   // Build update object with only defined fields.
   // NOTE: is_verified, subscription_status, billing_cycle, emcc_verified, icf_verified,
-  // verification_status are intentionally excluded — they must only be written by
+  // verification_status are intentionally excluded - they must only be written by
   // server-side edge functions (Stripe webhook, verification functions) via the service role.
   const updateData: any = {
     name: coach.name,
@@ -221,7 +221,7 @@ export const updateCoach = async (coach: Coach): Promise<boolean> => {
   // Enhanced profile fields (only add if defined)
   if (coach.accreditationBody !== undefined) updateData.accreditation_body = coach.accreditationBody;
   if (coach.accreditationLevel !== undefined) updateData.accreditation_level = coach.accreditationLevel;
-  // emcc_verified, emcc_verified_at, icf_verified, icf_verified_at are server-only — omitted
+  // emcc_verified, emcc_verified_at, icf_verified, icf_verified_at are server-only - omitted
   if (coach.emccProfileUrl !== undefined) updateData.emcc_profile_url = coach.emccProfileUrl;
   if (coach.icfAccreditationLevel !== undefined) updateData.icf_accreditation_level = coach.icfAccreditationLevel;
   if (coach.icfProfileUrl !== undefined) updateData.icf_profile_url = coach.icfProfileUrl;
@@ -1583,7 +1583,7 @@ export const verifyIcfCertificate = async (
       confidence: 0,
       extractedData: { credentialNumber: null, fullName: null, credentialLevel: null, expiryDate: null },
       matchDetails: { nameMatch: false, levelMatch: false, notExpired: false },
-      reason: 'Certificate verification is currently unavailable — please try again or contact support',
+      reason: 'Certificate verification is currently unavailable - please try again or contact support',
     };
   }
 
@@ -1625,7 +1625,7 @@ export const verifyEmccCertificate = async (
       confidence: 0,
       extractedData: { eiaNumber: null, fullName: null, accreditationLevel: null, expiryDate: null },
       matchDetails: { nameMatch: false, eiaMatch: false, levelMatch: false },
-      reason: 'Certificate verification is currently unavailable — please try again or contact support',
+      reason: 'Certificate verification is currently unavailable - please try again or contact support',
     };
   }
 
@@ -1755,7 +1755,7 @@ export const adminGetProductReviews = async (
   return (data.reviews as any[]).map(r => mapProductReview(r));
 };
 
-/** @deprecated RLS blocks unapproved rows — use adminGetProductReviews('pending') instead. */
+/** @deprecated RLS blocks unapproved rows - use adminGetProductReviews('pending') instead. */
 export const getPendingProductReviews = async (): Promise<ProductReview[]> => {
   return [];
 };
@@ -1842,28 +1842,15 @@ export const deleteTKIResult = async (resultId: string): Promise<boolean> => {
 
 // ── Event registrations ───────────────────────────────────────────────────────
 
-export const registerForEvent = async (
-  name: string,
-  email: string,
-  campaignId: string,
-  source?: string
-): Promise<boolean> => {
-  const { error } = await supabase
-    .from('event_registrations')
-    .insert({ campaign_id: campaignId, name, email, source: source ?? null });
-  if (error) {
-    console.error('[registerForEvent]', error);
-    return false;
-  }
-  return true;
-};
-
 export const adminGetEventRegistrations = async (): Promise<
-  { id: string; campaign_id: string; name: string; email: string; source: string | null; created_at: string }[]
+  {
+    id: string; campaign_id: string; name: string | null; email: string; source: string | null;
+    status: string; amount_paid_pence: number | null; paid_at: string | null; created_at: string;
+  }[]
 > => {
   const { data, error } = await supabase
     .from('event_registrations')
-    .select('id, campaign_id, name, email, source, created_at')
+    .select('id, campaign_id, name, email, source, status, amount_paid_pence, paid_at, created_at')
     .order('created_at', { ascending: false });
   if (error) {
     console.error('[adminGetEventRegistrations]', error);

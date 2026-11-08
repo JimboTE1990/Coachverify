@@ -46,7 +46,7 @@ export const ReviewPromptBanner: React.FC = () => {
     });
     setSubmitting(false);
 
-    if (!result) { setFormError('Something went wrong — please try again.'); return; }
+    if (!result) { setFormError('Something went wrong - please try again.'); return; }
 
     setSubmitted(true);
     localStorage.setItem(`product_reviewed_${coach.id}`, 'true');

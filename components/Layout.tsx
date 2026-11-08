@@ -213,7 +213,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 )}
               </div>
 
-              {/* Community standalone link — dev only until ready to ship */}
+              {/* Community standalone link - dev only until ready to ship */}
               <Link
                 to="/community"
                 className="text-lg font-display font-bold text-slate-700 hover:text-brand-600 transition-all"
@@ -271,7 +271,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   </>
                 )}
 
-                {/* Review prompt pill — shown to authenticated coaches who haven't reviewed */}
+                {/* Review prompt pill - shown to authenticated coaches who haven't reviewed */}
                 <ReviewPromptBanner />
               </div>
             </nav>
@@ -324,7 +324,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 </div>
               </div>
 
-              {/* Mobile Section: Community — dev only until ready to ship */}
+              {/* Mobile Section: Community - dev only until ready to ship */}
               <div>
                 <h3 className="text-sm font-extrabold uppercase tracking-widest mb-4 flex items-center" style={{ color: '#2D8A7E' }}><MessageCircle className="h-4 w-4 mr-2" /> Community</h3>
                 <div className="space-y-3">

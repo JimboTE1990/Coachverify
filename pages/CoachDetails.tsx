@@ -802,7 +802,7 @@ export const CoachDetails: React.FC = () => {
                       <CheckCircle className="h-6 w-6" />
                     </div>
                   )}
-                  {/* Top Dog badge — shown when all 5 setup steps are complete */}
+                  {/* Top Dog badge - shown when all 5 setup steps are complete */}
                   {(() => {
                     const hasPhoto = !!(coach.photoUrl && !coach.photoUrl.includes('placeholder'));
                     const hasProfile = !!(coach.bio && coach.bio.trim().length > 20 && coach.mainCoachingCategories && coach.mainCoachingCategories.length > 0);
@@ -820,7 +820,7 @@ export const CoachDetails: React.FC = () => {
                       return (
                         <div
                           className="absolute -top-2 -left-2 bg-gradient-to-br from-amber-400 to-yellow-500 text-white p-1.5 rounded-full shadow-lg ring-4 ring-white"
-                          title="Top Dog — Profile fully set up"
+                          title="Top Dog - Profile fully set up"
                         >
                           <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -872,7 +872,7 @@ export const CoachDetails: React.FC = () => {
                 </span>
               </button>
 
-              {/* Social icon links — booking/forms handled by buttons below; email/phone shown as icons here */}
+              {/* Social icon links - booking/forms handled by buttons below; email/phone shown as icons here */}
               <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
                 {coach.socialLinks?.filter(link => {
                   const url = link.url?.toLowerCase() || '';
@@ -947,7 +947,7 @@ export const CoachDetails: React.FC = () => {
               </div>
             </div>
 
-            {/* Contact Action Buttons — auto-width pills, centred like price badge */}
+            {/* Contact Action Buttons - auto-width pills, centred like price badge */}
             {(bookingLink || enquiryFormLink) && (
               <div className="flex justify-center gap-3 mt-5 mb-6">
                 {bookingLink && (
@@ -1164,7 +1164,7 @@ export const CoachDetails: React.FC = () => {
               </div>
             )}
 
-            {/* Coaching Languages — directly below bio */}
+            {/* Coaching Languages - directly below bio */}
             {coach.coachingLanguages && coach.coachingLanguages.length > 0 && (
               <div>
                 <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Coaching Languages:</h3>
@@ -1181,7 +1181,7 @@ export const CoachDetails: React.FC = () => {
               </div>
             )}
 
-            {/* Gender — directly below languages */}
+            {/* Gender - directly below languages */}
             {coach.gender && (
               <div>
                 <h3 className="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Gender:</h3>
@@ -1775,7 +1775,7 @@ export const CoachDetails: React.FC = () => {
               {/* Social Media Link (optional identity verification) */}
               <div>
                 <label htmlFor="review-social-url" className="block text-sm font-bold text-slate-900 mb-2">
-                  Your Social Media Profile <span className="text-slate-400 font-normal">(optional — helps verify your identity)</span>
+                  Your Social Media Profile <span className="text-slate-400 font-normal">(optional - helps verify your identity)</span>
                 </label>
                 <input
                   id="review-social-url"

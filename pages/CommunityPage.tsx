@@ -187,7 +187,7 @@ export const CommunityPage: React.FC = () => {
     if (selectedTag) {
       threads = threads.filter(t => t.tag === selectedTag);
     } else if (smartTag) {
-      // Smart tag matched — filter by tag only; the keyword already handled the semantics,
+      // Smart tag matched - filter by tag only; the keyword already handled the semantics,
       // so don't also require the search text to appear verbatim in the title
       threads = threads.filter(t => t.tag === smartTag);
     }
@@ -230,7 +230,7 @@ export const CommunityPage: React.FC = () => {
             <input
               type="text"
               className="w-full pl-11 pr-12 py-3 bg-slate-100 rounded-full text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all"
-              placeholder="Smart search — try 'burnout' or 'career change'…"
+              placeholder="Smart search - try 'burnout' or 'career change'…"
               value={searchValue}
               onChange={e => setSearchValue(e.target.value)}
             />
@@ -437,7 +437,7 @@ export const CommunityPage: React.FC = () => {
           {filteredMockThreads.length === 0 && filteredLiveThreads.length === 0 && (
             <div className="text-center py-12 text-slate-400 text-sm">
               {showBookmarksOnly
-                ? 'No bookmarks yet — bookmark a thread to save it here.'
+                ? 'No bookmarks yet - bookmark a thread to save it here.'
                 : 'No questions match your search.'
               }
             </div>

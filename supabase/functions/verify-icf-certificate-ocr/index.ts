@@ -6,9 +6,9 @@
 // returns a structured verification result.
 //
 // Bot protection (3 layers):
-//   1. IP rate limit    — max 10 calls per IP per hour (ocr_rate_limits table)
-//   2. Payload size cap — imageBase64 must decode to ≤ 5 MB
-//   3. Cache short-circuit — same name+level verified in last 24 h skips Claude
+//   1. IP rate limit - max 10 calls per IP per hour (ocr_rate_limits table)
+//   2. Payload size cap - imageBase64 must decode to ≤ 5 MB
+//   3. Cache short-circuit - same name+level verified in last 24 h skips Claude
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -115,7 +115,7 @@ serve(async (req) => {
         if (rlRow.call_count >= RATE_LIMIT_MAX) {
           console.warn('[ICF OCR] Rate limit exceeded for IP:', clientIp);
           return new Response(
-            JSON.stringify({ error: 'Too many requests — please try again later' }),
+            JSON.stringify({ error: 'Too many requests - please try again later' }),
             { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
@@ -153,7 +153,7 @@ serve(async (req) => {
           confidence: 0,
           extractedData: { credentialNumber: null, fullName: null, credentialLevel: null, expiryDate: null },
           matchDetails: { nameMatch: false, levelMatch: false, notExpired: false },
-          reason: 'Invalid credential level — must be ACC, PCC, MCC, or ACTC',
+          reason: 'Invalid credential level - must be ACC, PCC, MCC, or ACTC',
         } as VerificationResult),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -164,7 +164,7 @@ serve(async (req) => {
     if (approxBytes > MAX_IMAGE_BYTES) {
       console.warn('[ICF OCR] Payload too large:', Math.round(approxBytes / 1024), 'KB');
       return new Response(
-        JSON.stringify({ error: 'Image too large — please upload a file under 5 MB' }),
+        JSON.stringify({ error: 'Image too large - please upload a file under 5 MB' }),
         { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -186,7 +186,7 @@ serve(async (req) => {
     if (cached) {
       const overlap = nameOverlap(fullName, cached.full_name);
       if (overlap >= 0.75) {
-        console.log('[ICF OCR] Cache hit — skipping Claude API call');
+        console.log('[ICF OCR] Cache hit - skipping Claude API call');
         return new Response(
           JSON.stringify({
             verified: true,
@@ -216,10 +216,10 @@ A typical ICF credential certificate contains:
 - The ICF logo or seal
 
 Extract the following fields:
-1. Full name of the credential holder — as it appears on the certificate
-2. Credential level — one of: ACC, PCC, MCC, ACTC
-3. Expiry or "valid through" date — in ISO format (YYYY-MM-DD) if possible, otherwise as written
-4. Credential number — if visible (may be labelled "Certificate No.", "Credential ID", or similar); null if not present
+1. Full name of the credential holder - as it appears on the certificate
+2. Credential level - one of: ACC, PCC, MCC, ACTC
+3. Expiry or "valid through" date - in ISO format (YYYY-MM-DD) if possible, otherwise as written
+4. Credential number - if visible (may be labelled "Certificate No.", "Credential ID", or similar); null if not present
 
 Return ONLY valid JSON in this exact format (no markdown, no explanation):
 {
@@ -286,7 +286,7 @@ If a field cannot be found, use null for that field.`;
           confidence: 0,
           extractedData: extracted,
           matchDetails: { nameMatch: false, levelMatch: false, notExpired: false },
-          reason: 'Could not read certificate — please upload a clear image of your ICF certificate and try again',
+          reason: 'Could not read certificate - please upload a clear image of your ICF certificate and try again',
         } as VerificationResult),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -334,10 +334,10 @@ If a field cannot be found, use null for that field.`;
       reason: verified
         ? 'Certificate verified successfully'
         : !nameMatch
-          ? 'Name on certificate does not match your account name — please ensure the name on your certificate matches exactly and try again'
+          ? 'Name on certificate does not match your account name - please ensure the name on your certificate matches exactly and try again'
           : !levelMatch
-            ? `Credential level on certificate (${extractedLevel || 'not found'}) does not match your selection (${normalisedLevel}) — please check your credential level`
-            : 'Certificate could not be verified — please upload a clear image of your ICF credential certificate',
+            ? `Credential level on certificate (${extractedLevel || 'not found'}) does not match your selection (${normalisedLevel}) - please check your credential level`
+            : 'Certificate could not be verified - please upload a clear image of your ICF credential certificate',
     };
 
     return new Response(JSON.stringify(result), {
@@ -347,7 +347,7 @@ If a field cannot be found, use null for that field.`;
   } catch (err) {
     console.error('[ICF OCR] Unexpected error:', err);
     return new Response(
-      JSON.stringify({ error: 'Certificate verification is currently unavailable — please try again or contact support' }),
+      JSON.stringify({ error: 'Certificate verification is currently unavailable - please try again or contact support' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

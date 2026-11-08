@@ -67,7 +67,7 @@ export const CheckoutLifetime: React.FC = () => {
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-      // No session — show the page so they can see the discount code field;
+      // No session - show the page so they can see the discount code field;
       // the checkout button will redirect to login when they try to pay.
       if (!session || sessionError || !session.user) {
         setIsLoading(false);
@@ -137,7 +137,7 @@ export const CheckoutLifetime: React.FC = () => {
   };
 
   const handleCheckout = async () => {
-    // Not logged in — redirect to login, return here after
+    // Not logged in - redirect to login, return here after
     if (!currentCoach) {
       navigate('/coach-login', { state: { from: { pathname: '/checkout/lifetime' } } });
       return;
@@ -211,7 +211,7 @@ export const CheckoutLifetime: React.FC = () => {
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column — dark navy plan summary */}
+          {/* Left Column - dark navy plan summary */}
           <div>
             <div className="bg-[#111c32] rounded-2xl shadow-xl p-8 relative overflow-hidden">
               {/* Subtle glow */}
@@ -303,7 +303,7 @@ export const CheckoutLifetime: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column — checkout form */}
+          {/* Right Column - checkout form */}
           <div>
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
               <h2 className="text-2xl font-display font-bold text-slate-900 mb-6">
@@ -345,7 +345,7 @@ export const CheckoutLifetime: React.FC = () => {
                       {appliedDiscount.displayName && (
                         <div className="bg-green-50 border border-green-200 rounded-lg p-2">
                           <p className="text-xs text-green-800 font-medium">
-                            🎉 {appliedDiscount.displayName} — {appliedDiscount.description}
+                            🎉 {appliedDiscount.displayName} - {appliedDiscount.description}
                           </p>
                         </div>
                       )}
@@ -373,7 +373,7 @@ export const CheckoutLifetime: React.FC = () => {
                       <Tag className="h-4 w-4 mr-2 flex-shrink-0" />
                       <span className="font-medium text-sm">{appliedDiscount.code} applied</span>
                       {appliedDiscount.displayName && (
-                        <span className="ml-1 text-xs text-green-600">— {appliedDiscount.displayName}</span>
+                        <span className="ml-1 text-xs text-green-600"> - {appliedDiscount.displayName}</span>
                       )}
                     </div>
                     <button
@@ -447,7 +447,7 @@ export const CheckoutLifetime: React.FC = () => {
               {/* Security note */}
               <div className="mt-5 flex items-center justify-center text-slate-400 text-xs gap-1.5">
                 <Lock className="h-3 w-3" />
-                <span>Secured by Stripe — payment details encrypted, never stored</span>
+                <span>Secured by Stripe - payment details encrypted, never stored</span>
               </div>
 
               <div className="mt-3 text-center">

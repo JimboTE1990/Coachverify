@@ -58,7 +58,7 @@ export async function createCoachProfile(
   // NOTE: Columns covered by 20260317_restrict_coaches_insert.sql REVOKE are omitted here.
   // is_verified, verification_status, subscription_status, billing_cycle, trial_ends_at,
   // emcc_verified, icf_verified, ac_verified, emcc_verified_at, icf_verified_at, ac_verified_at
-  // — these use their DB defaults and are set via the auto-create trigger (SECURITY DEFINER)
+  // - these use their DB defaults and are set via the auto-create trigger (SECURITY DEFINER)
   // or the finalize-coach-profile edge function.
   const insertData: any = {
     user_id: userData.id,

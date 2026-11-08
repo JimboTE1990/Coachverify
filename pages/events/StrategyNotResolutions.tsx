@@ -4,7 +4,7 @@ import {
   CheckCircle, Calendar, Clock, Monitor, ChevronDown, ChevronUp, ArrowRight,
   FileText, Eye, Zap, PlayCircle, Users, TrendingUp, Compass, Briefcase, X, Ticket,
 } from 'lucide-react';
-import { registerForEvent } from '../../services/supabaseService';
+import { createEventCheckoutSession } from '../../services/eventCheckoutService';
 
 const CAMPAIGN_ID = 'strategy-not-resolutions-jan-2027';
 
@@ -25,50 +25,35 @@ const useScrollReveal = (threshold = 0.12) => {
   return { ref, visible };
 };
 
-// ── Register interest form — collects name + email, checkout comes later ──────
+// ── Buy ticket CTA - straight to Stripe Checkout, no form ─────────────────────
+// On success Stripe redirects to a dedicated success page (not an inline card).
 
-const RegisterForm: React.FC<{ source: string; dark?: boolean }> = ({ source, dark = false }) => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+const TicketCTA: React.FC<{ source: string; dark?: boolean }> = ({ source, dark = false }) => {
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !email.trim()) return;
+  const handleClick = async () => {
     setLoading(true);
-    await registerForEvent(name.trim(), email.trim(), CAMPAIGN_ID, source);
-    setLoading(false);
-    setSubmitted(true);
+    setError(null);
+    try {
+      await createEventCheckoutSession({ campaignId: CAMPAIGN_ID, source });
+      // Note: Stripe will redirect; this code won't execute after that.
+    } catch (err) {
+      setLoading(false);
+      setError(err instanceof Error ? err.message : 'Failed to start checkout. Please try again.');
+    }
   };
 
-  const inputCls = dark
-    ? 'w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm'
-    : 'w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm';
-
-  if (submitted) {
-    return (
-      <div className={`rounded-2xl p-6 text-center ${dark ? 'bg-white/10 border border-white/20' : 'bg-brand-50 border border-brand-100'}`}>
-        <CheckCircle className={`h-8 w-8 mx-auto mb-3 ${dark ? 'text-yellow-400' : 'text-brand-600'}`} />
-        <p className={`font-bold text-base mb-1 ${dark ? 'text-white' : 'text-slate-900'}`}>Thanks for registering your interest!</p>
-        <p className={`text-sm ${dark ? 'text-white/70' : 'text-slate-500'}`}>
-          We'll be in touch with booking details as soon as they're ready.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <input type="text" required placeholder="Your name" value={name}
-        onChange={e => setName(e.target.value)} className={inputCls} />
-      <input type="email" required placeholder="Your email address" value={email}
-        onChange={e => setEmail(e.target.value)} className={inputCls} />
-      <button type="submit" disabled={loading}
+    <div>
+      <button type="button" onClick={handleClick} disabled={loading}
         className="w-full flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-[#111c32] font-bold px-6 py-3.5 rounded-xl shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed text-sm">
-        {loading ? 'Registering…' : <>Register Interest <ArrowRight className="h-4 w-4" /></>}
+        {loading ? 'Redirecting to checkout…' : <>Buy Ticket - £19 <ArrowRight className="h-4 w-4" /></>}
       </button>
-    </form>
+      {error && (
+        <p className={`mt-2 text-xs ${dark ? 'text-red-300' : 'text-red-600'}`}>{error}</p>
+      )}
+    </div>
   );
 };
 
@@ -141,7 +126,7 @@ const TakeawayCarousel: React.FC<{ cards: TakeawayCard[] }> = ({ cards }) => {
   const activeIndex = Math.round(currentPos);
 
   return (
-    // Outer container — tall enough to provide scroll travel
+    // Outer container - tall enough to provide scroll travel
     <div ref={containerRef} style={{ height: `calc(100vh + ${(n - 1) * 40}vh)` }}>
       <div style={{ position: 'sticky', top: 0, height: 560, overflow: 'hidden' }}
         className="flex flex-col items-center justify-start bg-white">
@@ -312,7 +297,7 @@ const StrategyNotResolutions: React.FC = () => {
               </div>
 
               <div className="max-w-sm">
-                <RegisterForm source="hero" />
+                <TicketCTA source="hero" />
                 <p className="mt-3 text-xs text-slate-400 leading-relaxed">
                   An interactive, hands-on workshop. Your £19 comes off CoachDog membership if you join within 72 hours of the event.
                 </p>
@@ -376,7 +361,7 @@ const StrategyNotResolutions: React.FC = () => {
         </div>
       </div>
 
-      {/* ── You'll leave with — sticky-scroll carousel ────────────────────── */}
+      {/* ── You'll leave with - sticky-scroll carousel ────────────────────── */}
       <TakeawayCarousel cards={takeaways} />
 
       {/* ── Schedule ──────────────────────────────────────────────────────── */}
@@ -530,7 +515,7 @@ const StrategyNotResolutions: React.FC = () => {
             Make 2027 the year it all fits together.
           </h2>
           <p className="text-white/70 text-base mb-8">Two hours. One clear strategy. A practice the right clients can find.</p>
-          <RegisterForm source="closing-cta" dark />
+          <TicketCTA source="closing-cta" dark />
         </div>
       </div>
 

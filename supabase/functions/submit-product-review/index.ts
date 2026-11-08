@@ -2,7 +2,7 @@
  * Supabase Edge Function: submit-product-review
  *
  * Lets an authenticated coach submit a product review of CoachDog.
- * Uses the service role to bypass the RLS INSERT policy entirely —
+ * Uses the service role to bypass the RLS INSERT policy entirely - 
  * the client-side Supabase JS client consistently fails to attach the
  * user JWT to the INSERT request, causing 42501 from PostgREST.
  *
@@ -58,7 +58,7 @@ serve(async (req: Request) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   );
 
-  // Verify the token — getUser() with a token does server-side JWT validation
+  // Verify the token - getUser() with a token does server-side JWT validation
   const { data: { user }, error: authError } = await supabase.auth.getUser(token);
   if (authError || !user) {
     return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
@@ -82,7 +82,7 @@ serve(async (req: Request) => {
     });
   }
 
-  // Insert with service role — bypasses RLS entirely.
+  // Insert with service role - bypasses RLS entirely.
   // is_approved = false so new reviews go through the admin pending queue.
   const { data, error } = await supabase
     .from('product_reviews')

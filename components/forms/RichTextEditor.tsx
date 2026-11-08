@@ -19,7 +19,7 @@ const BRAND_COLORS = [
   { label: 'Red', value: '#dc2626' },
 ];
 
-// Injected once — styles the TipTap editor's content elements
+// Injected once - styles the TipTap editor's content elements
 const editorStyles = `
   .tiptap-bio h2 { font-size: 1.25rem; font-weight: 700; color: #0f172a; margin: 0.75rem 0 0.25rem; }
   .tiptap-bio h3 { font-size: 1.05rem; font-weight: 600; color: #1e293b; margin: 0.5rem 0 0.25rem; }
@@ -50,7 +50,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
   });
 
   // Populate editor from props. Editor always starts empty (content:'') so TipTap never fires
-  // onUpdate during initialisation — avoiding a false hasUnsavedChanges=true on mount.
+  // onUpdate during initialisation - avoiding a false hasUnsavedChanges=true on mount.
   // emitUpdate=false prevents this programmatic setContent from triggering onChange.
   useEffect(() => {
     if (editor && value && editor.isEmpty) {

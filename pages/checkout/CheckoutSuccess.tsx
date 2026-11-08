@@ -76,7 +76,7 @@ export const CheckoutSuccess: React.FC = () => {
 
           <p className="text-lg text-slate-600 mb-8">
             {isLifetime
-              ? 'You now have lifetime access to CoachDog. This is a one-time payment with no recurring fees—ever!'
+              ? 'You now have lifetime access to CoachDog. This is a one-time payment with no recurring fees - ever!'
               : hasActiveTrial
               ? `You're now a premium CoachDog user. Your plan starts after your free trial ends on ${trialEndDate?.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}.`
               : 'Thank you for subscribing to CoachDog. Your premium account is now active.'}
@@ -170,7 +170,7 @@ export const CheckoutSuccess: React.FC = () => {
                   <li className="flex items-start">
                     <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
                     <span>
-                      This was a one-time payment—no recurring charges will ever be made
+                      This was a one-time payment - no recurring charges will ever be made
                     </span>
                   </li>
                   <li className="flex items-start">

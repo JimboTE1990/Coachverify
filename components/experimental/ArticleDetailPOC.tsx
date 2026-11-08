@@ -1,4 +1,4 @@
-// DEV POC — not linked from nav, dev server only
+// DEV POC - not linked from nav, dev server only
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ShieldCheck, ThumbsUp, ThumbsDown, MessageCircle } from 'lucide-react';
@@ -140,7 +140,7 @@ export const ArticleDetailPOC: React.FC = () => {
               </div>
             </div>
 
-            {/* Sidebar — related threads */}
+            {/* Sidebar - related threads */}
             <div className="space-y-4">
               <p className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
                 <MessageCircle className="h-3.5 w-3.5" />

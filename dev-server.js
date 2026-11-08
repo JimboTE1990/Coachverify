@@ -121,6 +121,51 @@ app.post('/api/create-checkout-session', async (req, res) => {
   }
 });
 
+// Create Stripe Checkout Session for a one-off event ticket (no login, no form)
+app.post('/api/create-event-checkout-session', async (req, res) => {
+  try {
+    const { campaignId, source } = req.body;
+
+    console.log('[Dev API] Creating event ticket checkout session:', { campaignId, source });
+
+    if (!campaignId) {
+      return res.status(400).json({ error: 'Missing required field: campaignId' });
+    }
+
+    const priceId = process.env.EVENT_TICKET_PRICE_ID;
+    if (!priceId) {
+      throw new Error('EVENT_TICKET_PRICE_ID environment variable is not set');
+    }
+
+    const appUrl = process.env.VITE_APP_URL || 'http://localhost:5173';
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${appUrl}/events/strategy-not-resolutions/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appUrl}/events/strategy-not-resolutions`,
+      metadata: {
+        purchaseType: 'event_ticket',
+        campaignId,
+        source: source || 'unknown',
+      },
+    });
+
+    console.log('[Dev API] Event ticket checkout session created:', session.id);
+
+    return res.status(200).json({
+      sessionId: session.id,
+      url: session.url,
+    });
+
+  } catch (error) {
+    console.error('[Dev API] Error creating event ticket checkout session:', error);
+    return res.status(500).json({
+      error: error.message || 'Failed to create checkout session',
+    });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`\n✅ Development API server running on http://localhost:${PORT}`);

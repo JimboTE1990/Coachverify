@@ -1,5 +1,5 @@
 // verify-emcc-certificate
-// DEV/PREVIEW ONLY — not enabled in production UI yet.
+// DEV/PREVIEW ONLY - not enabled in production UI yet.
 //
 // Accepts a base64-encoded EMCC certificate image and calls the Claude Vision
 // API to extract the EIA number, coach name, and accreditation level.
@@ -7,10 +7,10 @@
 // a structured verification result.
 //
 // Bot protection (4 layers):
-//   1. IP rate limit    — max 10 calls per IP per hour (ocr_rate_limits table)
-//   2. Payload size cap — imageBase64 must decode to ≤ 5 MB
-//   3. EIA format check — must match /^(EIA|ESIA)\d+$/i before calling Claude
-//   4. Cache short-circuit — same EIA verified in last 24 h skips Claude entirely
+//   1. IP rate limit - max 10 calls per IP per hour (ocr_rate_limits table)
+//   2. Payload size cap - imageBase64 must decode to ≤ 5 MB
+//   3. EIA format check - must match /^(EIA|ESIA)\d+$/i before calling Claude
+//   4. Cache short-circuit - same EIA verified in last 24 h skips Claude entirely
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -116,7 +116,7 @@ serve(async (req) => {
         if (rlRow.call_count >= RATE_LIMIT_MAX) {
           console.warn('[EMCC OCR] Rate limit exceeded for IP:', clientIp);
           return new Response(
-            JSON.stringify({ error: 'Too many requests — please try again later' }),
+            JSON.stringify({ error: 'Too many requests - please try again later' }),
             { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
@@ -125,7 +125,7 @@ serve(async (req) => {
           .update({ call_count: rlRow.call_count + 1 })
           .eq('ip_address', clientIp);
       } else {
-        // New or expired window — reset
+        // New or expired window - reset
         await supabase
           .from('ocr_rate_limits')
           .upsert({ ip_address: clientIp, window_start: new Date().toISOString(), call_count: 1 });
@@ -153,7 +153,7 @@ serve(async (req) => {
     if (approxBytes > MAX_IMAGE_BYTES) {
       console.warn('[EMCC OCR] Payload too large:', Math.round(approxBytes / 1024), 'KB');
       return new Response(
-        JSON.stringify({ error: 'Image too large — please upload a file under 5 MB' }),
+        JSON.stringify({ error: 'Image too large - please upload a file under 5 MB' }),
         { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -168,7 +168,7 @@ serve(async (req) => {
           confidence: 0,
           extractedData: { eiaNumber: null, fullName: null, accreditationLevel: null, expiryDate: null },
           matchDetails: { nameMatch: false, eiaMatch: false, levelMatch: false },
-          reason: 'Invalid EIA number format — it should start with EIA or ESIA followed by digits (e.g. EIA20251840)',
+          reason: 'Invalid EIA number format - it should start with EIA or ESIA followed by digits (e.g. EIA20251840)',
         } as VerificationResult),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -190,7 +190,7 @@ serve(async (req) => {
     if (cached) {
       const overlap = nameOverlap(fullName, cached.full_name);
       if (overlap >= 0.75) {
-        console.log('[EMCC OCR] Cache hit — skipping Claude API call');
+        console.log('[EMCC OCR] Cache hit - skipping Claude API call');
         return new Response(
           JSON.stringify({
             verified: true,
@@ -210,7 +210,7 @@ serve(async (req) => {
     }
 
     // ── Call Claude Vision API ─────────────────────────────────────────────────
-    const prompt = `This is an EMCC (European Mentoring and Coaching Council) accreditation certificate. It may be an EIA (Individual Accreditation) or ESIA (Senior Individual Accreditation) certificate. The layout is as follows:\n- TOP SECTION: The accredited person's full name appears below the text "This Certificate is awarded to"\n- MIDDLE SECTION: The accreditation level (e.g. "Practitioner", "Senior Practitioner")\n- RIGHT BORDER: The accreditation reference number is printed VERTICALLY (rotated 90 degrees clockwise) along the right-hand edge of the certificate. It starts with "EIA" or "ESIA" followed by digits (e.g. EIA20230480, EIA20251840, ESIA20230123). Look carefully at the right edge of the image for this rotated text — it is the most important field to extract.\n\nExtract the following fields:\n1. Accreditation number — starts with "EIA" or "ESIA" followed by digits, printed vertically on the right border. Return it exactly as it appears including the prefix.\n2. Full name of the accredited individual — below "This Certificate is awarded to" near the top\n3. Accreditation level — one of: Foundation, Practitioner, Senior Practitioner, Master Practitioner\n4. Expiry or valid-until date (if present)\n\nReturn ONLY valid JSON in this exact format (no markdown, no explanation):\n{\n  "eiaNumber": "EIA... or ESIA...",\n  "fullName": "...",\n  "accreditationLevel": "...",\n  "expiryDate": "..."\n}\n\nIf a field cannot be found, use null for that field.`;
+    const prompt = `This is an EMCC (European Mentoring and Coaching Council) accreditation certificate. It may be an EIA (Individual Accreditation) or ESIA (Senior Individual Accreditation) certificate. The layout is as follows:\n- TOP SECTION: The accredited person's full name appears below the text "This Certificate is awarded to"\n- MIDDLE SECTION: The accreditation level (e.g. "Practitioner", "Senior Practitioner")\n- RIGHT BORDER: The accreditation reference number is printed VERTICALLY (rotated 90 degrees clockwise) along the right-hand edge of the certificate. It starts with "EIA" or "ESIA" followed by digits (e.g. EIA20230480, EIA20251840, ESIA20230123). Look carefully at the right edge of the image for this rotated text - it is the most important field to extract.\n\nExtract the following fields:\n1. Accreditation number - starts with "EIA" or "ESIA" followed by digits, printed vertically on the right border. Return it exactly as it appears including the prefix.\n2. Full name of the accredited individual - below "This Certificate is awarded to" near the top\n3. Accreditation level - one of: Foundation, Practitioner, Senior Practitioner, Master Practitioner\n4. Expiry or valid-until date (if present)\n\nReturn ONLY valid JSON in this exact format (no markdown, no explanation):\n{\n  "eiaNumber": "EIA... or ESIA...",\n  "fullName": "...",\n  "accreditationLevel": "...",\n  "expiryDate": "..."\n}\n\nIf a field cannot be found, use null for that field.`;
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -267,7 +267,7 @@ serve(async (req) => {
           confidence: 0,
           extractedData: extracted,
           matchDetails: { nameMatch: false, eiaMatch: false, levelMatch: false },
-          reason: 'Could not read certificate — please upload a clear image of your EMCC certificate and try again',
+          reason: 'Could not read certificate - please upload a clear image of your EMCC certificate and try again',
         } as VerificationResult),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -317,10 +317,10 @@ serve(async (req) => {
       reason: verified
         ? 'Certificate verified successfully'
         : eiaMatch && !nameMatch
-          ? 'Name on certificate does not match your account name — please ensure the name on your certificate matches exactly and try again'
+          ? 'Name on certificate does not match your account name - please ensure the name on your certificate matches exactly and try again'
           : !eiaMatch
-            ? 'EIA number on certificate does not match your entry — please check your EIA number and try again'
-            : 'Certificate could not be verified — please upload a clear image of your EMCC certificate',
+            ? 'EIA number on certificate does not match your entry - please check your EIA number and try again'
+            : 'Certificate could not be verified - please upload a clear image of your EMCC certificate',
     };
 
     return new Response(JSON.stringify(result), {
@@ -330,7 +330,7 @@ serve(async (req) => {
   } catch (err) {
     console.error('[EMCC OCR] Unexpected error:', err);
     return new Response(
-      JSON.stringify({ error: 'Certificate verification is currently unavailable — please try again or contact support' }),
+      JSON.stringify({ error: 'Certificate verification is currently unavailable - please try again or contact support' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

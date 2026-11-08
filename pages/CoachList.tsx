@@ -231,7 +231,7 @@ export const CoachList: React.FC = () => {
       }
     }
 
-    // 2. Specialty Filter — matches old specialties field OR coachingExpertise sub-categories
+    // 2. Specialty Filter - matches old specialties field OR coachingExpertise sub-categories
     if (specialtyFilter) {
       criteria.push('Specialty');
       const category = EXPERTISE_CATEGORIES.find(c => c.name === specialtyFilter);
@@ -308,7 +308,7 @@ export const CoachList: React.FC = () => {
       }
     }
 
-    // 12. Smart (NL) Search — only filters when at least one coach in the directory matches (graceful fallback)
+    // 12. Smart (NL) Search - only filters when at least one coach in the directory matches (graceful fallback)
     if (nlShouldFilter) {
       criteria.push('Smart search');
       const hasTagMatch = nlMatchedExpertise.some(tag => coach.coachingExpertise?.includes(tag));
@@ -360,7 +360,7 @@ export const CoachList: React.FC = () => {
       return score;
     };
 
-    // Profile quality score — photo and bio are dominant; no photo/bio always ranks below
+    // Profile quality score - photo and bio are dominant; no photo/bio always ranks below
     const computeProfileScore = (coach: Coach): number => {
       let score = 0;
       const hasRealPhoto = coach.photoUrl?.includes('supabase.co/storage') || coach.photoUrl?.startsWith('data:image/');

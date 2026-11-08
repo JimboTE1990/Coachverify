@@ -1,4 +1,4 @@
-// DEV POC — modal for posting a new community question with magic-link identity
+// DEV POC - modal for posting a new community question with magic-link identity
 import React, { useState, useEffect } from 'react';
 import { X, EyeOff, Mail } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -45,7 +45,7 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        // Already authenticated — check for a community profile
+        // Already authenticated - check for a community profile
         const { data } = await supabase
           .from('community_users')
           .select('display_name')
@@ -58,7 +58,7 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
         setEmail(session.user.email ?? '');
         setState('form');
       } else {
-        // Not authenticated — show the email verification gate first
+        // Not authenticated - show the email verification gate first
         setState('email_gate');
       }
     });
@@ -140,7 +140,7 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
 
     setState('submitting');
 
-    // Upsert community profile — save email + opt-in for admin leads view
+    // Upsert community profile - save email + opt-in for admin leads view
     await supabase.from('community_users').upsert(
       {
         user_id: session.user.id,
@@ -153,7 +153,7 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
 
     const slug = await postQuestion(session.user.id, name.trim() || existingName);
     if (!slug) {
-      setError('Something went wrong — please try again.');
+      setError('Something went wrong - please try again.');
       setState('form');
       return;
     }
@@ -193,7 +193,7 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
               We've sent a link to <span className="font-semibold text-slate-700">{email}</span>
             </p>
             <p className="text-sm text-slate-500 mb-6">
-              Click it to verify your identity — you'll be brought back here to post your question.
+              Click it to verify your identity - you'll be brought back here to post your question.
             </p>
             <button
               onClick={handleResend}
@@ -205,11 +205,11 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
           </div>
         )}
 
-        {/* Email gate — shown when not authenticated */}
+        {/* Email gate - shown when not authenticated */}
         {(state === 'email_gate' || (state === 'sending' && existingName === '')) && (
           <form onSubmit={handleGateSubmit} className="space-y-4">
             <p className="text-sm text-slate-500">
-              Verify your identity first — you'll be brought straight back to write your question.
+              Verify your identity first - you'll be brought straight back to write your question.
             </p>
 
             {/* Name + anonymous toggle */}
@@ -290,7 +290,7 @@ export const AskQuestionModal: React.FC<Props> = ({ onClose, onPosted }) => {
           </form>
         )}
 
-        {/* Question form — shown when authenticated */}
+        {/* Question form - shown when authenticated */}
         {(state === 'form' || state === 'submitting') && (
           <form onSubmit={handleFormSubmit} className="space-y-4">
 

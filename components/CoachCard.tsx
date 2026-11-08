@@ -19,7 +19,7 @@ export const CoachCard: React.FC<CoachCardProps> = ({ coach, matchReason, matchP
   const navigate = useNavigate();
   const totalReviews = coach.totalReviews || coach.reviews?.length || 0;
 
-  // Derive up to 2 category labels — priority: mainCoachingCategories → volume-based coachingExpertise → legacy specialties
+  // Derive up to 2 category labels - priority: mainCoachingCategories → volume-based coachingExpertise → legacy specialties
   const expertiseCategories = (() => {
     if (coach.mainCoachingCategories && coach.mainCoachingCategories.length > 0) {
       return coach.mainCoachingCategories.slice(0, 2);

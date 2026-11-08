@@ -34,7 +34,7 @@ serve(async (req) => {
   }
 
   try {
-    // ── Auth check — require a valid Supabase JWT ──────────────────────────────
+    // ── Auth check - require a valid Supabase JWT ──────────────────────────────
     const supabaseUrl     = Deno.env.get('SUPABASE_URL');
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
     const authHeader      = req.headers.get('Authorization');

@@ -1,4 +1,4 @@
-// DEV POC — coach-only hub: collab board + content submission
+// DEV POC - coach-only hub: collab board + content submission
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -143,7 +143,7 @@ export const CoachHubPOC: React.FC = () => {
     const lastVisit = localStorage.getItem(key);
     localStorage.setItem(key, now);
 
-    if (!lastVisit) return; // first visit — nothing to digest
+    if (!lastVisit) return; // first visit - nothing to digest
     const daysSince = (Date.now() - new Date(lastVisit).getTime()) / (1000 * 60 * 60 * 24);
     if (daysSince < 3) return;
 
@@ -406,7 +406,7 @@ export const CoachHubPOC: React.FC = () => {
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div>
                     <p className="font-display font-bold text-slate-900 text-base">
-                      👋 Welcome back — here's what happened in the last {dayCount} day{dayCount !== 1 ? 's' : ''}
+                      👋 Welcome back - here's what happened in the last {dayCount} day{dayCount !== 1 ? 's' : ''}
                     </p>
                     <p className="text-xs text-slate-500 mt-0.5">Since your last visit</p>
                   </div>
@@ -496,7 +496,7 @@ export const CoachHubPOC: React.FC = () => {
                 <div>
                   <h2 className="font-display font-bold text-slate-900 text-lg">Collaboration Requests</h2>
                   <p className="text-sm text-slate-500 mt-0.5">
-                    {filteredPosts.length} request{filteredPosts.length !== 1 ? 's' : ''} — podcasts, workshops, referrals, and more.
+                    {filteredPosts.length} request{filteredPosts.length !== 1 ? 's' : ''} - podcasts, workshops, referrals, and more.
                   </p>
                 </div>
                 <button
@@ -638,7 +638,7 @@ export const CoachHubPOC: React.FC = () => {
                     </button>
                   ))}
 
-                  {/* Sort + My posts — pushed right */}
+                  {/* Sort + My posts - pushed right */}
                   <div className="ml-auto flex items-center gap-2">
                     <button
                       onClick={() => setShowMyPosts(v => !v)}
@@ -801,7 +801,7 @@ export const CoachHubPOC: React.FC = () => {
 
               {contentSuccess && (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 text-sm font-semibold text-amber-700">
-                  ✓ Submitted — your content is under review and will go live once approved.
+                  ✓ Submitted - your content is under review and will go live once approved.
                 </div>
               )}
 
@@ -918,7 +918,7 @@ export const CoachHubPOC: React.FC = () => {
                 </form>
               )}
 
-              {/* Live submissions — coach sees their own with status */}
+              {/* Live submissions - coach sees their own with status */}
               {liveContent.length > 0 && (
                 <div className="space-y-3">
                   <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Your submissions</p>

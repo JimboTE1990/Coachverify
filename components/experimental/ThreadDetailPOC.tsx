@@ -1,4 +1,4 @@
-// DEV POC — thread detail: coach-only replies, upvoting, sorting, inline editing
+// DEV POC - thread detail: coach-only replies, upvoting, sorting, inline editing
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
@@ -705,7 +705,7 @@ export const ThreadDetailPOC: React.FC = () => {
                 </div>
                 {!currentUser && (
                   <p className="text-xs text-amber-600 mt-2 bg-amber-50 px-4 py-2 rounded-xl">
-                    Your coach session is loading — if this persists, try refreshing the page.
+                    Your coach session is loading - if this persists, try refreshing the page.
                   </p>
                 )}
               </>
@@ -721,7 +721,7 @@ export const ThreadDetailPOC: React.FC = () => {
                   Only verified CoachDog coaches can reply
                 </p>
                 <p className="text-xs text-slate-400 mb-4">
-                  Replies come from accredited, vetted coaches — so you know the advice is legit.
+                  Replies come from accredited, vetted coaches - so you know the advice is legit.
                 </p>
                 <Link
                   to="/coach-login"

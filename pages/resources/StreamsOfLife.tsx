@@ -40,7 +40,7 @@ export const StreamsOfLife: React.FC = () => {
               <FileText className="h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-800">Streams of Life — Worksheet</p>
+              <p className="text-sm font-semibold text-slate-800">Streams of Life - Worksheet</p>
               <p className="text-xs text-slate-500">Free PDF download</p>
             </div>
             <a
@@ -60,7 +60,7 @@ export const StreamsOfLife: React.FC = () => {
 
           <h2>What is the Streams of Life tool?</h2>
           <p>
-            The Streams of Life worksheet is a powerful visual coaching exercise that invites clients to reflect on the major areas of their life — often called "streams" — and assess how each one is flowing. Much like a river made up of many tributaries, a fulfilling life draws from multiple sources of meaning and energy.
+            The Streams of Life worksheet is a powerful visual coaching exercise that invites clients to reflect on the major areas of their life - often called "streams" - and assess how each one is flowing. Much like a river made up of many tributaries, a fulfilling life draws from multiple sources of meaning and energy.
           </p>
           <p>
             By mapping out each stream, clients can quickly see where life feels abundant and where it feels blocked, stagnant, or neglected. This creates a natural foundation for goal-setting and prioritisation within a coaching conversation.
@@ -73,7 +73,7 @@ export const StreamsOfLife: React.FC = () => {
           <ol>
             <li><strong>Complete the worksheet:</strong> Invite your client to score each stream on a simple scale (1–10), rating how satisfied or energised they feel in that area right now.</li>
             <li><strong>Explore the picture:</strong> Use open coaching questions to explore the high scores and the low ones. What does a 3 look like for them? What would a 9 feel like?</li>
-            <li><strong>Identify focus areas:</strong> Together, agree which one or two streams feel most important to focus on. The goal isn't to score a 10 across the board — it's to find the right balance for this person at this time.</li>
+            <li><strong>Identify focus areas:</strong> Together, agree which one or two streams feel most important to focus on. The goal isn't to score a 10 across the board - it's to find the right balance for this person at this time.</li>
             <li><strong>Set the agenda:</strong> Use the insights to shape the coaching engagement. The streams that score lowest often hold the most potential for meaningful change.</li>
           </ol>
 
@@ -82,18 +82,18 @@ export const StreamsOfLife: React.FC = () => {
             The worksheet covers the core areas that most clients identify as central to a well-rounded life:
           </p>
           <ul>
-            <li><strong>Career &amp; Purpose</strong> — Work, calling, contribution</li>
-            <li><strong>Relationships</strong> — Family, friends, intimate partnerships</li>
-            <li><strong>Health &amp; Wellbeing</strong> — Physical, mental, and emotional health</li>
-            <li><strong>Finances</strong> — Security, freedom, and relationship with money</li>
-            <li><strong>Personal Growth</strong> — Learning, creativity, and self-development</li>
-            <li><strong>Fun &amp; Recreation</strong> — Joy, hobbies, and rest</li>
-            <li><strong>Environment</strong> — Home, surroundings, and sense of place</li>
+            <li><strong>Career &amp; Purpose</strong> - Work, calling, contribution</li>
+            <li><strong>Relationships</strong> - Family, friends, intimate partnerships</li>
+            <li><strong>Health &amp; Wellbeing</strong> - Physical, mental, and emotional health</li>
+            <li><strong>Finances</strong> - Security, freedom, and relationship with money</li>
+            <li><strong>Personal Growth</strong> - Learning, creativity, and self-development</li>
+            <li><strong>Fun &amp; Recreation</strong> - Joy, hobbies, and rest</li>
+            <li><strong>Environment</strong> - Home, surroundings, and sense of place</li>
           </ul>
 
           <h2>Why this works</h2>
           <p>
-            One of the most common challenges clients face is knowing <em>where to start</em>. Life can feel overwhelming in its entirety. The Streams of Life tool breaks that overwhelm down into distinct, manageable areas — giving both coach and client a shared language and a clear visual to return to throughout the engagement.
+            One of the most common challenges clients face is knowing <em>where to start</em>. Life can feel overwhelming in its entirety. The Streams of Life tool breaks that overwhelm down into distinct, manageable areas - giving both coach and client a shared language and a clear visual to return to throughout the engagement.
           </p>
           <p>
             It also surfaces blind spots. Clients are often so focused on one struggling stream (typically career or relationships) that they overlook the energy available in other streams that could help fuel progress everywhere.
@@ -109,7 +109,7 @@ export const StreamsOfLife: React.FC = () => {
         <div className="mt-12 pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <p className="font-semibold text-slate-800 text-sm">Download the worksheet</p>
-            <p className="text-xs text-slate-500 mt-0.5">Free PDF — print or use digitally in sessions</p>
+            <p className="text-xs text-slate-500 mt-0.5">Free PDF - print or use digitally in sessions</p>
           </div>
           <a
             href={PDF_PATH}

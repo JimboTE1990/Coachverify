@@ -41,7 +41,7 @@ serve(async (req: Request) => {
     });
   }
 
-  // Admin auth — simple shared secret
+  // Admin auth - simple shared secret
   const adminPassword = Deno.env.get('ADMIN_PASSWORD');
   const providedPassword = req.headers.get('x-admin-password');
   if (!adminPassword || providedPassword !== adminPassword) {
@@ -71,7 +71,7 @@ serve(async (req: Request) => {
     });
   }
 
-  // Service role client — bypasses RLS and column-level REVOKEs
+  // Service role client - bypasses RLS and column-level REVOKEs
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!

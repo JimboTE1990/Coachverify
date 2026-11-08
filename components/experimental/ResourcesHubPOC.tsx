@@ -1,4 +1,4 @@
-// DEV POC — not linked from nav, dev server only
+// DEV POC - not linked from nav, dev server only
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, ShieldCheck, BookOpen, Users, TrendingUp, Star } from 'lucide-react';
@@ -22,7 +22,7 @@ const RESOURCES: ResourceCard[] = [
     icon: <ShieldCheck className="h-5 w-5" />,
     tag: 'Accreditation',
     title: 'What is coaching accreditation and why does it matter?',
-    description: 'Understand the difference between ICF, EMCC, and AC credentials — and why clients look for them.',
+    description: 'Understand the difference between ICF, EMCC, and AC credentials - and why clients look for them.',
     cta: 'Read guide',
     href: '/how-to-find-a-certified-verified-coach',
     badge: '🎓 CoachDog Verified',
@@ -31,8 +31,8 @@ const RESOURCES: ResourceCard[] = [
     id: 'r2',
     icon: <Star className="h-5 w-5" />,
     tag: 'Accreditation',
-    title: 'EMCC vs ICF — which accreditation pathway is right for you?',
-    description: 'A practical comparison of both bodies — requirements, costs, timelines, and global recognition.',
+    title: 'EMCC vs ICF - which accreditation pathway is right for you?',
+    description: 'A practical comparison of both bodies - requirements, costs, timelines, and global recognition.',
     cta: 'Read guide',
     href: '/insights-poc/resources',
     badge: '🛡️ Coach Authored',
@@ -42,7 +42,7 @@ const RESOURCES: ResourceCard[] = [
     icon: <BookOpen className="h-5 w-5" />,
     tag: 'Profile Tips',
     title: 'Building a CoachDog profile that converts',
-    description: 'What clients actually look for — and how to make your specialisms, style, and credentials land clearly.',
+    description: 'What clients actually look for - and how to make your specialisms, style, and credentials land clearly.',
     cta: 'Read guide',
     href: '/insights-poc/resources',
   },
@@ -51,7 +51,7 @@ const RESOURCES: ResourceCard[] = [
     icon: <TrendingUp className="h-5 w-5" />,
     tag: 'Growth',
     title: 'How CoachDog verifies your credentials',
-    description: 'A step-by-step walkthrough of how our OCR and manual review process works — and what to upload.',
+    description: 'A step-by-step walkthrough of how our OCR and manual review process works - and what to upload.',
     cta: 'Read guide',
     href: '/insights-poc/resources',
   },
@@ -69,7 +69,7 @@ const RESOURCES: ResourceCard[] = [
     icon: <BookOpen className="h-5 w-5" />,
     tag: 'Content',
     title: 'How to write articles that build trust with future clients',
-    description: 'Tips for publishing on CoachDog — what works, what to avoid, and how our editorial QA works.',
+    description: 'Tips for publishing on CoachDog - what works, what to avoid, and how our editorial QA works.',
     cta: 'Read guide',
     href: '/insights-poc/resources',
     badge: '✍️ Coming Soon',
@@ -179,7 +179,7 @@ export const ResourcesHubPOC: React.FC = () => {
               >
                 <p className="text-lg font-display font-bold mb-1">Answer community questions</p>
                 <p className="text-sm opacity-80 mb-4 leading-relaxed">
-                  When you reply to a thread on the community Q&A, your response is highlighted as a Featured Coach Answer — with a direct link to your profile. It's organic visibility with people who are actively looking for a coach.
+                  When you reply to a thread on the community Q&A, your response is highlighted as a Featured Coach Answer - with a direct link to your profile. It's organic visibility with people who are actively looking for a coach.
                 </p>
                 <Link
                   to="/insights-poc"
@@ -193,7 +193,7 @@ export const ResourcesHubPOC: React.FC = () => {
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                 <p className="font-display font-bold text-slate-900 mb-1">Write an article</p>
                 <p className="text-sm text-slate-500 leading-relaxed mb-4">
-                  Share your expertise with a long-form piece. CoachDog's editorial team reviews all submissions — if approved, it's published under your name with a link to your profile. Article publishing is coming soon.
+                  Share your expertise with a long-form piece. CoachDog's editorial team reviews all submissions - if approved, it's published under your name with a link to your profile. Article publishing is coming soon.
                 </p>
                 <button
                   disabled

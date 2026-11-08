@@ -1,4 +1,4 @@
-// DEV POC — standalone nav, does not touch Layout.tsx
+// DEV POC - standalone nav, does not touch Layout.tsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';

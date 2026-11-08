@@ -100,7 +100,7 @@ const CarouselSection: React.FC<{
                 {/* Image at top (when imageSrc provided) */}
                 {card.imageSrc && (
                   card.imageContain ? (
-                    // Natural proportions — fills full width, height flows from image
+                    // Natural proportions - fills full width, height flows from image
                     <img
                       src={card.imageSrc}
                       alt={card.title}
@@ -357,7 +357,7 @@ export const Home: React.FC = () => {
               <p className="mt-2 text-xs text-center text-brand-600 animate-pulse">Listening… speak now</p>
             )}
             {voiceStatus === 'error' && (
-              <p className="mt-2 text-xs text-center text-red-500">Couldn't hear anything — check microphone permissions</p>
+              <p className="mt-2 text-xs text-center text-red-500">Couldn't hear anything - check microphone permissions</p>
             )}
           </div>
 
@@ -399,7 +399,7 @@ export const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* ── What is CoachDog? — with photo cards ─────────────────────────── */}
+      {/* ── What is CoachDog? - with photo cards ─────────────────────────── */}
       <CarouselSection
         sectionCls="bg-white"
         title="What is CoachDog?"
@@ -443,7 +443,7 @@ export const Home: React.FC = () => {
         ]}
       />
 
-      {/* ── Why Use CoachDog? — with icon images ─────────────────────────── */}
+      {/* ── Why Use CoachDog? - with icon images ─────────────────────────── */}
       <CarouselSection
         id="why-use-coachdog"
         sectionCls="bg-slate-50"

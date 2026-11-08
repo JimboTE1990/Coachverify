@@ -29,7 +29,10 @@ export const AdminDashboard: React.FC = () => {
   const [coachPage, setCoachPage] = useState(1);
   const [activeTab, setActiveTab] = useState<'reviews' | 'coaches' | 'content' | 'leads' | 'expired' | 'campaigns'>('reviews');
   const [communityLeads, setCommunityLeads] = useState<{ id: string; display_name: string; email: string | null; marketing_opt_in: boolean; created_at: string }[]>([]);
-  const [eventRegistrations, setEventRegistrations] = useState<{ id: string; campaign_id: string; name: string; email: string; source: string | null; created_at: string }[]>([]);
+  const [eventRegistrations, setEventRegistrations] = useState<{
+    id: string; campaign_id: string; name: string | null; email: string; source: string | null;
+    status: string; amount_paid_pence: number | null; paid_at: string | null; created_at: string;
+  }[]>([]);
   const [campaignFilter, setCampaignFilter] = useState<string>('all');
   const [contentSubmissions, setContentSubmissions] = useState<ContentSubmission[]>([]);
   const [contentFilter, setContentFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
@@ -82,7 +85,7 @@ export const AdminDashboard: React.FC = () => {
   const handleProductReviewAction = async (action: 'approve' | 'delete', reviewId: string) => {
     const adminPassword = (import.meta as any).env?.VITE_ADMIN_PASSWORD;
     const success = await adminActionProductReview(action, reviewId, adminPassword);
-    if (!success) { alert('Action failed — please try again.'); return; }
+    if (!success) { alert('Action failed - please try again.'); return; }
 
     if (action === 'approve') {
       const review = pendingProductReviews.find(r => r.id === reviewId);
@@ -103,7 +106,7 @@ export const AdminDashboard: React.FC = () => {
       rejection_reason: reason || null,
     };
     const { error } = await supabase.from('coach_content_submissions').update(update).eq('id', id);
-    if (error) { alert('Update failed — please try again.'); return; }
+    if (error) { alert('Update failed - please try again.'); return; }
     setContentSubmissions(prev => prev.map(s => s.id === id ? { ...s, ...update } : s));
     setRejectingId(null);
     setRejectionReason('');
@@ -144,7 +147,7 @@ export const AdminDashboard: React.FC = () => {
     setTimeout(() => setCopySuccess(false), 2000);
   };
 
-  // Derived — coaches
+  // Derived - coaches
   const filteredCoaches = coaches.filter(c => {
     if (!filterStatus) return true;
     if (filterStatus === 'other') return !['lifetime', 'active', 'trial'].includes(c.subscriptionStatus);
@@ -153,7 +156,7 @@ export const AdminDashboard: React.FC = () => {
   const totalCoachPages = Math.max(1, Math.ceil(filteredCoaches.length / COACHES_PER_PAGE));
   const pagedCoaches = filteredCoaches.slice((coachPage - 1) * COACHES_PER_PAGE, coachPage * COACHES_PER_PAGE);
 
-  // Derived — approved reviews
+  // Derived - approved reviews
   const filteredApproved = starFilter ? approvedProductReviews.filter(r => r.rating === starFilter) : approvedProductReviews;
   const totalReviewPages = Math.max(1, Math.ceil(filteredApproved.length / REVIEWS_PER_PAGE));
   const pagedApproved = filteredApproved.slice((reviewPage - 1) * REVIEWS_PER_PAGE, reviewPage * REVIEWS_PER_PAGE);
@@ -336,7 +339,7 @@ export const AdminDashboard: React.FC = () => {
             </h3>
 
             {pendingProductReviews.length === 0 ? (
-              <p className="text-slate-400 text-sm py-2">Queue clear — nothing to review.</p>
+              <p className="text-slate-400 text-sm py-2">Queue clear - nothing to review.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {pendingProductReviews.map((review) => (
@@ -572,7 +575,7 @@ export const AdminDashboard: React.FC = () => {
                           <button onClick={() => handleFlag(review.coachId, review.id)} className="text-xs text-slate-500 hover:text-slate-800 underline">Dismiss</button>
                         </div>
                         <p className="text-sm text-slate-800 italic">"{review.text}"</p>
-                        <p className="text-xs text-slate-500 mt-2">— for {review.coachName}</p>
+                        <p className="text-xs text-slate-500 mt-2"> - for {review.coachName}</p>
                       </div>
                     ))
                   }
@@ -737,7 +740,7 @@ export const AdminDashboard: React.FC = () => {
 
                   {sub.status === 'approved' && (
                     <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-emerald-600">✓ Approved — live in community</span>
+                      <span className="text-xs font-semibold text-emerald-600">✓ Approved - live in community</span>
                       <button
                         onClick={() => handleContentAction(sub.id, 'rejected', 'Removed from community hub.')}
                         className="text-xs text-slate-400 hover:text-red-500 transition-colors"
@@ -789,7 +792,7 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               {optedIn.length === 0 ? (
-                <p className="text-slate-400 text-sm py-4">No opted-in leads yet — they'll appear here once community members tick the marketing checkbox.</p>
+                <p className="text-slate-400 text-sm py-4">No opted-in leads yet - they'll appear here once community members tick the marketing checkbox.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -819,7 +822,7 @@ export const AdminDashboard: React.FC = () => {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="font-bold text-slate-900 text-base">All community submitters</h3>
-                  <p className="text-sm text-slate-500 mt-0.5">Everyone who submitted a question — for internal context only, not for outbound marketing</p>
+                  <p className="text-sm text-slate-500 mt-0.5">Everyone who submitted a question - for internal context only, not for outbound marketing</p>
                 </div>
                 <button
                   onClick={() => downloadCsv(allSubmitters, 'coachdog_community_all.csv')}
@@ -901,7 +904,7 @@ export const AdminDashboard: React.FC = () => {
                           <td className="py-3 px-4 text-slate-600">{coach.email}</td>
                           <td className="py-3 px-4 text-slate-600">
                             {coach.accreditationBody
-                              ? `${coach.accreditationBody}${coach.accreditationLevel ? ` — ${coach.accreditationLevel}` : ''}`
+                              ? `${coach.accreditationBody}${coach.accreditationLevel ? ` - ${coach.accreditationLevel}` : ''}`
                               : <span className="text-slate-400 italic">Not set</span>}
                           </td>
                           <td className="py-3 px-4">
@@ -925,9 +928,9 @@ export const AdminDashboard: React.FC = () => {
         const filtered = campaignFilter === 'all' ? eventRegistrations : eventRegistrations.filter(r => r.campaign_id === campaignFilter);
 
         const downloadCsv = () => {
-          const header = 'Name,Email,Campaign,Source,Registered';
+          const header = 'Name,Email,Campaign,Source,Status,Amount,Registered';
           const body = filtered.map(r =>
-            `"${r.name.replace(/"/g, '""')}","${r.email.replace(/"/g, '""')}","${r.campaign_id}","${r.source ?? ''}","${new Date(r.created_at).toLocaleDateString('en-GB')}"`
+            `"${(r.name ?? '').replace(/"/g, '""')}","${r.email.replace(/"/g, '""')}","${r.campaign_id}","${r.source ?? ''}","${r.status}","${r.amount_paid_pence != null ? (r.amount_paid_pence / 100).toFixed(2) : ''}","${new Date(r.created_at).toLocaleDateString('en-GB')}"`
           ).join('\n');
           const blob = new Blob([header + '\n' + body], { type: 'text/csv' });
           const url = URL.createObjectURL(blob);
@@ -941,7 +944,7 @@ export const AdminDashboard: React.FC = () => {
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
               <div>
                 <h3 className="font-bold text-slate-900 text-base">Event registrations</h3>
-                <p className="text-sm text-slate-500 mt-0.5">Name and email captures from event landing pages</p>
+                <p className="text-sm text-slate-500 mt-0.5">Paid ticket purchases from event landing pages</p>
               </div>
               <div className="flex items-center gap-2">
                 <select
@@ -964,28 +967,36 @@ export const AdminDashboard: React.FC = () => {
             </div>
 
             {filtered.length === 0 ? (
-              <p className="text-slate-400 text-sm py-4">No registrations yet — they'll appear here once people submit the form on the event page.</p>
+              <p className="text-slate-400 text-sm py-4">No registrations yet - they'll appear here once people submit the form on the event page.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-100">
-                      <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Name</th>
                       <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Email</th>
                       <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Campaign</th>
                       <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Source</th>
+                      <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Status</th>
+                      <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Amount</th>
                       <th className="text-left py-2 font-semibold text-slate-500 text-xs uppercase tracking-wide">Registered</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filtered.map(reg => (
                       <tr key={reg.id} className="border-b border-slate-50 hover:bg-slate-50">
-                        <td className="py-2.5 pr-4 font-medium text-slate-800">{reg.name}</td>
                         <td className="py-2.5 pr-4 text-slate-600">{reg.email}</td>
                         <td className="py-2.5 pr-4">
                           <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full">{reg.campaign_id}</span>
                         </td>
-                        <td className="py-2.5 pr-4 text-slate-400 text-xs">{reg.source ?? '—'}</td>
+                        <td className="py-2.5 pr-4 text-slate-400 text-xs">{reg.source ?? ' - '}</td>
+                        <td className="py-2.5 pr-4">
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${reg.status === 'paid' ? 'text-green-700 bg-green-50' : 'text-slate-500 bg-slate-100'}`}>
+                            {reg.status === 'paid' ? 'Paid' : reg.status}
+                          </span>
+                        </td>
+                        <td className="py-2.5 pr-4 text-slate-600">
+                          {reg.amount_paid_pence != null ? `£${(reg.amount_paid_pence / 100).toFixed(2)}` : ' - '}
+                        </td>
                         <td className="py-2.5 text-slate-400 whitespace-nowrap">
                           {new Date(reg.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </td>

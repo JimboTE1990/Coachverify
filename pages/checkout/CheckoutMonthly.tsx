@@ -70,7 +70,7 @@ export const CheckoutMonthly: React.FC = () => {
       // Check authentication with session first (faster than getUser)
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-      // No session — show the page so they can see pricing/discount;
+      // No session - show the page so they can see pricing/discount;
       // the checkout button will redirect to login when they try to pay.
       if (!session || sessionError || !session.user) {
         setIsLoading(false);
@@ -100,14 +100,14 @@ export const CheckoutMonthly: React.FC = () => {
         return;
       }
 
-      // Lifetime — already on best plan, nothing to upgrade
+      // Lifetime - already on best plan, nothing to upgrade
       if (coach.subscription_status === 'lifetime') {
         setCheckoutView('already_covered');
         setIsLoading(false);
         return;
       }
 
-      // Active subscription — show appropriate guard screen
+      // Active subscription - show appropriate guard screen
       if (coach.subscription_status === 'active') {
         setCurrentCoach({ id: coach.id, billingCycle: coach.billing_cycle, subscriptionStatus: 'active' } as Coach);
         setCheckoutView(coach.billing_cycle === 'monthly' ? 'already_same_plan' : 'switch_plan');
@@ -140,7 +140,7 @@ export const CheckoutMonthly: React.FC = () => {
   };
 
   const handleCheckout = async () => {
-    // Not logged in — redirect to login, return here after
+    // Not logged in - redirect to login, return here after
     if (!currentCoach) {
       navigate('/coach-login', { state: { from: { pathname: '/checkout/monthly' } } });
       return;
@@ -196,7 +196,7 @@ export const CheckoutMonthly: React.FC = () => {
           <div className="text-6xl mb-6">🐾</div>
           <h1 className="text-2xl font-display font-bold text-slate-900 mb-3">Sit. Stay. Relax.</h1>
           <p className="text-slate-600 mb-8">
-            You're on the CoachDog Lifetime plan — the best value in the kennel. Your profile is live and there's nothing to upgrade, ever.
+            You're on the CoachDog Lifetime plan - the best value in the kennel. Your profile is live and there's nothing to upgrade, ever.
           </p>
           <button onClick={() => navigate('/for-coaches')} className="w-full py-3 rounded-xl font-bold text-white" style={{ backgroundColor: '#2D8A7E' }}>
             Back to Dashboard
@@ -246,7 +246,7 @@ export const CheckoutMonthly: React.FC = () => {
     );
   }
 
-  // Check if user has an ACTIVE trial — must be 'trial' status AND trial end date is in the future
+  // Check if user has an ACTIVE trial - must be 'trial' status AND trial end date is in the future
   const hasActiveTrial = currentCoach?.subscriptionStatus === 'trial' &&
     currentCoach?.trialEndsAt &&
     new Date(currentCoach.trialEndsAt) > new Date();
@@ -460,7 +460,7 @@ export const CheckoutMonthly: React.FC = () => {
                       <Tag className="h-4 w-4 mr-2 flex-shrink-0" />
                       <span className="font-medium text-sm">{appliedDiscount.code} applied</span>
                       {appliedDiscount.displayName && (
-                        <span className="ml-1 text-xs text-green-600">— {appliedDiscount.displayName}</span>
+                        <span className="ml-1 text-xs text-green-600"> - {appliedDiscount.displayName}</span>
                       )}
                     </div>
                     <button

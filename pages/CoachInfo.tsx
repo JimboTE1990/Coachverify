@@ -43,7 +43,7 @@ export const CoachInfo: React.FC = () => {
           <div className="rounded-2xl overflow-hidden shadow-2xl aspect-video">
             <iframe
               src="https://www.youtube.com/embed/BBnt6z11c50?rel=0"
-              title="CoachDog — Grow Your Practice"
+              title="CoachDog - Grow Your Practice"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
               className="w-full h-full"

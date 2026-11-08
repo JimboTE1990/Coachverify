@@ -44,7 +44,7 @@ export const ClientInfo: React.FC = () => {
               The coaching industry is unregulated, meaning anyone can call themselves a coach. <span className="text-slate-900 font-bold">We change that.</span>
             </p>
             <p className="text-lg text-slate-600 leading-relaxed max-w-2xl">
-              Every coach on CoachDog is verified against the accreditation standards of ICF, EMCC, or AC — so you can be confident you're working with a genuine, accredited professional.
+              Every coach on CoachDog is verified against the accreditation standards of ICF, EMCC, or AC - so you can be confident you're working with a genuine, accredited professional.
             </p>
             <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mt-4 inline-block">
                 <ul className="space-y-3 text-left">
