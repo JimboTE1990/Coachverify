@@ -443,6 +443,27 @@ export const Home: React.FC = () => {
         ]}
       />
 
+      {/* ── See CoachDog in action - YouTube embed ───────────────────────── */}
+      <div className="bg-white pb-16 lg:pb-20">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-display font-extrabold text-slate-900 sm:text-3xl">
+              See CoachDog in Action
+            </h2>
+          </div>
+          <div className="relative rounded-2xl overflow-hidden shadow-xl" style={{ aspectRatio: '16 / 9' }}>
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src="https://www.youtube.com/embed/sheDtAnm0BA"
+              title="CoachDog overview"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* ── Why Use CoachDog? - with icon images ─────────────────────────── */}
       <CarouselSection
         id="why-use-coachdog"
