@@ -24,6 +24,7 @@ const FREE_RESOURCES = [
   },
   {
     slug: 'health-check',
+    hidden: true, // Hidden until partner's December campaign launch - delete this line to reveal
     href: '/resources/health-check.html',
     ctaLabel: 'Start the health check',
     title: 'Coach Business Health Check',
@@ -66,7 +67,7 @@ export const Resources: React.FC = () => {
           </div>
 
           <div className="divide-y divide-slate-100">
-            {FREE_RESOURCES.map((resource) => (
+            {FREE_RESOURCES.filter((resource) => !resource.hidden).map((resource) => (
               <article key={resource.slug} className="py-8 first:pt-0">
                 <div className="flex items-start gap-5">
                   {/* Icon */}
