@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coach Business Health Check | CoachDog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<style>
+/* ===== Coach Business Health Check: all styles are scoped to #cdhc ===== */
+#cdhc{--mint:#9DDED3;--teal:#00C2CB;--tealtx:#00808A;--ink:#111111;--soft:#F5F8F7;--line:#E3EAE8;--grey:#555555;
+  font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);background:#FFFFFF;line-height:1.5;-webkit-font-smoothing:antialiased}
+#cdhc *{box-sizing:border-box}
+#cdhc .scr{display:none;max-width:760px;margin:0 auto;padding:28px 18px 48px}
+#cdhc .scr.on{display:block}
+#cdhc h1,#cdhc h2,#cdhc h3,#cdhc .sp{font-family:'League Spartan',system-ui,sans-serif}
+#cdhc .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:14px 28px 12px;border-radius:999px;border:2px solid var(--ink);background:var(--ink);color:#FFFFFF;font-family:'League Spartan',sans-serif;font-weight:700;font-size:18px;cursor:pointer;text-decoration:none;transition:transform .15s ease,background .15s ease}
+#cdhc .btn:hover{transform:translateY(-2px)}
+#cdhc .btn.alt{background:#FFFFFF;color:var(--ink)}
+#cdhc .btn.mint{background:var(--mint);border-color:var(--mint);color:var(--ink)}
+#cdhc .btn:focus-visible,#cdhc .rate:focus-visible,#cdhc .link:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+#cdhc .kick{font-family:'League Spartan',sans-serif;font-weight:700;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--tealtx)}
+#cdhc .top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}
+#cdhc .top img{height:40px;width:auto;display:block}
+#cdhc .pill{font-family:'League Spartan',sans-serif;font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;border:2px solid var(--ink);border-radius:999px;padding:7px 14px 5px}
+#cdhc .partner{font-size:13px;color:var(--grey);text-align:center;margin-top:28px}
+#cdhc .partner b{color:var(--ink)}
+
+/* welcome */
+#cdhc .wel{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:24px;align-items:center}
+#cdhc .wel h1{font-size:clamp(38px,7vw,58px);line-height:1;margin:10px 0 14px;letter-spacing:-.02em;font-weight:800}
+#cdhc .wel p{font-size:18px;margin:0 0 18px;color:#2A2A2A}
+#cdhc .ticks{list-style:none;padding:0;margin:0 0 24px;display:grid;gap:10px}
+#cdhc .ticks li{display:flex;gap:10px;align-items:flex-start;font-size:16px}
+#cdhc .ticks svg{flex:none;margin-top:2px}
+#cdhc .hero{position:relative;aspect-ratio:3/4}
+#cdhc .hero:before{content:"";position:absolute;left:4%;right:4%;bottom:4%;aspect-ratio:1;border-radius:50%;background:var(--mint)}
+#cdhc .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom}
+#cdhc .meta{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:var(--grey);margin-top:14px}
+
+/* quiz */
+#cdhc .paws{display:flex;gap:6px;flex-wrap:nowrap;justify-content:space-between;margin:4px 0 8px}
+#cdhc .paws svg{width:100%;max-width:26px;height:auto;flex:1 1 0;transition:transform .3s ease}
+#cdhc .paws svg path,#cdhc .paws svg ellipse{fill:#E3EAE8;transition:fill .3s ease}
+#cdhc .paws svg.f path,#cdhc .paws svg.f ellipse{fill:var(--mint)}
+#cdhc .paws svg.c path,#cdhc .paws svg.c ellipse{fill:var(--teal)}
+#cdhc .paws svg.pop{transform:scale(1.25) rotate(-8deg)}
+#cdhc .count{display:flex;justify-content:space-between;font-size:14px;color:var(--grey);margin-bottom:26px}
+#cdhc .qcard{min-height:150px;display:flex;align-items:center}
+#cdhc .qtext{font-family:'League Spartan',sans-serif;font-weight:700;font-size:clamp(24px,4.4vw,32px);line-height:1.2;margin:0}
+#cdhc .scale{margin-top:30px}
+#cdhc .rates{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+#cdhc .rate{aspect-ratio:1;max-width:84px;width:100%;justify-self:center;border-radius:50%;border:2px solid var(--ink);background:#FFFFFF;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'League Spartan',sans-serif;font-weight:700;font-size:22px;color:var(--ink);transition:all .15s ease;position:relative;padding:0}
+#cdhc .rate:hover{background:var(--soft)}
+#cdhc .rate .pw{display:none;width:58%;height:58%}
+#cdhc .rate.sel{background:var(--mint);border-color:var(--mint)}
+#cdhc .rate.sel .num{display:none}
+#cdhc .rate.sel .pw{display:block}
+#cdhc .ends{display:grid;grid-template-columns:repeat(3,1fr);font-size:13px;color:var(--grey);margin-top:10px}
+#cdhc .ends span:nth-child(2){text-align:center}#cdhc .ends span:nth-child(3){text-align:right}
+#cdhc .qnav{display:flex;justify-content:space-between;align-items:center;margin-top:34px}
+#cdhc .link{background:none;border:none;font:inherit;font-size:15px;color:var(--grey);cursor:pointer;text-decoration:underline;padding:8px 0}
+#cdhc .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,30px);opacity:0;background:var(--ink);color:#FFFFFF;padding:14px 22px;border-radius:999px;font-size:15px;transition:all .35s ease;pointer-events:none;z-index:50;display:flex;gap:10px;align-items:center;width:max-content;max-width:92vw}
+#cdhc .toast.on{opacity:1;transform:translate(-50%,0)}
+#cdhc .fade{animation:cdfade .3s ease}
+@keyframes cdfade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* email */
+#cdhc .gate{max-width:520px;margin:0 auto;text-align:center}
+#cdhc .gate .badge{width:96px;height:96px;margin:0 auto 14px;border-radius:50%;background:var(--mint);display:flex;align-items:center;justify-content:center}
+#cdhc .gate h2{font-size:clamp(30px,6vw,42px);line-height:1.05;margin:6px 0 10px}
+#cdhc .gate p{font-size:17px;color:#2A2A2A;margin:0 0 22px}
+#cdhc form{display:grid;gap:14px;text-align:left}
+#cdhc label{font-weight:700;font-size:14px;display:block;margin-bottom:6px}
+#cdhc input[type=text],#cdhc input[type=email]{width:100%;min-height:52px;border:2px solid var(--line);border-radius:14px;padding:12px 16px;font:inherit;font-size:17px}
+#cdhc input:focus{outline:none;border-color:var(--teal)}
+#cdhc .chk{display:flex;gap:10px;align-items:flex-start;font-size:14px;font-weight:400;color:#333333}
+#cdhc .chk input{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--tealtx)}
+#cdhc .small{font-size:12.5px;color:var(--grey)}
+#cdhc .err{color:#B42318;font-size:14px;min-height:18px}
+
+/* results summary */
+#cdhc .sum{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:22px;align-items:center}
+#cdhc .sum h2{font-size:clamp(34px,6.4vw,52px);line-height:1;margin:8px 0 10px;font-weight:800}
+#cdhc .sum .tag{font-family:'League Spartan',sans-serif;font-weight:600;font-size:20px;margin:0 0 14px}
+#cdhc .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+#cdhc .chip{background:var(--soft);border-radius:999px;padding:7px 14px 6px;font-size:14px}
+#cdhc .chip b{font-family:'League Spartan',sans-serif}
+#cdhc .bars{margin-top:26px;display:grid;gap:10px}
+#cdhc .bar{display:grid;grid-template-columns:110px minmax(0,1fr) 36px;gap:12px;align-items:center;font-size:15px}
+#cdhc .bar .tr{height:12px;background:#EEF2F1;border-radius:999px;overflow:hidden}
+#cdhc .bar .tr i{display:block;height:100%;border-radius:999px}
+#cdhc .bar b{font-family:'League Spartan',sans-serif;text-align:right;font-size:17px}
+#cdhc .bar.stk{background:#FFF4E5;border-radius:12px;padding:6px 10px;margin:0 -10px}
+#cdhc .acts{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+#cdhc .joinbox{margin-top:28px;background:var(--ink);color:#FFFFFF;border-radius:22px;padding:24px 26px;display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+#cdhc .joinbox h3{margin:0 0 4px;font-size:24px}
+#cdhc .joinbox p{margin:0;color:#DDDDDD;font-size:15px}
+#cdhc .rephead{margin:44px 0 16px;display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap}
+#cdhc .rephead h3{font-size:28px;margin:0}
+
+/* ===== report pages (A4 at 96dpi) ===== */
+#cdhc-report{display:grid;gap:18px;justify-items:center}
+#cdhc .pw8{position:relative;overflow:hidden;border-radius:6px;box-shadow:0 2px 14px rgba(0,0,0,.08)}
+#cdhc .page{width:794px;height:1123px;background:#FFFFFF;position:absolute;left:0;top:0;transform-origin:0 0;display:flex;flex-direction:column;padding:36px 48px 28px;overflow:hidden;color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#cdhc .page p{margin:0}
+#cdhc .ph{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;border-bottom:2px solid var(--ink)}
+#cdhc .ph div{display:flex;align-items:center;gap:10px}
+#cdhc .ph img{width:30px;height:30px}
+#cdhc .ph b{font-family:'League Spartan',sans-serif;font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+#cdhc .ph span{font-size:12px;color:var(--grey)}
+#cdhc .pf{margin-top:auto;display:flex;justify-content:space-between;font-size:11px;color:#666666;padding-top:16px}
+#cdhc .pf b{color:var(--ink)}
+#cdhc .pk{font-family:'League Spartan',sans-serif;font-weight:700;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--tealtx)}
+#cdhc .pt{margin:0;font-family:'League Spartan',sans-serif;font-weight:800;font-size:42px;line-height:1}
+#cdhc .pi{font-size:14.5px;line-height:1.6;color:#3A3A3A}
+#cdhc .h3{font-family:'League Spartan',sans-serif;font-weight:700;font-size:20px;margin:0}
+#cdhc .it{display:flex;gap:11px;align-items:flex-start;font-size:13.5px;line-height:1.5;color:#2E2E2E}
+#cdhc .dot{width:9px;height:9px;border-radius:50%;flex:none;margin-top:6px;background:var(--ink)}
+#cdhc .dot.t{background:var(--tealtx)}
+#cdhc .card{background:var(--soft);border-radius:16px;padding:18px 20px}
+#cdhc .lab{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tealtx)}
+/* cover */
+#cdhc .cover{padding:40px 48px 32px;gap:24px}
+#cdhc .cv-top{display:flex;justify-content:space-between;align-items:center}
+#cdhc .cv-top img{height:50px;width:auto}
+#cdhc .cv-mid{flex:1;display:flex;gap:24px;min-height:0}
+#cdhc .cv-txt{width:330px;flex:none;display:flex;flex-direction:column;justify-content:center;gap:16px}
+#cdhc .cv-txt p{font-size:17.5px;line-height:1.6;color:#2A2A2A}
+#cdhc .cv-img{flex:1;position:relative;min-width:0}
+#cdhc .cv-img:before{content:"";position:absolute;left:10px;right:0;bottom:20px;height:330px;border-radius:50%;background:var(--mint)}
+#cdhc .cv-img img{position:absolute;left:0;right:0;bottom:6px;width:100%;height:450px;object-fit:contain;object-position:center bottom}
+#cdhc .band{background:var(--ink);color:#FFFFFF;border-radius:22px;padding:24px 28px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+#cdhc .band div+div{border-left:1px solid #3A3A3A;padding-left:18px}
+#cdhc .band small{display:block;font-size:12.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mint);margin-bottom:6px}
+#cdhc .band strong{display:block;font-family:'League Spartan',sans-serif;font-weight:800;font-size:30px;line-height:1.05}
+#cdhc .band em{font-style:normal;font-size:14.5px;color:#CFCFCF}
+/* results page */
+#cdhc .row{display:grid;grid-template-columns:150px minmax(0,1fr) 54px;gap:18px;align-items:center;padding:12px 0;border-bottom:1px solid #E6ECEA}
+#cdhc .row.stk{background:#FFF4E5;margin:0 -16px;padding:12px 16px;border-radius:14px;border-bottom:none}
+#cdhc .pn{font-family:'League Spartan',sans-serif;font-weight:700;font-size:20px;line-height:1.1}
+#cdhc .pd{font-size:11.5px;color:#666666;margin-top:3px;line-height:1.35}
+#cdhc .row.stk .pd{color:#8A4B00;font-weight:700}
+#cdhc .trk{height:14px;background:#EEF2F1;border-radius:999px;overflow:hidden}
+#cdhc .row.stk .trk,#cdhc .row.stk .st{background:#FFFFFF}
+#cdhc .trk i,#cdhc .st i{display:block;height:100%;border-radius:999px}
+#cdhc .sub{display:grid;grid-template-columns:118px minmax(0,1fr) 26px;gap:10px;align-items:center;font-size:11.5px;color:#444444;margin-top:6px}
+#cdhc .st{height:6px;background:#EEF2F1;border-radius:999px;overflow:hidden}
+#cdhc .st i{background:var(--ink);border-radius:0}
+#cdhc .num{font-family:'League Spartan',sans-serif;font-weight:800;font-size:28px;text-align:right}
+#cdhc .keyg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#cdhc .keyg div{display:flex;gap:10px;align-items:flex-start;background:var(--soft);border-radius:12px;padding:11px 13px;font-size:12px;line-height:1.45}
+#cdhc .keyg i{width:14px;height:14px;border-radius:50%;flex:none;margin-top:2px}
+#cdhc .stage{display:flex;gap:14px;align-items:center;border:2px solid var(--mint);border-radius:14px;padding:12px 16px;margin-top:14px}
+#cdhc .stage b{font-family:"League Spartan",sans-serif;font-size:16px;flex:none;white-space:nowrap}
+#cdhc .stage span{font-size:12.5px;line-height:1.45;color:#333333}
+/* archetype page */
+#cdhc .quote{background:var(--ink);color:#FFFFFF;border-radius:18px;padding:20px 24px;display:flex;gap:14px;align-items:flex-start}
+#cdhc .quote b{font-family:'League Spartan',sans-serif;font-weight:800;font-size:58px;line-height:.7;color:var(--mint)}
+#cdhc .quote span{font-family:'League Spartan',sans-serif;font-weight:600;font-size:20px;line-height:1.35}
+#cdhc .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px}
+#cdhc .col{display:flex;flex-direction:column;gap:11px}
+#cdhc .mini{width:170px;height:210px;flex:none;position:relative}
+#cdhc .mini:before{content:"";position:absolute;left:10px;bottom:0;width:160px;height:160px;border-radius:50%;background:var(--mint)}
+#cdhc .mini img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom}
+/* sticking point page */
+#cdhc .sc{border:2px solid #E0E6E4;border-radius:18px;padding:18px 20px;display:flex;flex-direction:column;gap:9px}
+#cdhc .sc.first{border-color:var(--ink)}
+#cdhc .sc .hd{display:flex;justify-content:space-between;align-items:baseline}
+#cdhc .sc .hd span{font-family:'League Spartan',sans-serif;font-weight:800;font-size:30px}
+#cdhc .tag2{font-size:12.5px;font-weight:700}
+#cdhc .leaks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+#cdhc .leaks div{background:var(--soft);border-radius:14px;padding:15px 16px;display:flex;flex-direction:column;gap:6px}
+#cdhc .leaks em{font-style:normal;font-family:'League Spartan',sans-serif;font-weight:800;font-size:26px;color:var(--tealtx)}
+#cdhc .leaks strong{font-size:14px}
+#cdhc .leaks span{font-size:12.5px;line-height:1.5;color:#3A3A3A}
+#cdhc .ins{background:var(--ink);color:#FFFFFF;border-radius:18px;padding:22px 24px;display:flex;flex-direction:column;gap:14px}
+#cdhc .ins p{font-size:13px;line-height:1.55;color:#DDDDDD}
+#cdhc .fun{display:flex;align-items:center;gap:10px}
+#cdhc .fun div{flex:1;border-radius:12px;padding:12px 14px;text-align:center;color:var(--ink)}
+#cdhc .fun strong{display:block;font-family:'League Spartan',sans-serif;font-weight:800;font-size:30px;line-height:1}
+#cdhc .fun small{font-size:12px}
+#cdhc .fun em{color:var(--mint);font-style:normal;font-weight:700;font-size:22px}
+/* plan page */
+#cdhc .phs{display:grid;grid-template-columns:120px minmax(0,1fr);gap:20px;padding:12px 0;border-bottom:1px solid #E6ECEA}
+#cdhc .phs:last-child{border-bottom:none}
+#cdhc .wk{font-family:'League Spartan',sans-serif;font-weight:800;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--tealtx)}
+#cdhc .phs h4{font-family:'League Spartan',sans-serif;font-weight:700;font-size:21px;margin:0 0 6px}
+#cdhc .tk{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.5;color:#2E2E2E;margin-top:5px}
+#cdhc .tk i{width:14px;height:14px;border:2px solid var(--ink);border-radius:4px;flex:none;margin-top:2px}
+#cdhc .rhy{background:var(--mint);border-radius:18px;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+#cdhc .rhy .g{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#cdhc .rhy .g div{background:#FFFFFF;border-radius:14px;padding:12px 13px;display:flex;flex-direction:column;gap:4px;font-size:12px;line-height:1.4}
+#cdhc .rhy strong{font-family:'League Spartan',sans-serif;font-weight:800;font-size:28px;line-height:1}
+/* quick wins */
+#cdhc .qw{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+#cdhc .qc{border:1.5px solid #E0E6E4;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:7px}
+#cdhc .qc.wide{grid-column:span 2;background:#E9F8F5;border-color:var(--mint)}
+#cdhc .qc .hd{display:flex;justify-content:space-between;align-items:baseline}
+#cdhc .qc .hd b{font-family:'League Spartan',sans-serif;font-weight:700;font-size:21px}
+#cdhc .qc .hd span{font-family:'League Spartan',sans-serif;font-weight:800;font-size:26px}
+#cdhc .qc .w{font-size:12.5px;line-height:1.5;color:#555555}
+#cdhc .qc .q{font-size:13px;line-height:1.5;font-weight:500}
+/* support page */
+#cdhc .bk{display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;padding:10px 0;border-bottom:1px solid #E6ECEA}
+#cdhc .bk:last-child{border-bottom:none}
+#cdhc .sp8{width:44px;height:58px;border-radius:5px;background:var(--ink);position:relative}
+#cdhc .sp8:before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--mint);border-radius:5px 0 0 5px}
+#cdhc .bk:nth-child(even) .sp8:before{background:var(--teal)}
+#cdhc .bt{font-family:'League Spartan',sans-serif;font-weight:700;font-size:16px;line-height:1.2}
+#cdhc .ba{font-size:12px;color:var(--tealtx);font-weight:700;margin-top:2px}
+#cdhc .bw{font-size:12.5px;line-height:1.45;color:#3A3A3A;margin-top:3px}
+#cdhc .who{display:flex;gap:12px;align-items:flex-start;background:var(--soft);border-radius:14px;padding:13px 15px}
+#cdhc .who em{width:30px;height:30px;border-radius:50%;background:var(--mint);flex:none;display:flex;align-items:center;justify-content:center;font-family:'League Spartan',sans-serif;font-weight:800;font-size:15px;font-style:normal}
+#cdhc .who b{font-size:14px}
+#cdhc .who span{display:block;font-size:12.5px;line-height:1.45;color:#3A3A3A;margin-top:2px}
+#cdhc .try{border:2px dashed var(--mint);border-radius:18px;padding:16px 20px;display:flex;gap:16px;align-items:center}
+#cdhc .try b{font-family:'League Spartan',sans-serif;font-weight:800;font-size:32px;color:var(--tealtx);flex:none}
+#cdhc .try span{font-size:13px;line-height:1.55;color:#2E2E2E}
+/* last page */
+#cdhc .last{background:var(--ink);color:#FFFFFF;padding:0}
+#cdhc .last .lt{display:flex;gap:20px;padding:52px 48px 0}
+#cdhc .last h2{margin:0;font-family:'League Spartan',sans-serif;font-weight:800;font-size:54px;line-height:1}
+#cdhc .lim{width:290px;height:380px;flex:none;position:relative}
+#cdhc .lim:before{content:"";position:absolute;left:0;right:0;bottom:10px;height:290px;border-radius:50%;background:var(--mint)}
+#cdhc .lim img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom}
+#cdhc .stp{display:flex;gap:16px;align-items:flex-start}
+#cdhc .stp em{width:40px;height:40px;border-radius:50%;background:var(--mint);color:var(--ink);flex:none;display:flex;align-items:center;justify-content:center;font-family:'League Spartan',sans-serif;font-weight:800;font-size:19px;font-style:normal}
+#cdhc .stp b{font-family:'League Spartan',sans-serif;font-weight:700;font-size:21px}
+#cdhc .stp span{display:block;font-size:16px;line-height:1.5;color:#E6E6E6;margin-top:3px}
+#cdhc .cta{margin:30px 48px 0;background:var(--mint);color:var(--ink);border-radius:20px;padding:22px 26px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+#cdhc .cta b{display:block;font-family:'League Spartan',sans-serif;font-weight:800;font-size:26px}
+#cdhc .cta span{font-size:15.5px;line-height:1.45}
+#cdhc .cta a{background:var(--ink);color:#FFFFFF;border-radius:999px;padding:15px 24px 13px;font-family:'League Spartan',sans-serif;font-weight:700;font-size:18px;white-space:nowrap;text-decoration:none}
+#cdhc .lfoot{margin-top:auto;background:#FFFFFF;color:var(--ink);padding:22px 48px;display:flex;justify-content:space-between;align-items:center}
+#cdhc .lfoot img{height:40px;width:auto}
+#cdhc .lfoot div{font-size:14px;color:#444444;text-align:right;line-height:1.5}
+
+@media (max-width:640px){
+  #cdhc .wel,#cdhc .sum{grid-template-columns:1fr}
+  #cdhc .hero{width:100%;max-width:300px;margin:0 auto;order:-1}
+  #cdhc .sum .hero{max-width:240px}
+  #cdhc .rates{gap:6px}
+  #cdhc .rate{font-size:18px}
+  #cdhc .bar{grid-template-columns:92px minmax(0,1fr) 32px;font-size:14px}
+}
+@media print{
+  @page{size:A4;margin:0}
+  html,body{margin:0!important;padding:0!important;background:#FFFFFF!important}
+  body *{visibility:hidden!important}
+  #cdhc-report,#cdhc-report *{visibility:visible!important}
+  #cdhc-report{position:absolute;left:0;top:0;display:block!important;gap:0}
+  #cdhc .pw8{width:794px!important;height:1123px!important;box-shadow:none;border-radius:0;break-after:page;page-break-after:always;overflow:hidden}
+  #cdhc .pw8:last-child{break-after:auto;page-break-after:auto}
+  #cdhc .page{transform:none!important}
+}
+</style>
+</head>
+<body style="margin:0">
+
+<div id="cdhc">
+
+<!-- WELCOME -->
+<section class="scr on" id="cd-welcome" aria-labelledby="cd-wt">
+  <div class="top"><img data-img="logo" alt="CoachDog"><span class="pill">Free for coaches</span></div>
+  <div class="wel">
+    <div>
+      <div class="kick">Coach Business Health Check</div>
+      <h1 id="cd-wt">What is really holding your coaching business back?</h1>
+      <p>Answer 60 quick statements about how you run your practice. You will get your coach archetype, a score for each area of your business, and a personal 90 day plan.</p>
+      <ul class="ticks">
+        <li><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#9DDED3"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#111" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Your coach archetype, and what it says about you</li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#9DDED3"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#111" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Scores across six areas of your business</li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#9DDED3"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#111" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>A full eight page report with your 90 day plan</li>
+      </ul>
+      <button class="btn" type="button" id="cd-start">Start the health check</button>
+      <div class="meta"><span>About 12 minutes</span><span>Be honest, nobody else sees your answers</span></div>
+    </div>
+    <div class="hero"><img data-img="welcome" alt="A Dalmatian looking through binoculars"></div>
+  </div>
+  <div class="partner">In partnership with <b>Coaching Minds</b></div>
+</section>
+
+<!-- QUIZ -->
+<section class="scr" id="cd-quiz" aria-live="polite">
+  <div class="top"><img data-img="logo" alt="CoachDog"><span class="pill">Health Check</span></div>
+  <div class="paws" id="cd-paws" aria-hidden="true"></div>
+  <div class="count"><span id="cd-count">Statement 1 of 60</span><span id="cd-pct">0% complete</span></div>
+  <div class="qcard"><p class="qtext" id="cd-q"></p></div>
+  <div class="scale" role="radiogroup" aria-labelledby="cd-q">
+    <div class="rates" id="cd-rates"></div>
+    <div class="ends"><span>Not like me at all</span><span>Somewhat</span><span>Exactly like me</span></div>
+  </div>
+  <div class="qnav"><button class="link" type="button" id="cd-back">Back</button><span class="small">Tap a number to continue</span></div>
+</section>
+
+<!-- EMAIL -->
+<section class="scr" id="cd-email">
+  <div class="top"><img data-img="logo" alt="CoachDog"><span class="pill">Nearly there</span></div>
+  <div class="gate">
+    <div class="badge" aria-hidden="true"><svg width="54" height="54" viewBox="0 0 64 64"><g fill="#111"><ellipse cx="18" cy="24" rx="6" ry="8"/><ellipse cx="32" cy="17" rx="6" ry="8"/><ellipse cx="46" cy="24" rx="6" ry="8"/><ellipse cx="53" cy="37" rx="5" ry="6.5"/><path d="M32 30c-9 0-17 11-17 18 0 6 5 8 10 7 3-.5 5-2 7-2s4 1.5 7 2c5 1 10-1 10-7 0-7-8-18-17-18z"/></g></svg></div>
+    <div class="kick">Well done, you made it</div>
+    <h2>Your report is ready</h2>
+    <p>Tell us where to send it, and your results will appear straight away.</p>
+    <form id="cd-form" novalidate>
+      <div><label for="cd-name">First name</label><input type="text" id="cd-name" autocomplete="given-name" required></div>
+      <div><label for="cd-mail">Email address</label><input type="email" id="cd-mail" autocomplete="email" required></div>
+      <label class="chk"><input type="checkbox" id="cd-opt"> Yes, send me tips, tools and updates from CoachDog. You can unsubscribe at any time.</label>
+      <div class="err" id="cd-err" role="alert"></div>
+      <button class="btn" type="button" id="cd-go">Show my results</button>
+      <p class="small" style="margin:0;text-align:center">We use your details to send your report and, if you choose, occasional updates. We never sell your data.<span id="cd-priv"></span></p>
+    </form>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section class="scr" id="cd-results">
+  <div class="top"><img data-img="logo" alt="CoachDog"><span class="pill">Your results</span></div>
+  <div id="cd-summary"></div>
+  <div class="rephead"><h3>Your full report</h3><button class="btn alt" type="button" data-print>Download PDF</button></div>
+  <div id="cdhc-report"></div>
+  <div class="partner">In partnership with <b>Coaching Minds</b></div>
+</section>
+
+<div class="toast" id="cd-toast" role="status"></div>
+</div>
+
+<script>
+/* ===================== SETTINGS FOR JAMIE ===================== */
+var CDHC_CONFIG = {
+  /* Paste a webhook URL here (Zapier, Make, your CRM or your own server).
+     Each finished assessment is sent to it as JSON. Leave empty to switch off. */
+  webhookUrl: "",
+  /* Where the "Join CoachDog" buttons go */
+  joinUrl: "https://www.coachdog.co.uk/coach-signup",
+  joinLabel: "coachdog.co.uk",
+  /* Sends each finished assessment straight into CoachDog's own database
+     (visible in the admin dashboard) instead of a third-party webhook. */
+  onLead: function(data){
+    try{
+      fetch("https://whhwvuugrzbyvobwfmce.supabase.co/functions/v1/health-check-lead-intake", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoaHd2dXVncnpieXZvYndmbWNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwNDY5OTAsImV4cCI6MjA4MDYyMjk5MH0.sF8Jp4Uofh11Q8ApKFkTAqv-43rXANgf1okgYkcLkHU"
+        },
+        body: JSON.stringify(data)
+      }).catch(function(){});
+    }catch(e){}
+  },
+  /* Link to the CoachDog privacy policy, shown under the email form (needed for GDPR) */
+  privacyUrl: "https://www.coachdog.co.uk/privacy",
+  /* Save progress in the browser so a refresh does not lose answers */
+  saveProgress: true
+};
+/* Images: replace any of these with a hosted URL to make the file much smaller */
+var CDHC_IMAGES = {
+ "welcome": "/resources/health-check/welcome.png",
+
+ "fisher": "/resources/health-check/fisher.png",
+
+ "entrepreneur": "/resources/health-check/entrepreneur.png",
+
+ "chameleon": "/resources/health-check/chameleon.png",
+
+ "gem": "/resources/health-check/gem.png",
+
+ "star": "/resources/health-check/star.png",
+
+ "sprinter": "/resources/health-check/sprinter.png",
+
+ "logo": "/resources/health-check/logo.png",
+
+ "icon": "/resources/health-check/icon.png"
+
+};
+</script>
+<script>
+/* ===== CONTENT LIBRARY: Coach Business Health Check ===== */
+const AREAS = [
+  {id:"mindset", name:"Mindset", desc:"Seeing yourself as a business owner", subs:["owner","money"],
+   lever:"Use your confidence to raise your prices or ask for bigger commitments."},
+  {id:"offer", name:"Offer", desc:"Who you help, what you sell, what it costs", subs:["niche","packaging"],
+   lever:"Put your clear offer at the centre of every conversation and every post."},
+  {id:"brand", name:"Brand", desc:"Being visible and memorable", subs:["message","visibility"],
+   lever:"Use your visibility to invite people to a free workshop or conversation."},
+  {id:"credibility", name:"Credibility", desc:"Proof that you get results", subs:["proof","standing"],
+   lever:"Put your proof right next to your offer, so it does the selling for you."},
+  {id:"clients", name:"Clients", desc:"Finding people and turning them into clients", subs:["finding","converting"],
+   lever:"Use your steady flow of enquiries to be choosier about who you work with."},
+  {id:"delivery", name:"Delivery", desc:"The coaching and the client experience", subs:["craft","experience"],
+   lever:"Turn great delivery into new clients. At the end of every programme, ask who else would benefit."}
+];
+/* When two areas tie for lowest, the one earlier in this list becomes the sticking point */
+const TIE_ORDER = ["mindset","offer","clients","brand","credibility","delivery"];
+
+const SUBS = {
+  owner:{name:"Owner identity",
+    weak:"You still see yourself more as a coach than as a business owner.",
+    strong:"You think and act like a business owner.",
+    win:"Block one hour a week as business time, and protect it like a client session.",
+    signals:["You treat your practice as something you do, rather than something you run.","Business tasks get squeezed in around your coaching.","You rarely set goals or check your numbers."],
+    shift:"From doing some coaching, to running a coaching business."},
+  money:{name:"Money and worth",
+    weak:"Talking about money and charging what you are worth still causes a wobble.",
+    strong:"You price with confidence and talk about money comfortably.",
+    win:"Say your price out loud ten times this week, until it sounds as normal as your name.",
+    signals:["You hesitate or apologise when you state your price.","You offer discounts or extras before anyone asks.","Charging for coaching can feel uncomfortable."],
+    shift:"From apologising for your price, to standing behind your value."},
+  niche:{name:"Niche",
+    weak:"Your focus is still broad, so people struggle to place you.",
+    strong:"You know exactly who you help, and with what.",
+    win:"Finish this sentence and use it everywhere: \"I help [who] to [result] without [the pain].\"",
+    signals:["You find it hard to describe your ideal client in one sentence.","You say yes to almost any work that comes along.","How you describe your work changes depending on who asks."],
+    shift:"From coaching anyone on anything, to being known for one thing."},
+  packaging:{name:"Packaging",
+    weak:"Your offer is not yet packaged, so it is hard for people to buy.",
+    strong:"Your programmes and prices are clear and easy to buy.",
+    win:"Turn your hours into one named programme with a clear outcome, length and price.",
+    signals:["You mostly sell single sessions or hours.","Your prices are not ready to share the moment someone asks.","There is only one way for clients to work with you."],
+    shift:"From selling your time, to selling a clear result."},
+  message:{name:"Message",
+    weak:"Your message is not yet clear or memorable enough to stick.",
+    strong:"Your message is clear, distinctive and easy to repeat.",
+    win:"Write down your three strongest opinions about coaching, and build your next posts around them.",
+    signals:["Friends struggle to explain what you do.","Your content sounds similar to other coaches.","Your profiles do not tell one consistent story."],
+    shift:"From sounding like every coach, to sounding like you."},
+  visibility:{name:"Visibility",
+    weak:"Too few of the right people see you often enough.",
+    strong:"You show up consistently where your clients are.",
+    win:"Pick the one platform where your clients spend time, and show up there twice a week for 90 days.",
+    signals:["You go quiet online when you get busy.","You are rarely where your ideal clients spend their time.","Few strangers find you on their own."],
+    shift:"From occasional bursts, to a steady presence."},
+  proof:{name:"Proof",
+    weak:"Your proof is not yet doing the selling for you.",
+    strong:"You have clear evidence of the results you get.",
+    win:"Ask three past clients for two sentences on what changed for them, with a real result.",
+    signals:["You have few testimonials that mention specific results.","You do not track client progress in a way you can share.","Your evidence is not where potential clients will see it."],
+    shift:"From telling people you get results, to showing them."},
+  standing:{name:"Standing",
+    weak:"Your professional standing is not yet complete or visible.",
+    strong:"Your training, supervision and standards are solid.",
+    win:"Add your qualifications, memberships and code of ethics to your CoachDog profile.",
+    signals:["You do not have regular supervision.","You are not yet part of a professional coaching body.","Your training and standards are not visible to clients."],
+    shift:"From quietly qualified, to visibly professional."},
+  finding:{name:"Finding",
+    weak:"New conversations arrive by chance, not by design.",
+    strong:"You have a steady flow of new conversations.",
+    win:"Message five people you already know this week, simply to reconnect.",
+    signals:["New conversations arrive by chance, not by design.","You rarely ask happy clients for introductions.","You could not say where your next three clients will come from."],
+    shift:"From waiting to be found, to starting a set number of conversations every week."},
+  converting:{name:"Converting",
+    weak:"Conversations are not yet turning into paying work.",
+    strong:"Your discovery calls reliably turn into paying clients.",
+    win:"End every discovery call by asking: \"Would you like to work together?\"",
+    signals:["Discovery calls turn into friendly chats with no clear next step.","You feel uneasy naming your price out loud.","People who say \"let me think about it\" rarely hear from you again."],
+    shift:"From hoping they will say yes, to a simple call structure that invites a decision."},
+  craft:{name:"Craft",
+    weak:"Your coaching craft has room to grow.",
+    strong:"Your coaching itself is excellent.",
+    win:"Record one session, with permission, and review it with your supervisor.",
+    signals:["You do not always agree clear goals at the start.","You slip into giving advice more than you would like.","You rarely get feedback on your coaching."],
+    shift:"From instinctive coaching, to deliberate, reflective practice."},
+  experience:{name:"Client experience",
+    weak:"Your client experience is not yet earning repeat work and referrals.",
+    strong:"Clients love working with you, stay the course and come back.",
+    win:"At the end of every programme, ask: \"Who else do you know who would benefit from this?\"",
+    signals:["Clients sometimes drift away without a proper ending.","There is no clear welcome or onboarding.","Progress is not reviewed at agreed points."],
+    shift:"From individual sessions, to a journey clients want to finish."}
+};
+
+/* [statement, sub area, reversed] */
+const QUESTIONS = [
+ ["I describe myself as running a coaching business, not just being a coach.","owner",0],
+ ["I set aside time every week to work on my business, not only in it.","owner",0],
+ ["I have written goals for my business for the next 12 months.","owner",0],
+ ["I see marketing and sales as a distraction from my real work.","owner",1],
+ ["I make business decisions using numbers, such as income and enquiries, not just gut feel.","owner",0],
+ ["I can state my prices out loud without apologising or explaining.","money",0],
+ ["My prices reflect the value my clients get, not just the time I spend.","money",0],
+ ["I often offer discounts or extra free sessions without being asked.","money",1],
+ ["I am comfortable asking for payment before the work begins.","money",0],
+ ["I feel guilty charging people for coaching.","money",1],
+ ["I can describe the exact type of person I help in one sentence.","niche",0],
+ ["I know the specific problem my ideal clients will pay to solve.","niche",0],
+ ["I tell people I can coach anyone on anything.","niche",1],
+ ["I turn down work that does not fit the clients I want to serve.","niche",0],
+ ["My ideal clients would recognise themselves in how I describe my work.","niche",0],
+ ["I sell programmes or packages, not just single sessions.","packaging",0],
+ ["Each of my offers has a clear outcome, length and price.","packaging",0],
+ ["When someone asks what I offer, I have to stop and think about how to answer.","packaging",1],
+ ["My prices are published, or ready to share the moment someone asks.","packaging",0],
+ ["Clients can work with me in more than one way, at different price points.","packaging",0],
+ ["People who know me could explain what I do in one sentence.","message",0],
+ ["My website and social profiles tell the same clear story.","message",0],
+ ["I share my own point of view on coaching, not just general advice.","message",0],
+ ["My content could have been written by almost any other coach.","message",1],
+ ["People have told me that something I said or posted really stuck with them.","message",0],
+ ["I share content where my ideal clients spend time at least once a week.","visibility",0],
+ ["I have a profile on at least one directory or platform where people look for coaches.","visibility",0],
+ ["In the last three months, I have spoken at, hosted or attended an event where my ideal clients were.","visibility",0],
+ ["I go quiet online whenever I get busy with clients.","visibility",1],
+ ["People I have never met have contacted me because they found me.","visibility",0],
+ ["I have at least five written testimonials that mention specific results.","proof",0],
+ ["I have at least one case study showing a client's journey from start to finish.","proof",0],
+ ["I measure and record the progress my clients make.","proof",0],
+ ["If a potential client asked for evidence of my results, I would struggle.","proof",1],
+ ["My testimonials are visible where potential clients will see them.","proof",0],
+ ["I hold a recognised coaching qualification or accreditation.","standing",0],
+ ["I have regular coaching supervision.","standing",0],
+ ["I belong to a professional coaching body, such as the EMCC or ICF.","standing",0],
+ ["I keep a record of my coaching hours and development.","standing",0],
+ ["I work to a published code of ethics and can explain it to clients.","standing",0],
+ ["I know where my next three clients are likely to come from.","finding",0],
+ ["I start at least five new conversations with potential clients every week.","finding",0],
+ ["I have asked a client or contact for a referral in the last month.","finding",0],
+ ["I mostly hope clients will find me through word of mouth.","finding",1],
+ ["I keep a list of people who have shown interest in working with me.","finding",0],
+ ["I use a clear structure for my discovery calls.","converting",0],
+ ["At the end of a discovery call, I always invite the person to make a decision.","converting",0],
+ ["I follow up with everyone who says \"let me think about it\".","converting",0],
+ ["I avoid talking about price until the other person brings it up.","converting",1],
+ ["I know roughly how many of my discovery calls turn into paying clients.","converting",0],
+ ["I agree a clear contract and goals with every client at the start.","craft",0],
+ ["I spend most of each session listening rather than talking.","craft",0],
+ ["I regularly get feedback on my coaching from clients or a supervisor.","craft",0],
+ ["I often find myself giving advice when I meant to coach.","craft",1],
+ ["I can name the coaching models I use and explain why I use them.","craft",0],
+ ["New clients receive a proper welcome and onboarding from me.","experience",0],
+ ["I review progress with clients at agreed points in our work together.","experience",0],
+ ["Most of my clients complete their full programme.","experience",0],
+ ["Clients often come back to work with me again.","experience",0],
+ ["Clients sometimes drift away without a proper ending.","experience",1]
+];
+
+const STAGES = {
+  pup:{name:"Pup", range:"0 to 39", head:"You are at the start of your journey",
+    text:"Your scores are low in several areas, which is completely normal for a newer practice. Do not try to fix everything at once. Work through your areas in this order: Mindset, then Offer, then Clients. Everything else gets easier once those are in place."},
+  working:{name:"Working Dog", range:"40 to 69", head:"You have solid foundations",
+    text:"Your business is working, but one area is holding the rest back. Put your energy there for the next 90 days and the whole business will lift."},
+  top:{name:"Top Dog", range:"70 to 100", head:"You are doing really well",
+    text:"Your business is strong across the board. Your sticking point is simply your lowest area, not a crisis. Small improvements here will take you from good to exceptional."}
+};
+
+const SUPPORT = [
+  ["CoachDog","A profile in the directory puts you where people are already searching for a coach, with tools and community support behind you."],
+  ["An accountability partner","Another coach who checks in on your progress every Friday."],
+  ["A business mentor","Someone who has already built a full practice and can shortcut your learning."],
+  ["Your supervisor","A safe space to explore what feels uncomfortable, and why."],
+  ["Coaching Minds","Accredited training that builds the business skills alongside the coaching."]
+];
+
+const ARCHETYPES = {
+ mindset:{
+  name:"The Reluctant Entrepreneur", img:"entrepreneur",
+  imgAlt:"A Dalmatian in a blazer holding an Open sign behind his back",
+  tagline:"Brilliant at the work, unsure about the business.",
+  intro:["You are a capable coach who cares deeply about your clients.","What holds you back is not skill, it is permission. Part of you still feels that pricing, selling and promoting are not quite what a good coach should be doing.","This report shows you how to start treating your practice as the business it already is."],
+  lead:"Reluctant Entrepreneurs often have everything they need to succeed except the belief that they are allowed to. They coach beautifully, then go quiet the moment money or marketing comes up.",
+  quote:"You have opened a lovely shop, but you keep apologising to customers for coming in.",
+  strengths:[["Deep care.","You genuinely put clients first, and they feel it."],["Integrity.","You would never oversell or push anyone, which builds real trust."],["Humility.","You keep learning and never assume you know it all."],["Good instincts.","Your sense of what clients need is usually right."]],
+  signs:["You undercharge, then quietly resent it.","You call your practice a side project, even when it is not.","Talking about price makes you squirm.","You give away free sessions, hoping they turn into paid work.","You are waiting until you feel ready before you promote yourself."],
+  why:"Most coaches come into the profession to help people, not to run a business. Money and selling can feel at odds with that, so they get pushed aside. But a coach without clients cannot help anybody.",
+  goodNews:"Mindset can shift quickly once you decide. You do not need a new skill so much as a new story about what you do. Change the story and every other area gets easier.",
+  leaks:[["Undercharging","Low prices attract clients who value you less, and leave you stretched thin."],["Free work","Endless free sessions teach people to expect you for nothing."],["Waiting to feel ready","Confidence follows action. It very rarely arrives first."]],
+  insight:{title:"Change the words, change the business",body:"Swap \"I am a coach\" for \"I run a coaching business\". Swap \"my fee\" for \"the investment\". Swap \"I hope to help\" for \"I help\". Small words shape big decisions, and the people you talk to will hear the difference."},
+  plan:[
+   {weeks:"Weeks 1 to 2",label:"Decide",title:"Give yourself permission",actions:["Write down why your coaching is worth paying for, in your clients' words, not yours.","Set a goal for the next 12 months: how many clients, and what income.","Block one hour a week as business time, and treat it like a client session.","Complete your CoachDog profile as a business owner, not a hobbyist."]},
+   {weeks:"Weeks 3 to 6",label:"Practise",title:"Get comfortable being paid",actions:["Review your prices and raise them to match the value you give.","Say your price out loud to a friend until it sounds normal.","Replace free sessions with a short, paid starter session.","Tell five people what you do and who you help."]},
+   {weeks:"Weeks 7 to 12",label:"Own it",title:"Run it like a business",actions:["Track your income, enquiries and clients every Friday.","Take payment upfront for every new programme.","Celebrate one business win every week, however small.","Retake the health check on day 90 and compare your scores."]}],
+  rhythm:[["1","hour of business time"],["5","people told what you do"],["1","price said with confidence"],["30","minute review every Friday"]],
+  rhythmNote:"Confidence is built in small, repeated moments, not in one big leap. Two hours a week is enough to change how you see yourself.",
+  books:[["The E-Myth Revisited","Michael E. Gerber","Why great practitioners struggle as business owners, and how to change that."],["Profit First","Mike Michalowicz","A simple system that makes money feel manageable instead of awkward."],["The Big Leap","Gay Hendricks","On the limits we place on our own success, and how to move past them."],["Mindset","Carol S. Dweck","The research behind growth thinking, useful for you and your clients."],["Daring Greatly","Brené Brown","On the courage it takes to be seen, which is exactly what selling asks of you."]],
+  tip:"Keep a note on your phone called \"Proof of value\". Every time a client thanks you or achieves something, add it. Read it before you talk about price.",
+  closeHead:"Your business deserves you.", closeSub:"Time to stop apologising and start owning it.",
+  closePara:"Being a Reluctant Entrepreneur is not a flaw. It usually means you care more about people than profit, and that is exactly why clients will trust you. But caring is not the same as being found. Give yourself permission to run a real business for the next 90 days, and watch what happens.",
+  steps:[["Today","Write one sentence about why your coaching is worth paying for."],["This week","Update your CoachDog profile so it speaks like a business owner."],["In 90 days","Retake the Coach Business Health Check and see how far you have come."]]
+ },
+ offer:{
+  name:"The Chameleon", img:"chameleon",
+  imgAlt:"A Dalmatian wearing a stack of different hats and holding name badges",
+  tagline:"Helps anyone, so stands out to no one.",
+  intro:["You are a flexible, talented coach who can help almost anyone.","That is exactly the problem. When you help everyone, nobody can tell whether you are the right coach for them, so they keep looking.","This report shows you how to choose your colours and get remembered."],
+  lead:"Chameleons are adaptable, curious and good with almost any client. But when someone asks what you do, the answer changes every time, and people cannot recommend a coach they cannot describe.",
+  quote:"You change colour to match every client, so nobody can quite see you.",
+  strengths:[["Versatile.","You can work with a wide range of people and problems."],["Curious.","You are genuinely interested in people from every walk of life."],["Adaptable.","You meet clients where they are, every single time."],["Broad experience.","You have a rich mix of skills to draw on."]],
+  signs:["Your answer to \"what do you do?\" changes depending on who asks.","You say yes to almost any client who comes your way.","Your website talks about helping people reach their potential.","You sell your time by the hour rather than a clear programme.","People like you, but rarely refer you, because they are not sure who to send."],
+  why:"Choosing a niche feels risky, like saying no to people and money. In reality the opposite happens. A clear focus makes you easier to find, easier to remember and far easier to recommend.",
+  goodNews:"You do not have to stop helping other people. You just need to lead with one group. Your flexibility stays as a strength, behind a clear front door.",
+  leaks:[["No clear focus","People cannot see themselves in a message aimed at everyone."],["Selling hours","An hour of coaching is hard to value. A clear result is easy."],["Hard to refer","If friends cannot describe you in a sentence, they cannot recommend you."]],
+  insight:{title:"The one sentence test",body:"Finish this: \"I help [who] to [result] without [the pain].\" If it takes more than one breath to say, it is not ready yet. When it is, put it at the top of your website, your CoachDog profile and every introduction you make."},
+  plan:[
+   {weeks:"Weeks 1 to 2",label:"Choose",title:"Pick your colours",actions:["List your favourite past clients and what they had in common.","Choose one group and one problem to lead with for the next 90 days.","Write your one sentence: who you help, the result, and the pain you remove.","Rewrite your CoachDog profile around that sentence."]},
+   {weeks:"Weeks 3 to 6",label:"Package",title:"Turn hours into results",actions:["Design one signature programme with a clear outcome, length and price.","Give it a name people will remember.","Write a short page explaining who it is for, and who it is not for.","Test it in conversation with five people from your chosen group."]},
+   {weeks:"Weeks 7 to 12",label:"Commit",title:"Stay one colour long enough to be seen",actions:["Kindly say no to one client who does not fit.","Share content only about your chosen problem.","Ask clients in your niche for testimonials that name the result.","Retake the health check on day 90 and compare your scores."]}],
+  rhythm:[["1","clear sentence, used everywhere"],["5","conversations with your chosen group"],["1","post about their problem"],["30","minute review every Friday"]],
+  rhythmNote:"Focus feels like a loss at first. Within a few weeks it starts to feel like freedom.",
+  books:[["$100M Offers","Alex Hormozi","How to package an offer so good that people feel daft saying no."],["Book Yourself Solid","Michael Port","Its Red Velvet Rope policy will help you choose who you work with."],["Pricing Creativity","Blair Enns","How to stop selling your time and start pricing your value."],["Building a StoryBrand","Donald Miller","How to describe what you do so clearly that people get it instantly."],["Purple Cow","Seth Godin","Why being remarkable to a few beats being acceptable to everyone."]],
+  tip:"Look back at your last ten clients. Circle the three you most enjoyed and got the best results with. What do they have in common? That is your starting niche.",
+  closeHead:"Choose your colours.", closeSub:"Then stay that colour long enough to be noticed.",
+  closePara:"Being a Chameleon is not a flaw. Your range is a real gift, and it means you can genuinely help people. But to be found, you need a clear front door. Pick one group, one problem and one programme for the next 90 days. You can always widen it later, once people know your name.",
+  steps:[["Today","Write your one sentence: who you help and the result they get."],["This week","Put that sentence at the top of your CoachDog profile."],["In 90 days","Retake the Coach Business Health Check and see how far you have come."]]
+ },
+ brand:{
+  name:"The Hidden Gem", img:"gem",
+  imgAlt:"A Dalmatian peeking out from behind a potted shrub, holding a glowing gem",
+  tagline:"Brilliant, but hard to find.",
+  intro:["You are a skilled coach with real substance behind you.","But the people who need you most cannot find you. You stay quiet, hope your work will speak for itself, and wonder why the diary is not fuller.","This report shows you how to step out from behind the bush and be seen."],
+  lead:"Hidden Gems are often the most thoughtful coaches around. They have depth, good judgement and happy clients. What they lack is visibility. Being good is only half the job. Being seen is the other half.",
+  quote:"You are a diamond in a drawer. Valuable, beautiful, and completely out of sight.",
+  strengths:[["Substance.","There is real depth and thought behind what you do."],["Quality.","You would rather do fewer things brilliantly."],["Trusted.","The clients who find you value you highly."],["Thoughtful.","You think before you speak, so what you say carries weight."]],
+  signs:["You have written posts that never got published.","You go quiet online for weeks at a time.","Your website has not changed in a long while.","You feel uncomfortable talking about yourself.","People say \"I didn't know you did that\" far too often."],
+  why:"Visibility can feel like showing off, especially for reflective people. But staying hidden is not modest. It means the people you could help are working with someone else, or with no one at all.",
+  goodNews:"You already have the most important thing: something worth saying. Visibility is a habit, not a personality trait, and it can be built in small, steady steps.",
+  leaks:[["Inconsistency","Showing up in bursts means people forget you in between."],["Wrong place","Your clients cannot see you if you are not where they spend time."],["Too modest","If you never share your view, nobody knows what makes you different."]],
+  insight:{title:"Show up small, show up often",body:"You do not need to go viral. One useful post a week, in the one place your clients spend time, for 90 days, will do more than any burst of activity. Consistency builds familiarity, and familiarity builds trust."},
+  plan:[
+   {weeks:"Weeks 1 to 2",label:"Clarify",title:"Know what you want to be known for",actions:["Write down three opinions about coaching that you hold strongly.","Choose the one platform where your ideal clients spend most time.","Refresh your photo and headline so they say who you help.","Complete your CoachDog profile so people searching for a coach can find you."]},
+   {weeks:"Weeks 3 to 6",label:"Show up",title:"Build the visibility habit",actions:["Post once a week, every week, sharing one useful idea.","Comment thoughtfully on five posts from people your clients follow.","Tell one client story a month, with permission.","Say yes to one chance to speak, write a guest piece or be interviewed."]},
+   {weeks:"Weeks 7 to 12",label:"Grow",title:"Let people find you",actions:["Turn your best post into a short talk or workshop.","Ask happy clients to share or tag your work.","Track who contacts you and where they found you.","Retake the health check on day 90 and compare your scores."]}],
+  rhythm:[["1","useful post"],["5","thoughtful comments"],["1","conversation with a new contact"],["30","minute review every Friday"]],
+  rhythmNote:"Nobody remembers the coach who posted once. They remember the one who kept turning up.",
+  books:[["Show Your Work!","Austin Kleon","A gentle, practical guide to sharing what you do without feeling like a show off."],["Known","Mark W. Schaefer","How ordinary people build a recognised name in their field."],["This Is Marketing","Seth Godin","Marketing as generosity, which suits a coach perfectly."],["Building a StoryBrand","Donald Miller","How to make your message clear enough that people remember it."],["Quiet","Susan Cain","If you are naturally reserved, this shows why that can be an advantage."]],
+  tip:"Keep a running list of the questions clients ask you. Every one of them is a post waiting to be written.",
+  closeHead:"The world needs to see you.", closeSub:"Time to step out from behind the bush.",
+  closePara:"Being a Hidden Gem is not a flaw. It usually means you value substance over noise, and that is rare. But the people who need you cannot hire a coach they have never heard of. Commit to showing up, small and steady, for the next 90 days, and let your work be seen.",
+  steps:[["Today","Write down the one idea you would most like to be known for."],["This week","Complete your CoachDog profile and share it once."],["In 90 days","Retake the Coach Business Health Check and see how far you have come."]]
+ },
+ credibility:{
+  name:"The Rising Star", img:"star",
+  imgAlt:"A Dalmatian on stage with a microphone, smiling in the spotlight",
+  tagline:"Plenty of energy, not enough proof.",
+  intro:["You are visible, enthusiastic and easy to like.","People notice you, but when it comes to choosing a coach, they hesitate. They cannot yet see the evidence that you get results.","This report shows you how to build proof that does the selling for you."],
+  lead:"Rising Stars have momentum. They show up, they have energy, and they are not afraid to put themselves out there. What is missing is the proof that turns interest into trust.",
+  quote:"You have the stage and the spotlight. Now you need something to put in the frame.",
+  strengths:[["Visible.","People know who you are and what you do."],["Energetic.","Your enthusiasm is infectious and draws people in."],["Brave.","You are willing to put yourself out there."],["Likeable.","People enjoy talking to you and want you to succeed."]],
+  signs:["People engage with your posts, but rarely book.","You have few written testimonials, or none that mention results.","You are not always sure how to measure client progress.","You worry that other coaches are more qualified than you.","Potential clients ask, \"Have you worked with someone like me?\""],
+  why:"Visibility gets attention, but proof gets decisions. Hiring a coach feels like a risk, and evidence is what makes that risk feel safe.",
+  goodNews:"You already have attention, which is the hard part for most coaches. Proof can be gathered quickly, often from clients you have already helped.",
+  leaks:[["No results on show","Without evidence, people have to take your word for it."],["Not measuring","If you do not track progress, you cannot show it."],["Hidden credentials","Your training and standards may be invisible to clients."]],
+  insight:{title:"Proof beats promises",body:"One sentence from a real client, such as \"I got the promotion within three months\", is worth more than a page of you describing what you do. Collect results as you go, not just at the end."},
+  plan:[
+   {weeks:"Weeks 1 to 2",label:"Gather",title:"Collect what you already have",actions:["List every past client who got a good result.","Ask three of them for two sentences on what changed for them.","Add your qualifications and memberships to your CoachDog profile and website.","Choose one simple way to measure progress with every client."]},
+   {weeks:"Weeks 3 to 6",label:"Build",title:"Turn results into stories",actions:["Write one short case study: where the client started, what you did, where they ended up.","Put testimonials where people will see them, right next to your offer.","Start, or restart, regular supervision.","Join a professional coaching body if you have not already."]},
+   {weeks:"Weeks 7 to 12",label:"Show",title:"Let the proof do the talking",actions:["Share one client result a month, with permission.","Mention real results in your discovery calls.","Ask every finishing client for a testimonial as standard.","Retake the health check on day 90 and compare your scores."]}],
+  rhythm:[["1","testimonial request"],["1","result shared"],["5","progress checks with clients"],["30","minute review every Friday"]],
+  rhythmNote:"Every client you finish with is a chance to add to your proof. Make asking a habit.",
+  books:[["Influence","Robert B. Cialdini","Why social proof works, and how to use it honestly."],["The Trusted Advisor","David Maister, Charles Green and Robert Galford","How trust is really built with clients."],["Measuring the Success of Coaching","Patricia Pulliam Phillips, Jack J. Phillips and Lisa Ann Edwards","Practical ways to measure and show the impact of your coaching."],["Show Your Work!","Austin Kleon","How to share your process and results generously."],["Supervision in the Helping Professions","Peter Hawkins and Robin Shohet","The classic on why supervision makes you a stronger practitioner."]],
+  tip:"Create a folder called \"Proof\" and save every kind message, result and thank you in it. Before long it becomes your testimonial bank.",
+  closeHead:"You are on your way up.", closeSub:"Now give people the proof to follow you.",
+  closePara:"Being a Rising Star is not a flaw. You have energy and visibility that many coaches would love. Now back it up. Gather proof, show your standards and let your clients' results speak for you for the next 90 days. Attention turns into clients when trust catches up.",
+  steps:[["Today","Message one past client and ask what changed for them."],["This week","Add your qualifications and one testimonial to your CoachDog profile."],["In 90 days","Retake the Coach Business Health Check and see how far you have come."]]
+ },
+ clients:{
+  name:"The Patient Fisher", img:"fisher",
+  imgAlt:"A Dalmatian fishing from a rock with his line in the water",
+  tagline:"Line in the water, waiting for a bite.",
+  intro:["You are a good coach with a lot to offer, and your clients get real results.","The trouble is that not enough people get to experience it, because you are waiting for clients to find you.","This report shows you where your business is leaking, and what to do about it in the next 90 days."],
+  lead:"Patient Fishers are often the best coaches in the room. They have trained properly, they care deeply, and clients leave their sessions changed. What they have not yet done is build a way for new people to find them.",
+  quote:"You have built a lovely shop, stocked it beautifully, and hung the open sign on the inside of the door.",
+  strengths:[["Your clients get results.","When people work with you, it works."],["You take the craft seriously.","Training, standards and doing it properly matter to you."],["People trust you.","Clients who find you tend to stay, and speak well of you."],["You do things properly.","Your standards and ethics are a real asset in a crowded market."]],
+  signs:["Most of your clients came through word of mouth, and you are not sure how to get more.","You post now and then, then go quiet when you get busy.","Selling feels awkward, so you hope your work will speak for itself.","Your diary swings between full and empty, with little warning either way.","You have said \"I just need a few more clients\" more than once this year."],
+  why:"Coach training teaches you to coach. It rarely teaches you to find clients. So it is easy to believe that being good is enough. Being good keeps clients. Being visible, and asking, is what finds them.",
+  goodNews:"You already have the hardest part sorted. Great delivery takes years to build. Finding clients is a skill, and with a simple system and a bit of courage, it can be learned in weeks.",
+  leaks:[["No steady source","Without a regular way to meet new people, your diary depends on luck."],["Not asking","For referrals, for the next step, for the sale. People cannot say yes to a question you never ask."],["Interest goes cold","Warm leads fade without a follow up. Most people need a second nudge."]],
+  insight:{title:"The maths of a full diary",body:"Clients are a numbers game you can actually control. Decide how many you want, work backwards, and the weekly target writes itself. Your own numbers will differ, so track them for a month and adjust.",funnel:[["30","real conversations"],["12","discovery calls"],["4","new clients"]]},
+  plan:[
+   {weeks:"Weeks 1 to 2",label:"Get ready",title:"Know who you are fishing for",actions:["Write one sentence: who you help, and the problem you solve for them.","List 50 people you already know: past clients, colleagues, friends of friends.","Set your weekly target. Five new conversations a week is a strong start.","Complete your CoachDog profile, so people searching for a coach can find you."]},
+   {weeks:"Weeks 3 to 6",label:"Cast the line",title:"Start the conversations",actions:["Message five people a week from your list. Not to sell, but to reconnect and ask what they are working on.","Ask every current and past client for one introduction.","Post once a week about a problem your ideal client is living with.","Follow up every warm conversation within 48 hours."]},
+   {weeks:"Weeks 7 to 12",label:"Reel them in",title:"Turn interest into clients",actions:["Use a simple call structure: their goal, the gap, the cost of staying stuck, your offer, the invitation.","Say your price clearly, then stop talking and let them answer.","Track three numbers every Friday: conversations, discovery calls, new clients.","Retake the health check on day 90 and compare your scores."]}],
+  rhythm:[["5","new conversations"],["1","post about your client's problem"],["1","referral ask"],["30","minute review every Friday"]],
+  rhythmNote:"Small, steady and repeatable beats a big burst of effort every few months. Two hours a week is enough to change your diary.",
+  books:[["Get Clients Now!","C.J. Hayden","A practical 28 day programme for finding clients. Perfect for turning this plan into daily habits."],["Book Yourself Solid","Michael Port","The classic on building a steady flow of clients for service businesses."],["The Prosperous Coach","Steve Chandler and Rich Litvin","How to create clients through powerful conversations, written for coaches."],["To Sell Is Human","Daniel H. Pink","If selling makes you squirm, this reframes it as helping people decide."],["Building a StoryBrand","Donald Miller","For your next area: a clear message that makes people stop and listen."]],
+  tip:"Keep a simple spreadsheet with three columns: name, date of last conversation and next step. It is the cheapest client system in the world, and it stops warm leads going cold.",
+  closeHead:"The clients are out there.", closeSub:"Time to reel in the line and go and say hello.",
+  closePara:"Being a Patient Fisher is not a flaw. It usually means you care more about doing great work than selling it, and that is exactly the coach people want to hire. They just need to know you exist. You already have the skill, so give yourself a system and 90 days of courage. Your future clients are waiting for you to go first.",
+  steps:[["Today","Write down the first five names from your list and send one message before bed."],["This week","Create or update your CoachDog profile, so people searching for a coach can find you."],["In 90 days","Retake the Coach Business Health Check and see how far you have come."]]
+ },
+ delivery:{
+  name:"The Sprinter", img:"sprinter",
+  imgAlt:"A Dalmatian sprinting with a relay baton in a running vest",
+  tagline:"Great at winning clients, less good at keeping them.",
+  intro:["You are energetic, confident and good at bringing clients in.","But they do not always stay, finish or come back, so you are forever starting again from the beginning.","This report shows you how to turn a sprint into a business that lasts."],
+  lead:"Sprinters are often natural sellers. They network well, start conversations easily and fill their diary fast. The trouble comes after the sale, when the experience does not quite live up to the promise.",
+  quote:"You are brilliant at getting people through the door. Now give them a reason to stay.",
+  strengths:[["Energetic.","You bring drive and pace to everything you do."],["Confident selling.","Talking to potential clients comes naturally to you."],["Well connected.","You know a lot of people, and they know you."],["Action focused.","You make things happen rather than waiting."]],
+  signs:["Clients sometimes drift away halfway through a programme.","Few clients come back for a second round.","Referrals are rarer than you would expect.","Your coaching relationships rarely have a formal start or end.","You feel like you are always hunting for the next client."],
+  why:"When winning clients comes easily, the experience after the sale can get less attention. But a client who finishes delighted is worth several new leads, because they stay, return and refer.",
+  goodNews:"You already have the hardest skill in business: getting clients. Improving what happens next is mostly about structure, and structure is easy to add.",
+  leaks:[["A weak start","Without a clear contract and goals, clients lose direction."],["No milestones","If progress is never reviewed, clients cannot see what they are getting."],["Loose endings","Clients who drift away never refer anyone."]],
+  insight:{title:"Keep the clients you win",body:"Winning a new client usually takes far more effort than keeping a happy one. Every client who finishes well, comes back or refers a friend saves you a sprint. Build the experience and the business starts to grow on its own."},
+  plan:[
+   {weeks:"Weeks 1 to 2",label:"Structure",title:"Design the client journey",actions:["Write a simple welcome pack: what to expect, how sessions work, how to get the most from coaching.","Agree clear goals and a contract with every new client.","Plan review points at the start, middle and end of each programme.","Get supervision or feedback on your recent sessions."]},
+   {weeks:"Weeks 3 to 6",label:"Deliver",title:"Make progress visible",actions:["Hold a progress review with every current client.","Use one simple measure so clients can see how far they have come.","Practise listening more and advising less in every session.","Ask for feedback at the halfway point, not just at the end."]},
+   {weeks:"Weeks 7 to 12",label:"Keep",title:"Turn finishes into referrals",actions:["Close every programme with a proper ending session.","Offer a clear next step for clients who want to continue.","Ask every finishing client who else would benefit.","Retake the health check on day 90 and compare your scores."]}],
+  rhythm:[["1","progress review"],["1","feedback request"],["1","referral ask from a happy client"],["30","minute review every Friday"]],
+  rhythmNote:"Slow down after the sale. The finishing line is where referrals begin.",
+  books:[["The Coaching Habit","Michael Bungay Stanier","Seven questions that help you talk less and coach more."],["Coaching for Performance","John Whitmore","The classic on structure and the GROW model."],["Time to Think","Nancy Kline","On the power of truly listening."],["Unreasonable Hospitality","Will Guidara","How to create an experience people cannot stop talking about."],["Supervision in the Helping Professions","Peter Hawkins and Robin Shohet","How regular reflection keeps your practice sharp."]],
+  tip:"Write a one page client journey: what happens in week one, in the middle and in the final session. Give it to every new client.",
+  closeHead:"Win them, then wow them.", closeSub:"Time to turn the sprint into a long run.",
+  closePara:"Being a Sprinter is not a flaw. Bringing clients in is a gift many coaches would envy. Now give them an experience worth staying for. Build structure, show progress and finish well for the next 90 days, and your clients will start doing your marketing for you.",
+  steps:[["Today","Write the three things every new client should experience in their first week."],["This week","Update your CoachDog profile to show how you work with clients."],["In 90 days","Retake the Coach Business Health Check and see how far you have come."]]
+ }
+};
+
+</script>
+<script>
+(function(){
+"use strict";
+var C=CDHC_CONFIG, IM=CDHC_IMAGES;
+var $=function(id){return document.getElementById(id)};
+var KEY="cdhc_progress_v1";
+var PAW='<svg viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="18" cy="24" rx="6" ry="8"/><ellipse cx="32" cy="17" rx="6" ry="8"/><ellipse cx="46" cy="24" rx="6" ry="8"/><ellipse cx="53" cy="37" rx="5" ry="6.5"/><path d="M32 30c-9 0-17 11-17 18 0 6 5 8 10 7 3-.5 5-2 7-2s4 1.5 7 2c5 1 10-1 10-7 0-7-8-18-17-18z"/></svg>';
+var PAWFILL='<svg class="pw" viewBox="0 0 64 64" aria-hidden="true"><g fill="#111"><ellipse cx="18" cy="24" rx="6" ry="8"/><ellipse cx="32" cy="17" rx="6" ry="8"/><ellipse cx="46" cy="24" rx="6" ry="8"/><ellipse cx="53" cy="37" rx="5" ry="6.5"/><path d="M32 30c-9 0-17 11-17 18 0 6 5 8 10 7 3-.5 5-2 7-2s4 1.5 7 2c5 1 10-1 10-7 0-7-8-18-17-18z"/></g></svg>';
+var N=QUESTIONS.length, PAWS=12;
+var state={order:null,answers:{},i:0,name:"",email:""};
+
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function save(){if(!C.saveProgress)return;try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.order&&s.order.length===N)return s}catch(e){}return null}
+function clearSave(){try{localStorage.removeItem(KEY)}catch(e){}}
+function shuffle(n){var a=[];for(var i=0;i<n;i++)a.push(i);for(var j=n-1;j>0;j--){var k=Math.floor(Math.random()*(j+1));var t=a[j];a[j]=a[k];a[k]=t}return a}
+function show(id){var s=document.querySelectorAll("#cdhc .scr");for(var i=0;i<s.length;i++)s[i].classList.remove("on");$(id).classList.add("on");var r=$("cdhc").getBoundingClientRect();if(r.top<0)window.scrollTo({top:window.scrollY+r.top-10,behavior:"smooth"})}
+function imgs(root){var n=(root||document).querySelectorAll("#cdhc [data-img]");for(var i=0;i<n.length;i++){var k=n[i].getAttribute("data-img");if(IM[k])n[i].src=IM[k]}}
+var toastT;function toast(t){var el=$("cd-toast");el.innerHTML=PAWFILL.replace('class="pw"','width="18" height="18"').replace('fill="#111"','fill="#9DDED3"')+"<span>"+esc(t)+"</span>";el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove("on")},2600)}
+
+/* ---------- quiz ---------- */
+function buildPaws(){var h="";for(var i=0;i<PAWS;i++)h+=PAW;$("cd-paws").innerHTML=h}
+function buildRates(){var h="";for(var v=1;v<=5;v++)h+='<button type="button" class="rate" role="radio" aria-checked="false" data-v="'+v+'" aria-label="'+v+' out of 5"><span class="num">'+v+'</span>'+PAWFILL+'</button>';$("cd-rates").innerHTML=h;
+  var b=$("cd-rates").querySelectorAll(".rate");for(var i=0;i<b.length;i++)b[i].addEventListener("click",pick)}
+function answered(){return Object.keys(state.answers).length}
+function render(){
+  var qi=state.order[state.i], q=QUESTIONS[qi];
+  var qe=$("cd-q");qe.textContent=q[0];qe.classList.remove("fade");void qe.offsetWidth;qe.classList.add("fade");
+  $("cd-count").textContent="Statement "+(state.i+1)+" of "+N;
+  var a=answered();$("cd-pct").textContent=Math.round(a/N*100)+"% complete";
+  var ps=$("cd-paws").querySelectorAll("svg"),per=N/PAWS;
+  for(var p=0;p<ps.length;p++){ps[p].classList.toggle("f",a>=(p+1)*per);ps[p].classList.toggle("c",a<(p+1)*per&&a>=p*per+1)}
+  var cur=state.answers[qi],b=$("cd-rates").querySelectorAll(".rate");
+  for(var i=0;i<b.length;i++){var on=+b[i].getAttribute("data-v")===cur;b[i].classList.toggle("sel",on);b[i].setAttribute("aria-checked",on?"true":"false")}
+  $("cd-back").style.visibility=state.i===0?"hidden":"visible";
+}
+var busy=false;
+function pick(e){if(busy)return;var v=+e.currentTarget.getAttribute("data-v"),qi=state.order[state.i];var before=answered();state.answers[qi]=v;save();render();
+  var after=answered();
+  if(after>before){var ps=$("cd-paws").querySelectorAll("svg"),per=N/PAWS;if(after%per===0){var el=ps[after/per-1];if(el){el.classList.add("pop");setTimeout(function(){el.classList.remove("pop")},350)}}
+    if(after===15)toast("Good start. Keep going.");if(after===30)toast("Halfway there. Your results are worth it.");if(after===45)toast("Nearly there. Just 15 to go.")}
+  busy=true;setTimeout(function(){busy=false;next()},320)}
+function next(){var nx=-1;for(var j=state.i+1;j<N;j++){if(state.answers[state.order[j]]==null){nx=j;break}}
+  if(nx<0)for(var j2=0;j2<N;j2++){if(state.answers[state.order[j2]]==null){nx=j2;break}}
+  if(nx<0){save();show("cd-email");setTimeout(function(){$("cd-name").focus()},200);return}
+  state.i=nx;save();render()}
+$("cd-back").addEventListener("click",function(){if(state.i>0){state.i--;render()}});
+document.addEventListener("keydown",function(e){if(!$("cd-quiz").classList.contains("on"))return;var n=parseInt(e.key,10);if(n>=1&&n<=5){var b=$("cd-rates").querySelector('[data-v="'+n+'"]');if(b)b.click()}});
+
+/* ---------- scoring ---------- */
+function score(){
+  var raw={},sub={},area={};
+  QUESTIONS.forEach(function(q,qi){var v=state.answers[qi]||3;if(q[2])v=6-v;(raw[q[1]]=raw[q[1]]||[]).push(v)});
+  Object.keys(raw).forEach(function(k){var s=raw[k].reduce(function(a,b){return a+b},0),n=raw[k].length;sub[k]=Math.round((s-n)/(4*n)*100)});
+  AREAS.forEach(function(a){area[a.id]=Math.round((sub[a.subs[0]]+sub[a.subs[1]])/2)});
+  var overall=Math.round(AREAS.reduce(function(t,a){return t+area[a.id]},0)/AREAS.length);
+  var low=TIE_ORDER.slice().sort(function(x,y){return area[x]-area[y]||TIE_ORDER.indexOf(x)-TIE_ORDER.indexOf(y)})[0];
+  var high=TIE_ORDER.slice().sort(function(x,y){return area[y]-area[x]||TIE_ORDER.indexOf(x)-TIE_ORDER.indexOf(y)})[0];
+  var stage=overall<40?"pup":overall<70?"working":"top";
+  return {sub:sub,area:area,overall:overall,stick:low,best:high,stage:stage};
+}
+function band(v){return v>=70?"#00808A":v>=40?"#9DDED3":"#111111"}
+function areaBy(id){for(var i=0;i<AREAS.length;i++)if(AREAS[i].id===id)return AREAS[i]}
+
+/* ---------- report pages ---------- */
+function head(arch){return '<div class="ph"><div><img src="'+IM.icon+'" alt=""><b>Coach Business Health Check</b></div><span>'+esc(arch.name)+'</span></div>'}
+function foot(n){return '<div class="pf"><span>Join CoachDog to access more tools and community support · <b>'+esc(C.joinLabel)+'</b></span><span>'+n+'</span></div>'}
+function pages(R,arch,who,date){
+  var A=R.area,S=R.sub,st=STAGES[R.stage],stickA=areaBy(R.stick),bestA=areaBy(R.best),P=[];
+  /* 1 cover */
+  P.push('<div class="page cover"><div class="cv-top"><img src="'+IM.logo+'" alt="CoachDog"><span class="pill" style="font-size:14px;padding:9px 18px 7px">Coach Business Health Check</span></div>'+
+   '<div style="display:flex;flex-direction:column;gap:12px;padding-top:8px"><div class="pk" style="font-size:17px">Your coach archetype</div><h1 style="margin:0;font-weight:800;font-size:'+(arch.name.length>20?60:68)+'px;line-height:1;letter-spacing:-.02em">'+esc(arch.name)+'</h1><div class="sp" style="font-weight:600;font-size:26px;line-height:1.25">'+esc(arch.tagline)+'</div></div>'+
+   '<div class="cv-mid"><div class="cv-txt"><p>'+esc(arch.intro[0])+'</p><p>'+esc(arch.intro[1])+'</p><p style="font-weight:700">'+esc(arch.intro[2])+'</p></div><div class="cv-img"><img src="'+IM[arch.img]+'" alt="'+esc(arch.imgAlt)+'"></div></div>'+
+   '<div class="band"><div><small>Business health</small><strong style="font-size:42px">'+R.overall+'<span style="font-size:20px;font-weight:600;color:#CFCFCF">/100</span></strong><em>Stage: '+st.name+'</em></div><div><small>Strongest area</small><strong>'+bestA.name+'</strong><em>'+A[bestA.id]+' out of 100</em></div><div><small>Sticking point</small><strong>'+stickA.name+'</strong><em>'+A[stickA.id]+' out of 100</em></div></div>'+
+   '<div style="display:flex;justify-content:space-between;font-size:14px;color:#444"><div>Prepared for <b style="color:#111">'+esc(who)+'</b> · '+esc(date)+'</div><div>In partnership with <b style="color:#111">Coaching Minds</b></div></div></div>');
+  /* 2 results */
+  var rows=AREAS.map(function(a){var stk=a.id===R.stick;return '<div class="row'+(stk?' stk':'')+'"><div><div class="pn">'+a.name+'</div><div class="pd">'+(stk?'Your sticking point':esc(a.desc))+'</div></div><div><div class="trk"><i style="width:'+Math.max(A[a.id],2)+'%;background:'+(stk?'#111':band(A[a.id]))+'"></i></div>'+
+    a.subs.map(function(s){return '<div class="sub"><span>'+SUBS[s].name+'</span><div class="st"><i style="width:'+Math.max(S[s],2)+'%"></i></div><span>'+S[s]+'</span></div>'}).join("")+'</div><div class="num">'+A[a.id]+'</div></div>'}).join("");
+  P.push('<div class="page">'+head(arch)+'<div style="padding-top:24px;display:flex;flex-direction:column;gap:10px"><div class="pk">Your results</div><h2 class="pt">Your business at a glance</h2><p class="pi">Every coaching business runs on six areas, each scored out of 100 from your answers. Your lowest area is your sticking point. It decides your archetype, and it is where your effort will pay back fastest.</p></div>'+
+   '<div class="stage"><b>Stage: '+st.name+'</b><span><b style="font-size:12.5px">'+st.head+'.</b> '+st.text+'</span></div>'+
+   '<div style="margin-top:8px">'+rows+'</div>'+
+   '<div class="keyg" style="margin-top:auto"><div><i style="background:#00808A"></i><span><b>70 to 100, strong.</b> A real asset. Use it to lift the rest.</span></div><div><i style="background:#9DDED3"></i><span><b>40 to 69, building.</b> Working, but not yet pulling its weight.</span></div><div><i style="background:#111"></i><span><b>0 to 39, leaking.</b> This is costing you clients right now.</span></div></div>'+foot(2)+'</div>');
+  /* 3 archetype */
+  P.push('<div class="page">'+head(arch)+'<div style="display:flex;gap:20px;align-items:flex-end;padding-top:22px"><div style="flex:1;display:flex;flex-direction:column;gap:10px;padding-bottom:8px"><div class="pk">Your archetype</div><h2 class="pt">Who you are as a coach</h2><p class="pi">'+esc(arch.lead)+'</p></div><div class="mini"><img src="'+IM[arch.img]+'" alt=""></div></div>'+
+   '<div class="quote" style="margin-top:18px"><b>“</b><span>'+esc(arch.quote)+'</span></div>'+
+   '<div class="two" style="margin-top:22px"><div class="col"><h3 class="h3">What you do brilliantly</h3><div class="it"><span class="dot t"></span><span><b>Your strongest area is '+bestA.name+'.</b> At '+A[bestA.id]+' out of 100, it is a real foundation to build on.</span></div>'+
+   arch.strengths.slice(0,3).map(function(s){return '<div class="it"><span class="dot t"></span><span><b>'+esc(s[0])+'</b> '+esc(s[1])+'</span></div>'}).join("")+'</div>'+
+   '<div class="col"><h3 class="h3">Signs you will recognise</h3>'+arch.signs.map(function(s){return '<div class="it"><span class="dot"></span><span>'+esc(s)+'</span></div>'}).join("")+'</div></div>'+
+   '<div class="two" style="margin-top:auto;gap:16px"><div class="card"><h3 class="h3" style="font-size:17px;margin-bottom:8px">Why it happens</h3><p style="font-size:13px;line-height:1.55;color:#3A3A3A">'+esc(arch.why)+'</p></div><div class="card" style="background:#E9F8F5"><h3 class="h3" style="font-size:17px;margin-bottom:8px">The good news</h3><p style="font-size:13px;line-height:1.55;color:#3A3A3A">'+esc(arch.goodNews)+'</p></div></div>'+foot(3)+'</div>');
+  /* 4 sticking point */
+  var subs=stickA.subs.slice().sort(function(x,y){return S[x]-S[y]});
+  var sc=subs.map(function(s,i){var B=SUBS[s],ok=S[s]>=70;
+    var tag=ok?'<div class="tag2" style="color:#00808A">This side is working well.</div>':i===0?'<div class="tag2" style="color:#8A4B00">Start here. This is your weakest side.</div>':'<div class="tag2" style="color:#555">Next. Work on this once the first side improves.</div>';
+    var body=ok?'<div class="it"><span class="dot t"></span><span>'+esc(B.strong)+'</span></div><div class="it"><span class="dot t"></span><span>Keep doing what you are doing, and use it to lift the other side.</span></div>':
+      '<div class="lab">What your answers tell us</div>'+B.signals.map(function(x){return '<div class="it" style="font-size:13px"><span class="dot"></span><span>'+esc(x)+'</span></div>'}).join("")+'<div class="lab" style="margin-top:4px">The shift</div><div style="font-size:13px;line-height:1.5;font-weight:500">'+esc(B.shift)+'</div>';
+    return '<div class="sc'+(i===0&&!ok?' first':'')+'"><div class="hd"><h3 class="h3">'+B.name+'</h3><span>'+S[s]+'</span></div>'+tag+body+'</div>'}).join("");
+  var ins=arch.insight,fun="";
+  if(ins.funnel){var cols=["#FFFFFF","#9DDED3","#00C2CB"];fun='<div class="fun">'+ins.funnel.map(function(f,i){return (i?'<em aria-hidden="true">→</em>':'')+'<div style="background:'+cols[i]+'"><strong>'+f[0]+'</strong><small>'+esc(f[1])+'</small></div>'}).join("")+'</div>'}
+  P.push('<div class="page">'+head(arch)+'<div style="padding-top:24px;display:flex;flex-direction:column;gap:10px"><div class="pk">Your sticking point</div><h2 class="pt">'+stickA.name+': '+A[stickA.id]+' out of 100</h2><p class="pi">This is the area holding everything else back, which also makes it your biggest opportunity. It has two sides, and knowing which one is weaker tells you where to start.</p></div>'+
+   '<div class="two" style="gap:16px;margin-top:16px">'+sc+'</div>'+
+   '<div style="margin-top:18px"><h3 class="h3">Your three biggest leaks</h3><div class="leaks">'+arch.leaks.map(function(l,i){return '<div><em>'+(i+1)+'</em><strong>'+esc(l[0])+'</strong><span>'+esc(l[1])+'</span></div>'}).join("")+'</div></div>'+
+   '<div class="ins" style="margin-top:18px"><div style="display:flex;justify-content:space-between;align-items:baseline"><h3 class="h3" style="color:#FFF">'+esc(ins.title)+'</h3>'+(ins.funnel?'<span style="font-size:11px;color:#BFBFBF;letter-spacing:.1em;text-transform:uppercase">An example</span>':'')+'</div>'+fun+'<p>'+esc(ins.body)+'</p></div>'+foot(4)+'</div>');
+  /* 5 plan */
+  var stageNote=R.stage==="pup"?'<div class="stage" style="margin-top:12px"><b>Pup stage</b><span>Start with the first stage below, then work on Mindset, Offer and Clients in that order before anything else.</span></div>':R.stage==="top"?'<div class="stage" style="margin-top:12px"><b>Top Dog</b><span>You are already doing well, so move through this plan at pace and stretch the targets.</span></div>':'';
+  P.push('<div class="page">'+head(arch)+'<div style="padding-top:24px;display:flex;flex-direction:column;gap:10px"><div class="pk">Fix this first</div><h2 class="pt">Your 90 day plan</h2><p class="pi">Three stages, one goal: fix your sticking point and let the rest of the business lift with it. Tick each one off as you go.</p></div>'+stageNote+
+   '<div style="margin-top:4px">'+arch.plan.map(function(p){return '<div class="phs"><div><div class="wk">'+p.weeks+'</div><div style="font-size:12px;color:#666;margin-top:4px">'+esc(p.label)+'</div></div><div><h4>'+esc(p.title)+'</h4>'+p.actions.map(function(a){return '<div class="tk"><i></i><span>'+esc(a)+'</span></div>'}).join("")+'</div></div>'}).join("")+'</div>'+
+   '<div class="rhy" style="margin-top:auto"><h3 class="h3">Your weekly rhythm</h3><div class="g">'+arch.rhythm.map(function(r){return '<div><strong>'+r[0]+'</strong><span>'+esc(r[1])+'</span></div>'}).join("")+'</div><p style="font-size:12.5px;line-height:1.5">'+esc(arch.rhythmNote)+'</p></div>'+foot(5)+'</div>');
+  /* 6 quick wins */
+  var others=AREAS.filter(function(a){return a.id!==R.stick}).sort(function(x,y){return A[x.id]-A[y.id]});
+  var nextStick=others[0];
+  var cards=others.map(function(a,i){var ws=a.subs.slice().sort(function(x,y){return S[x]-S[y]})[0],ss=a.subs.filter(function(s){return s!==ws})[0];
+    var strong=A[a.id]>=70&&S[ws]>=70, w, q;
+    if(strong){w=esc(SUBS[ws].strong)+' Both sides score 70 or more, so this is a real asset.';q=esc(a.lever)}
+    else{w=esc(SUBS[ws].weak)+' '+esc(SUBS[ws].name)+', at '+S[ws]+', is the weaker side'+(S[ss]>=70?', while '+esc(SUBS[ss].name.toLowerCase())+' is strong at '+S[ss]:'')+'.';q=esc(SUBS[ws].win)}
+    return '<div class="qc'+(i===others.length-1?' wide':'')+'"><div class="hd"><b>'+a.name+'</b><span>'+A[a.id]+'</span></div><div class="w">'+w+'</div><div class="lab">'+(strong?'Use it':'Quick win')+'</div><div class="q">'+q+'</div></div>'}).join("");
+  P.push('<div class="page">'+head(arch)+'<div style="padding-top:24px;display:flex;flex-direction:column;gap:10px"><div class="pk">Your other areas</div><h2 class="pt">One quick win for each</h2><p class="pi">'+stickA.name+' is your priority, but small moves elsewhere make that work easier. Each of these takes less than an hour.</p></div>'+
+   '<div class="qw" style="margin-top:20px">'+cards+'</div>'+
+   '<div class="ins" style="margin-top:20px;flex-direction:row;align-items:center;gap:18px"><div style="width:52px;height:52px;border-radius:50%;background:#9DDED3;color:#111;display:flex;align-items:center;justify-content:center;font-family:League Spartan,sans-serif;font-weight:800;font-size:24px;flex:none">!</div><div><h3 class="h3" style="color:#FFF;font-size:18px;margin-bottom:4px">Watch out for what comes next</h3><p>Once '+stickA.name+' improves, '+nextStick.name+' is likely to become your new sticking point. Coaches who fix one leak often find the next, and that is progress, not failure. Retake the check in 90 days to see how far you have moved.</p></div></div>'+foot(6)+'</div>');
+  /* 7 support */
+  P.push('<div class="page">'+head(arch)+'<div style="padding-top:24px;display:flex;flex-direction:column;gap:10px"><div class="pk">Resources and support</div><h2 class="pt">You do not have to do this alone</h2></div>'+
+   '<div style="display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;margin-top:20px"><div><h3 class="h3" style="font-size:22px">Read</h3><div style="margin-top:6px">'+arch.books.map(function(b){return '<div class="bk"><div class="sp8"></div><div><div class="bt">'+esc(b[0])+'</div><div class="ba">'+esc(b[1])+'</div><div class="bw">'+esc(b[2])+'</div></div></div>'}).join("")+'</div></div>'+
+   '<div class="col" style="gap:10px"><h3 class="h3" style="font-size:22px">Who can help</h3>'+SUPPORT.map(function(s,i){return '<div class="who"><em>'+(i+1)+'</em><div><b>'+esc(s[0])+'</b><span>'+esc(s[1])+'</span></div></div>'}).join("")+'</div></div>'+
+   '<div class="try" style="margin-top:22px"><b>Try</b><span>'+esc(arch.tip)+'</span></div>'+foot(7)+'</div>');
+  /* 8 next step */
+  P.push('<div class="page last"><div class="lt"><div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px"><div class="pk" style="color:#9DDED3;font-size:16px">Your next step</div><h2>'+esc(arch.closeHead)+'</h2><div class="sp" style="font-weight:600;font-size:25px;line-height:1.3;color:#9DDED3">'+esc(arch.closeSub)+'</div></div><div class="lim"><img src="'+IM[arch.img]+'" alt=""></div></div>'+
+   '<div style="padding:28px 48px 0"><p style="font-size:17px;line-height:1.6;color:#F0F0F0">'+esc(arch.closePara)+'</p></div>'+
+   '<div style="margin:28px 48px 0;display:flex;flex-direction:column;gap:16px">'+arch.steps.map(function(s,i){return '<div class="stp"><em>'+(i+1)+'</em><div><b>'+esc(s[0])+'</b><span>'+esc(s[1])+'</span></div></div>'}).join("")+'</div>'+
+   '<div class="cta"><div><b>Join CoachDog</b><span>Access more tools and community support, and get found by clients.</span></div><a href="'+esc(C.joinUrl)+'" target="_blank" rel="noopener">'+esc(C.joinLabel)+'</a></div>'+
+   '<div class="lfoot"><img src="'+IM.logo+'" alt="CoachDog"><div>In partnership with <b style="color:#111">Coaching Minds</b><br>EMCC accredited coach training</div></div></div>');
+  return P;
+}
+function layoutPages(){var rep=$("cdhc-report");if(!rep)return;var w=Math.min(794,rep.clientWidth||794),s=w/794;var ws=rep.querySelectorAll(".pw8");for(var i=0;i<ws.length;i++){ws[i].style.width=(794*s)+"px";ws[i].style.height=(1123*s)+"px";ws[i].firstChild.style.transform="scale("+s+")"}}
+window.addEventListener("resize",layoutPages);
+
+/* ---------- results ---------- */
+function results(){
+  var R=score(),arch=ARCHETYPES[R.stick],st=STAGES[R.stage];
+  var date=new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+  var who=state.name||"You";
+  $("cd-summary").innerHTML='<div class="sum"><div class="hero"><img src="'+IM[arch.img]+'" alt="'+esc(arch.imgAlt)+'"></div><div><div class="kick">'+esc(who)+', your coach archetype is</div><h2>'+esc(arch.name)+'</h2><p class="tag">'+esc(arch.tagline)+'</p>'+
+    '<div class="chips"><span class="chip">Business health <b>'+R.overall+'/100</b></span><span class="chip">Stage <b>'+st.name+'</b></span><span class="chip">Sticking point <b>'+areaBy(R.stick).name+'</b></span></div>'+
+    '<div class="bars">'+AREAS.map(function(a){var stk=a.id===R.stick;return '<div class="bar'+(stk?' stk':'')+'"><span>'+a.name+'</span><span class="tr"><i style="width:'+Math.max(R.area[a.id],2)+'%;background:'+(stk?'#111':band(R.area[a.id]))+'"></i></span><b>'+R.area[a.id]+'</b></div>'}).join("")+'</div>'+
+    '<div class="acts"><button class="btn" type="button" data-print>Download your full report</button><a class="btn alt" href="'+esc(C.joinUrl)+'" target="_blank" rel="noopener">Join CoachDog</a></div></div></div>'+
+    '<div class="joinbox"><div><h3>Join CoachDog</h3><p>Access more tools and community support, and get found by clients searching for a coach.</p></div><a class="btn mint" href="'+esc(C.joinUrl)+'" target="_blank" rel="noopener">Join CoachDog</a></div>';
+  var P=pages(R,arch,who,date);
+  $("cdhc-report").innerHTML=P.map(function(p){return '<div class="pw8">'+p+'</div>'}).join("");
+  var pb=document.querySelectorAll("#cdhc [data-print]");for(var i=0;i<pb.length;i++)pb[i].onclick=function(){var old=document.title;document.title=arch.name+" - Coach Business Health Check";try{window.print()}catch(err){toast("Printing is blocked here. Open the page in Chrome or Safari to save your PDF.")}setTimeout(function(){document.title=old},1000)};
+  show("cd-results");layoutPages();setTimeout(layoutPages,60);
+  return R;
+}
+
+/* ---------- lead capture ---------- */
+function sendLead(R){
+  var data={firstName:state.name,email:state.email,marketingOptIn:!!state.opt,archetype:ARCHETYPES[R.stick].name,stickingPoint:R.stick,stage:STAGES[R.stage].name,overall:R.overall,
+    areas:R.area,sides:R.sub,completedAt:new Date().toISOString(),source:"Coach Business Health Check"};
+  try{window.dispatchEvent(new CustomEvent("coachdog:lead",{detail:data}))}catch(e){}
+  if(typeof C.onLead==="function"){try{C.onLead(data)}catch(e){}}
+  if(C.webhookUrl){try{fetch(C.webhookUrl,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=UTF-8"},body:JSON.stringify(data)})}catch(e){}}
+  return data;
+}
+function submitGate(e){if(e&&e.preventDefault)e.preventDefault();
+  var n=$("cd-name").value.trim(),m=$("cd-mail").value.trim();
+  if(!n){$("cd-err").textContent="Please add your first name.";$("cd-name").focus();return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m)){$("cd-err").textContent="Please check your email address.";$("cd-mail").focus();return}
+  $("cd-err").textContent="";state.name=n;state.email=m;state.opt=$("cd-opt").checked;
+  var R;try{R=results()}catch(err){$("cd-err").textContent="Sorry, something went wrong showing your results. Please refresh and try again.";if(window.console)console.error(err);return}
+  try{sendLead(R)}catch(err){}clearSave();
+}
+$("cd-go").addEventListener("click",submitGate);
+$("cd-form").addEventListener("submit",submitGate);
+["cd-name","cd-mail"].forEach(function(id){$(id).addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();submitGate()}})});
+
+/* ---------- start ---------- */
+$("cd-start").addEventListener("click",function(){
+  var s=load();
+  if(s&&Object.keys(s.answers).length>0&&Object.keys(s.answers).length<N){state=s}else{state={order:shuffle(N),answers:{},i:0,name:"",email:""}}
+  save();show("cd-quiz");render();
+});
+buildPaws();buildRates();imgs();
+if(C.privacyUrl){$("cd-priv").innerHTML=' <a href="'+esc(C.privacyUrl)+'" target="_blank" rel="noopener" style="color:inherit">Privacy policy</a>.'}
+(function(){var s=load();if(s&&Object.keys(s.answers).length>0)$("cd-start").textContent="Continue where you left off"})();
+/* test hook */
+window.CDHC={_state:function(){return state},_score:score,_results:results};
+})();
+</script>
+</body>
+</html>

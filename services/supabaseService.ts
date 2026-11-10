@@ -1869,3 +1869,32 @@ export const adminGetEventRegistrations = async (adminPassword: string): Promise
   }
   return data.registrations as EventRegistrationRow[];
 };
+
+// ── Health check leads ────────────────────────────────────────────────────────
+
+export interface HealthCheckLeadRow {
+  id: string; first_name: string | null; email: string; marketing_opt_in: boolean;
+  archetype: string | null; sticking_point: string | null; stage: string | null;
+  overall: number | null; areas: Record<string, number> | null; sides: Record<string, number> | null;
+  completed_at: string | null; source: string | null; created_at: string;
+}
+
+/**
+ * Reads health_check_leads via a password-verified edge function (service
+ * role), same pattern as adminGetEventRegistrations.
+ */
+export const adminGetHealthCheckLeads = async (adminPassword: string): Promise<HealthCheckLeadRow[]> => {
+  const { data, error } = await supabase.functions.invoke('admin-health-check-leads', {
+    body: {},
+    headers: {
+      'x-admin-password': adminPassword,
+      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+    },
+  });
+
+  if (error || !data?.leads) {
+    console.error('[adminGetHealthCheckLeads]', error || data);
+    return [];
+  }
+  return data.leads as HealthCheckLeadRow[];
+};

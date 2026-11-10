@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, FileText, ArrowRight } from 'lucide-react';
+import { BookOpen, FileText, ArrowRight, HeartPulse } from 'lucide-react';
 import { ResourceTabs } from '../components/resources/ResourceTabs';
 
 const FREE_RESOURCES = [
@@ -21,6 +21,17 @@ const FREE_RESOURCES = [
     type: 'Worksheet',
     readTime: '5 min read',
     pdfPath: '/coaching-resources/streams-of-life.pdf',
+  },
+  {
+    slug: 'health-check',
+    href: '/resources/health-check.html',
+    ctaLabel: 'Start the health check',
+    title: 'Coach Business Health Check',
+    excerpt: 'Answer 60 quick questions about how you run your practice and get your coaching archetype, a six-area score breakdown, and a personalised 8-page action report you can download as a PDF.',
+    tags: ['Quiz', 'Self-assessment', 'Business Growth'],
+    type: 'Interactive Tool',
+    readTime: '~12 min',
+    pdfPath: null,
   },
 ];
 
@@ -59,8 +70,8 @@ export const Resources: React.FC = () => {
               <article key={resource.slug} className="py-8 first:pt-0">
                 <div className="flex items-start gap-5">
                   {/* Icon */}
-                  <div className="flex-shrink-0 mt-1 p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-                    <FileText className="h-6 w-6" />
+                  <div className={`flex-shrink-0 mt-1 p-3 rounded-xl ${resource.href ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                    {resource.href ? <HeartPulse className="h-6 w-6" /> : <FileText className="h-6 w-6" />}
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -79,12 +90,18 @@ export const Resources: React.FC = () => {
 
                     {/* Title */}
                     <h3 className="text-xl font-display font-bold text-slate-900 mb-2 leading-snug">
-                      <Link
-                        to={resource.slug.startsWith('/') ? resource.slug : `/resources/${resource.slug}`}
-                        className="hover:text-emerald-700 transition-colors"
-                      >
-                        {resource.title}
-                      </Link>
+                      {resource.href ? (
+                        <a href={resource.href} target="_blank" rel="noopener" className="hover:text-emerald-700 transition-colors">
+                          {resource.title}
+                        </a>
+                      ) : (
+                        <Link
+                          to={resource.slug.startsWith('/') ? resource.slug : `/resources/${resource.slug}`}
+                          className="hover:text-emerald-700 transition-colors"
+                        >
+                          {resource.title}
+                        </Link>
+                      )}
                     </h3>
 
                     {/* Excerpt */}
@@ -92,12 +109,23 @@ export const Resources: React.FC = () => {
 
                     {/* Actions */}
                     <div className="flex items-center gap-4">
-                      <Link
-                        to={resource.slug.startsWith('/') ? resource.slug : `/resources/${resource.slug}`}
-                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 hover:text-emerald-800 transition-colors"
-                      >
-                        Read article <ArrowRight className="h-4 w-4" />
-                      </Link>
+                      {resource.href ? (
+                        <a
+                          href={resource.href}
+                          target="_blank"
+                          rel="noopener"
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 hover:text-emerald-800 transition-colors"
+                        >
+                          {resource.ctaLabel} <ArrowRight className="h-4 w-4" />
+                        </a>
+                      ) : (
+                        <Link
+                          to={resource.slug.startsWith('/') ? resource.slug : `/resources/${resource.slug}`}
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 hover:text-emerald-800 transition-colors"
+                        >
+                          Read article <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      )}
                       {!!resource.pdfPath && (
                         <a
                           href={resource.pdfPath}
