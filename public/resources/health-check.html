@@ -850,7 +850,21 @@ function results(){
     '<div class="joinbox"><div><h3>Join CoachDog</h3><p>Access more tools and community support, and get found by clients searching for a coach.</p></div><a class="btn mint" href="'+esc(C.joinUrl)+'" target="_blank" rel="noopener">Join CoachDog</a></div>';
   var P=pages(R,arch,who,date);
   $("cdhc-report").innerHTML=P.map(function(p){return '<div class="pw8">'+p+'</div>'}).join("");
-  var pb=document.querySelectorAll("#cdhc [data-print]");for(var i=0;i<pb.length;i++)pb[i].onclick=function(){var old=document.title;document.title=arch.name+" - Coach Business Health Check";try{window.print()}catch(err){toast("Printing is blocked here. Open the page in Chrome or Safari to save your PDF.")}setTimeout(function(){document.title=old},1000)};
+  var pb=document.querySelectorAll("#cdhc [data-print]");for(var i=0;i<pb.length;i++)pb[i].onclick=function(){
+    var old=document.title;document.title=arch.name+" - Coach Business Health Check";
+    var doPrint=function(){try{window.print()}catch(err){toast("Printing is blocked here. Open the page in Chrome or Safari to save your PDF.")}setTimeout(function(){document.title=old},1000)};
+    // Force a full layout/paint of the report before printing - some browsers
+    // (notably Safari) can skip rendering content that has never been
+    // scrolled into view, which can come out blank in the saved PDF even
+    // though the on-screen page looks fine. Scrolling through it once first
+    // guarantees everything has actually been laid out and painted.
+    var prevScroll=window.pageYOffset;
+    window.scrollTo(0,document.body.scrollHeight);
+    requestAnimationFrame(function(){requestAnimationFrame(function(){
+      window.scrollTo(0,prevScroll);
+      requestAnimationFrame(function(){requestAnimationFrame(doPrint)});
+    })});
+  };
   show("cd-results");layoutPages();setTimeout(layoutPages,60);
   return R;
 }
