@@ -14,6 +14,7 @@ export interface CreateCheckoutSessionParams {
   trialEndsAt?: string;
   discountCode?: string; // Raw code string (for display/logging)
   stripePromotionCodeId?: string; // Stripe promo code ID (e.g. promo_xxx) to apply at checkout
+  prepaymentCode?: string; // Set when the applied discount came from a prepayment credit, so the webhook/confirm step can mark it redeemed
 }
 
 /**
@@ -21,7 +22,7 @@ export interface CreateCheckoutSessionParams {
  * Calls the Vercel serverless function to create a Stripe session securely
  */
 export const createCheckoutSession = async (params: CreateCheckoutSessionParams): Promise<void> => {
-  const { priceId, coachId, coachEmail, billingCycle, trialEndsAt, discountCode, stripePromotionCodeId } = params;
+  const { priceId, coachId, coachEmail, billingCycle, trialEndsAt, discountCode, stripePromotionCodeId, prepaymentCode } = params;
 
   console.log('[StripeService] Creating checkout session:', {
     priceId,
@@ -62,6 +63,7 @@ export const createCheckoutSession = async (params: CreateCheckoutSessionParams)
         trialEndsAt,
         discountCode,
         stripePromotionCodeId,
+        prepaymentCode,
       }),
     });
 

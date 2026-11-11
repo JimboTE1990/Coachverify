@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, ArrowRight, Calendar, CreditCard, Loader } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { confirmRedemption } from '../../services/prepaymentService';
 
 export const CheckoutSuccess: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +19,15 @@ export const CheckoutSuccess: React.FC = () => {
       setLoading(false);
     }
   }, [authLoading]);
+
+  useEffect(() => {
+    // Harmless no-op unless this checkout used a prepayment credit code -
+    // marks it redeemed. Doesn't block rendering, fire-and-forget.
+    if (sessionId) {
+      confirmRedemption(sessionId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]);
 
   if (loading || authLoading) {
     return (

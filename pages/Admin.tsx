@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { adminGetAllCoaches, toggleFlagReview, adminGetProductReviews, adminActionProductReview, adminGetEventRegistrations, EventRegistrationRow, adminGetHealthCheckLeads, HealthCheckLeadRow } from '../services/supabaseService';
+import { adminGetAllCoaches, toggleFlagReview, adminGetProductReviews, adminActionProductReview, adminGetEventRegistrations, EventRegistrationRow, adminGetHealthCheckLeads, HealthCheckLeadRow, adminGetPrepaymentCredits, PrepaymentCreditRow } from '../services/supabaseService';
 import { Coach, ProductReview } from '../types';
-import { Lock, FileText, Flag, Star, MessageSquare, ChevronLeft, ChevronRight, Download, Copy, Check, BookOpen, Users, XCircle, CalendarDays, HeartPulse } from 'lucide-react';
+import { Lock, FileText, Flag, Star, MessageSquare, ChevronLeft, ChevronRight, Download, Copy, Check, BookOpen, Users, XCircle, CalendarDays, HeartPulse, Banknote } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 // Friendly display names for event campaign IDs - falls back to the raw
@@ -34,11 +34,12 @@ export const AdminDashboard: React.FC = () => {
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   const [coachPage, setCoachPage] = useState(1);
-  const [activeTab, setActiveTab] = useState<'reviews' | 'coaches' | 'content' | 'leads' | 'expired' | 'campaigns' | 'healthCheck'>('reviews');
+  const [activeTab, setActiveTab] = useState<'reviews' | 'coaches' | 'content' | 'leads' | 'expired' | 'campaigns' | 'healthCheck' | 'prepayments'>('reviews');
   const [communityLeads, setCommunityLeads] = useState<{ id: string; display_name: string; email: string | null; marketing_opt_in: boolean; created_at: string }[]>([]);
   const [eventRegistrations, setEventRegistrations] = useState<EventRegistrationRow[]>([]);
   const [campaignFilter, setCampaignFilter] = useState<string>('all');
   const [healthCheckLeads, setHealthCheckLeads] = useState<HealthCheckLeadRow[]>([]);
+  const [prepaymentCredits, setPrepaymentCredits] = useState<PrepaymentCreditRow[]>([]);
   const [contentSubmissions, setContentSubmissions] = useState<ContentSubmission[]>([]);
   const [contentFilter, setContentFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const [rejectingId, setRejectingId] = useState<string | null>(null);
@@ -58,7 +59,7 @@ export const AdminDashboard: React.FC = () => {
     if (isAuthenticated) {
       const adminPassword = (import.meta as any).env?.VITE_ADMIN_PASSWORD;
       const loadData = async () => {
-        const [coachData, approvedData, pendingData, contentData, leadsData, eventRegsData, healthCheckData] = await Promise.all([
+        const [coachData, approvedData, pendingData, contentData, leadsData, eventRegsData, healthCheckData, prepaymentData] = await Promise.all([
           adminGetAllCoaches(),
           adminGetProductReviews('approved', adminPassword),
           adminGetProductReviews('pending', adminPassword),
@@ -66,6 +67,7 @@ export const AdminDashboard: React.FC = () => {
           supabase.from('community_users').select('id, display_name, email, marketing_opt_in, created_at').order('created_at', { ascending: false }),
           adminGetEventRegistrations(adminPassword),
           adminGetHealthCheckLeads(adminPassword),
+          adminGetPrepaymentCredits(adminPassword),
         ]);
         setCoaches(coachData);
         setApprovedProductReviews(approvedData);
@@ -74,6 +76,7 @@ export const AdminDashboard: React.FC = () => {
         if (leadsData.data) setCommunityLeads(leadsData.data as typeof communityLeads);
         setEventRegistrations(eventRegsData);
         setHealthCheckLeads(healthCheckData);
+        setPrepaymentCredits(prepaymentData);
       };
       loadData();
     }
@@ -340,6 +343,20 @@ export const AdminDashboard: React.FC = () => {
           Health Check
           <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${activeTab === 'healthCheck' ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-600'}`}>
             {healthCheckLeads.filter(l => l.marketing_opt_in).length}
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveTab('prepayments')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all ${
+            activeTab === 'prepayments'
+              ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200'
+              : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-300 hover:text-emerald-600'
+          }`}
+        >
+          <Banknote size={15} />
+          Prepayments
+          <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${activeTab === 'prepayments' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-600'}`}>
+            {prepaymentCredits.filter(c => !c.redeemed).length}
           </span>
         </button>
       </div>
@@ -1100,6 +1117,80 @@ export const AdminDashboard: React.FC = () => {
                         </td>
                         <td className="py-2.5 text-slate-400 whitespace-nowrap">
                           {lead.completed_at ? new Date(lead.completed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ' - '}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ── PREPAYMENTS TAB ── */}
+      {activeTab === 'prepayments' && (() => {
+        const downloadCsv = () => {
+          const header = 'Email,Amount Paid,Code,Redeemed,Redeemed At,Created';
+          const body = prepaymentCredits.map(c =>
+            `"${c.email.replace(/"/g, '""')}","${(c.amount_paid_pence / 100).toFixed(2)}","${c.promo_code}","${c.redeemed ? 'Yes' : 'No'}","${c.redeemed_at ? new Date(c.redeemed_at).toLocaleDateString('en-GB') : ''}","${new Date(c.created_at).toLocaleDateString('en-GB')}"`
+          ).join('\n');
+          const blob = new Blob([header + '\n' + body], { type: 'text/csv' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = 'coachdog_prepayment_credits.csv'; a.click();
+          URL.revokeObjectURL(url);
+        };
+
+        return (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+              <div>
+                <h3 className="font-bold text-slate-900 text-base">Lifetime pre-payments</h3>
+                <p className="text-sm text-slate-500 mt-0.5">Not-yet-accredited partner-school coaches who paid upfront for a one-time redemption code</p>
+              </div>
+              <button
+                onClick={downloadCsv}
+                disabled={prepaymentCredits.length === 0}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:border-emerald-300 hover:text-emerald-600 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Download size={14} /> Export CSV
+              </button>
+            </div>
+
+            {prepaymentCredits.length === 0 ? (
+              <p className="text-slate-400 text-sm py-4">No pre-payments yet - they'll appear here once a coach pays via /partner-prepay.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Email</th>
+                      <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Amount Paid</th>
+                      <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Code</th>
+                      <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Status</th>
+                      <th className="text-left py-2 pr-4 font-semibold text-slate-500 text-xs uppercase tracking-wide">Redeemed</th>
+                      <th className="text-left py-2 font-semibold text-slate-500 text-xs uppercase tracking-wide">Created</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {prepaymentCredits.map(credit => (
+                      <tr key={credit.id} className="border-b border-slate-50 hover:bg-slate-50">
+                        <td className="py-2.5 pr-4 text-slate-600">{credit.email}</td>
+                        <td className="py-2.5 pr-4 font-medium text-slate-800">£{(credit.amount_paid_pence / 100).toFixed(2)}</td>
+                        <td className="py-2.5 pr-4">
+                          <span className="font-mono text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">{credit.promo_code}</span>
+                        </td>
+                        <td className="py-2.5 pr-4">
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${credit.redeemed ? 'text-green-700 bg-green-50' : 'text-amber-700 bg-amber-50'}`}>
+                            {credit.redeemed ? 'Redeemed' : 'Unredeemed'}
+                          </span>
+                        </td>
+                        <td className="py-2.5 pr-4 text-slate-400 whitespace-nowrap">
+                          {credit.redeemed_at ? new Date(credit.redeemed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ' - '}
+                        </td>
+                        <td className="py-2.5 text-slate-400 whitespace-nowrap">
+                          {new Date(credit.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </td>
                       </tr>
                     ))}

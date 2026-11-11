@@ -71,7 +71,7 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { priceId, coachId, coachEmail, billingCycle, trialEndsAt, discountCode, stripePromotionCodeId } = await req.json();
+    const { priceId, coachId, coachEmail, billingCycle, trialEndsAt, discountCode, stripePromotionCodeId, prepaymentCode } = await req.json();
 
     // Validate required fields
     if (!priceId || !coachId || !coachEmail || !billingCycle) {
@@ -113,6 +113,7 @@ serve(async (req) => {
       'customer_email': coachEmail,
       'metadata[coachId]': coachId,
       'metadata[billingCycle]': billingCycle,
+      ...(prepaymentCode ? { 'metadata[prepaymentCode]': prepaymentCode } : {}),
     };
 
     // Only add subscription_data for recurring subscriptions (not lifetime)

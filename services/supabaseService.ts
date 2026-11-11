@@ -1898,3 +1898,28 @@ export const adminGetHealthCheckLeads = async (adminPassword: string): Promise<H
   }
   return data.leads as HealthCheckLeadRow[];
 };
+
+export interface PrepaymentCreditRow {
+  id: string; email: string; amount_paid_pence: number; promo_code: string;
+  redeemed: boolean; redeemed_at: string | null; coach_id: string | null; created_at: string;
+}
+
+/**
+ * Reads prepayment_credits via a password-verified edge function (service
+ * role), same pattern as adminGetHealthCheckLeads.
+ */
+export const adminGetPrepaymentCredits = async (adminPassword: string): Promise<PrepaymentCreditRow[]> => {
+  const { data, error } = await supabase.functions.invoke('admin-prepayment-credits', {
+    body: {},
+    headers: {
+      'x-admin-password': adminPassword,
+      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+    },
+  });
+
+  if (error || !data?.credits) {
+    console.error('[adminGetPrepaymentCredits]', error || data);
+    return [];
+  }
+  return data.credits as PrepaymentCreditRow[];
+};

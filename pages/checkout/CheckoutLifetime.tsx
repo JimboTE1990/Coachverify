@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { CheckCircle, ArrowLeft, Loader, Lock, Zap, Tag, X, Infinity } from 'lucide-react';
 import { SUBSCRIPTION_CONSTANTS } from '../../constants/subscription';
 import { STRIPE_PRICES } from '../../lib/stripe';
@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabase';
 import { createCheckoutSession } from '../../services/stripeService';
 import type { Coach } from '../../types';
 import { getActivePromoCode, validateDiscountCode, calculateDiscount, DiscountCode } from '../../config/discountCodes';
+import { validatePrepaymentCode } from '../../services/prepaymentService';
 
 // Checkout page for lifetime access plan
 export const CheckoutLifetime: React.FC = () => {
@@ -37,23 +38,38 @@ export const CheckoutLifetime: React.FC = () => {
     }
   }, []);
 
-  const handleApplyDiscount = () => {
+  const handleApplyDiscount = async () => {
     setDiscountError(null);
     const code = discountInputValue.trim();
     if (!code) return;
     const validation = validateDiscountCode(code);
-    if (!validation.valid || !validation.discount) {
-      setDiscountError(validation.error || 'Invalid code');
+    if (validation.valid && validation.discount) {
+      const calc = calculateDiscount(validation.discount, SUBSCRIPTION_CONSTANTS.LIFETIME_PRICE_GBP, 'lifetime');
+      if (calc.discountAmount === 0 && validation.discount.type !== 'trial_extension') {
+        setDiscountError('This code is not valid for the lifetime plan');
+        return;
+      }
+      setAppliedDiscount(validation.discount);
+      setDiscountAmount(calc.discountAmount);
+      setShowDiscountInput(false);
       return;
     }
-    const calc = calculateDiscount(validation.discount, SUBSCRIPTION_CONSTANTS.LIFETIME_PRICE_GBP, 'lifetime');
-    if (calc.discountAmount === 0 && validation.discount.type !== 'trial_extension') {
-      setDiscountError('This code is not valid for the lifetime plan');
-      return;
+
+    // Not a static code - check whether it's an unredeemed prepayment credit
+    try {
+      const prepaymentResult = await validatePrepaymentCode(code);
+      if (prepaymentResult.valid && prepaymentResult.discount) {
+        const calc = calculateDiscount(prepaymentResult.discount, SUBSCRIPTION_CONSTANTS.LIFETIME_PRICE_GBP, 'lifetime');
+        setAppliedDiscount(prepaymentResult.discount);
+        setDiscountAmount(calc.discountAmount);
+        setShowDiscountInput(false);
+        return;
+      }
+    } catch {
+      // fall through to the generic error below
     }
-    setAppliedDiscount(validation.discount);
-    setDiscountAmount(calc.discountAmount);
-    setShowDiscountInput(false);
+
+    setDiscountError(validation.error || 'Invalid code');
   };
 
   const handleRemoveDiscount = () => {
@@ -177,6 +193,7 @@ export const CheckoutLifetime: React.FC = () => {
         billingCycle: 'lifetime',
         discountCode: appliedDiscount?.code,
         stripePromotionCodeId: appliedDiscount?.stripePromotionCodeId,
+        prepaymentCode: appliedDiscount?.code,
       });
 
       // Note: Stripe will redirect to checkout page
@@ -454,6 +471,12 @@ export const CheckoutLifetime: React.FC = () => {
                 <p className="text-xs text-slate-400">
                   By proceeding, you agree to our Terms of Service and Privacy Policy
                 </p>
+              </div>
+
+              <div className="mt-3 text-center">
+                <Link to="/partner-prepay" className="text-xs text-slate-400 hover:text-[#1e3a5f] underline">
+                  Not accredited yet? Lock in today's price - pre-pay here
+                </Link>
               </div>
 
               <div className="mt-4 pt-4 border-t border-slate-100">

@@ -29,6 +29,7 @@ import { CheckoutMonthly } from './pages/checkout/CheckoutMonthly';
 import { CheckoutAnnual } from './pages/checkout/CheckoutAnnual';
 import { CheckoutLifetime } from './pages/checkout/CheckoutLifetime';
 import { CheckoutSuccess } from './pages/checkout/CheckoutSuccess';
+import { PartnerPrepay } from './pages/PartnerPrepay';
 import { ChangePlan } from './pages/subscription/ChangePlan';
 import { ChangePlanConfirm } from './pages/subscription/ChangePlanConfirm';
 import { ChangePlanSuccess } from './pages/subscription/ChangePlanSuccess';
@@ -134,6 +135,7 @@ const App: React.FC = () => {
               <Route path="/checkout/monthly" element={<CheckoutMonthly />} />
               <Route path="/checkout/annual" element={<CheckoutAnnual />} />
               <Route path="/checkout/lifetime" element={<CheckoutLifetime />} />
+              <Route path="/partner-prepay" element={<PartnerPrepay />} />
               <Route path="/checkout/success" element={<CheckoutSuccess />} />
               <Route path="/subscription/change-plan" element={<ChangePlan />} />
               <Route path="/subscription/change-plan/confirm" element={<ChangePlanConfirm />} />

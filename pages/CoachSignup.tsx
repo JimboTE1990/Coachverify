@@ -1267,6 +1267,14 @@ export const CoachSignup: React.FC = () => {
                       </div>
                   </div>
               )}
+
+              {signupError && !verified && (
+                  <div className="mt-3 text-center">
+                    <Link to="/partner-prepay" className="text-sm text-brand-600 hover:text-brand-700 underline font-medium">
+                      Not accredited yet? Lock in today's price - pre-pay here
+                    </Link>
+                  </div>
+              )}
             </div>
           )}
 
