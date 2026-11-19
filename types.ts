@@ -369,6 +369,8 @@ export interface Coach {
   secondaryAccreditations?: SecondaryAccreditation[]; // Additional accreditation bodies beyond the primary
 
 
+  createdAt?: string; // When the coach account was created (joined)
+
   // Subscription & Billing
   subscriptionStatus: SubscriptionStatus;
   trialEndsAt?: string;

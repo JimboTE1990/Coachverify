@@ -1073,6 +1073,7 @@ const mapCoachProfile = (data: any): Coach => {
     location: data.location || 'Remote',
     reviews: [],
     documentsSubmitted: data.documents_submitted || false,
+    createdAt: data.created_at,
     subscriptionStatus: (() => {
       const status = data.subscription_status || 'onboarding';
       // Auto-detect expired trials: if status is 'trial' but trial_ends_at is in the past, treat as expired

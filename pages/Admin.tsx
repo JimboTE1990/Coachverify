@@ -136,9 +136,12 @@ export const AdminDashboard: React.FC = () => {
     return 'Onboarding';
   };
 
+  const formatDateJoined = (createdAt?: string): string =>
+    createdAt ? new Date(createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ' - ';
+
   const handleExportCSV = () => {
-    const rows = [['Name', 'Email', 'Membership Status']];
-    filteredCoaches.forEach(c => rows.push([c.name, c.email, getStatusLabel(c)]));
+    const rows = [['Name', 'Email', 'Membership Status', 'Date Joined']];
+    filteredCoaches.forEach(c => rows.push([c.name, c.email, getStatusLabel(c), formatDateJoined(c.createdAt)]));
     const csv = rows.map(r => r.map(v => `"${v.replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -150,8 +153,8 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const handleCopyToClipboard = async () => {
-    const lines = ['Name\tEmail\tMembership Status'];
-    filteredCoaches.forEach(c => lines.push(`${c.name}\t${c.email}\t${getStatusLabel(c)}`));
+    const lines = ['Name\tEmail\tMembership Status\tDate Joined'];
+    filteredCoaches.forEach(c => lines.push(`${c.name}\t${c.email}\t${getStatusLabel(c)}\t${formatDateJoined(c.createdAt)}`));
     await navigator.clipboard.writeText(lines.join('\n'));
     setCopySuccess(true);
     setTimeout(() => setCopySuccess(false), 2000);
@@ -544,6 +547,7 @@ export const AdminDashboard: React.FC = () => {
                     <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
                     <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Email</th>
                     <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Date Joined</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -552,6 +556,7 @@ export const AdminDashboard: React.FC = () => {
                       <td className="px-4 py-2.5 text-slate-900 font-medium">{coach.name}</td>
                       <td className="px-4 py-2.5 text-slate-600">{coach.email}</td>
                       <td className="px-4 py-2.5"><SubBadge coach={coach} /></td>
+                      <td className="px-4 py-2.5 text-slate-400 whitespace-nowrap">{formatDateJoined(coach.createdAt)}</td>
                     </tr>
                   ))}
                 </tbody>
