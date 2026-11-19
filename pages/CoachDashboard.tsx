@@ -46,7 +46,7 @@ import { CollapsibleSection } from '../components/forms/CollapsibleSection';
 import { RichTextEditor } from '../components/forms/RichTextEditor';
 import { LOCATION_RADIUS_OPTIONS } from '../constants/locations';
 import { SearchableLocationSelect } from '../components/forms/SearchableLocationSelect';
-import { CPD_QUALIFICATIONS } from '../constants/filterOptions';
+import { CPD_QUALIFICATIONS, COACHING_LANGUAGES } from '../constants/filterOptions';
 
 const AVAILABLE_SPECIALTIES: Specialty[] = [
   'Career Growth',
@@ -115,18 +115,6 @@ const COACHING_EXPERTISE_BY_CATEGORY: Record<CoachingExpertiseCategory, Coaching
   ] as MethodologyModalityExpertise[]
 };
 
-
-// Coaching Languages
-const COACHING_LANGUAGES: CoachingLanguage[] = [
-  'English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese',
-  'Dutch', 'Polish', 'Romanian', 'Greek', 'Swedish', 'Danish',
-  'Norwegian', 'Finnish', 'Czech', 'Hungarian', 'Bulgarian', 'Croatian',
-  'Slovak', 'Lithuanian', 'Latvian', 'Estonian', 'Slovenian',
-  'Arabic', 'Hebrew', 'Turkish', 'Russian', 'Ukrainian',
-  'Mandarin Chinese', 'Cantonese', 'Japanese', 'Korean',
-  'Hindi', 'Urdu', 'Bengali', 'Punjabi', 'Tamil',
-  'Tagalog', 'Vietnamese', 'Thai', 'Indonesian', 'Malay', 'Swahili'
-];
 
 export const CoachDashboard: React.FC = () => {
   const location = useLocation();
@@ -1369,11 +1357,12 @@ export const CoachDashboard: React.FC = () => {
                 {(() => {
                   const hasPhoto = !!(currentCoach.photoUrl && currentCoach.photoUrl.trim() && !currentCoach.photoUrl.includes('placeholder'));
                   const hasCompletedProfile = !!(currentCoach.bio && currentCoach.bio.trim().length > 20 && currentCoach.mainCoachingCategories && currentCoach.mainCoachingCategories.length > 0);
-                  const hasSchedulingLink = !!(currentCoach.socialLinks && currentCoach.socialLinks.some(l => {
-                    const label = (l.platform || '').toLowerCase();
-                    const url = (l.url || '').toLowerCase();
-                    return label.includes('booking') || label.includes('schedule') || label.includes('calendly') || label.includes('cal.com') || label.includes('microsoft') || label.includes('highlevel') || label.includes('gohighlevel') || url.includes('leadconnectorhq.com') || url.includes('msgsndr.com') || url.includes('gohighlevel.com');
-                  }));
+                  // Reuses classifyLink (the same function that categorizes links under
+                  // Social Links as "Booking Link") rather than a separate keyword list -
+                  // a prior hand-rolled duplicate here missed calendly.com/cal.com/Google
+                  // Calendar URLs, so a link that correctly showed as a Booking Link never
+                  // ticked off this checklist step.
+                  const hasSchedulingLink = !!(currentCoach.socialLinks && currentCoach.socialLinks.some(l => classifyLink(l) === 'booking'));
                   const hasReviews = (currentCoach.totalReviews ?? currentCoach.reviews?.length ?? 0) >= 1;
                   const hasSocialLinks = !!(currentCoach.socialLinks && currentCoach.socialLinks.some(l => {
                     const label = (l.platform || '').toLowerCase();

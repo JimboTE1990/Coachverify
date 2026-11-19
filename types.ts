@@ -211,7 +211,8 @@ export type CoachingLanguage =
   | 'Thai'
   | 'Indonesian'
   | 'Malay'
-  | 'Swahili';
+  | 'Swahili'
+  | 'Afrikaans';
 
 export type Gender = 'Male' | 'Female' | 'Non-binary' | 'Prefer not to say' | string; // string allows for self-describe option
 

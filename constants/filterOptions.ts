@@ -58,7 +58,8 @@ export const COACHING_LANGUAGES: CoachingLanguage[] = [
   'Thai',
   'Indonesian',
   'Malay',
-  'Swahili'
+  'Swahili',
+  'Afrikaans'
 ];
 
 // ============================================================
