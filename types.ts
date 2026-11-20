@@ -60,7 +60,8 @@ export type CareerProfessionalExpertise =
   | 'Work-Life Balance'
   | 'Time Management'
   | 'Productivity'
-  | 'Confidence Building';
+  | 'Confidence Building'
+  | 'Change & Project Delivery';
 
 export type BusinessEntrepreneurshipExpertise =
   | 'Business Start-up'

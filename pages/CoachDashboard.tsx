@@ -46,7 +46,10 @@ import { CollapsibleSection } from '../components/forms/CollapsibleSection';
 import { RichTextEditor } from '../components/forms/RichTextEditor';
 import { LOCATION_RADIUS_OPTIONS } from '../constants/locations';
 import { SearchableLocationSelect } from '../components/forms/SearchableLocationSelect';
-import { CPD_QUALIFICATIONS, COACHING_LANGUAGES } from '../constants/filterOptions';
+import {
+  CPD_QUALIFICATIONS, COACHING_LANGUAGES, CAREER_PROFESSIONAL, BUSINESS_ENTREPRENEURSHIP,
+  HEALTH_WELLNESS, PERSONAL_LIFE, FINANCIAL, NICHE_DEMOGRAPHIC, METHODOLOGY_MODALITY,
+} from '../constants/filterOptions';
 
 const AVAILABLE_SPECIALTIES: Specialty[] = [
   'Career Growth',
@@ -69,50 +72,16 @@ const MAIN_COACHING_CATEGORIES: CoachingExpertiseCategory[] = [
 
 const AVAILABLE_FORMATS: Format[] = ['Online', 'In-Person'];
 
-// Coaching Expertise by Category
+// Coaching Expertise by Category - sourced from constants/filterOptions.ts so
+// there's one list per category, not a second copy that can drift out of sync.
 const COACHING_EXPERTISE_BY_CATEGORY: Record<CoachingExpertiseCategory, CoachingExpertise[]> = {
-  'Career & Professional Development': [
-    'Career Transition', 'Leadership Development', 'Executive Coaching',
-    'Team Coaching', 'Performance Coaching', 'Communication Skills',
-    'Public Speaking', 'Interview Preparation', 'Networking',
-    'Personal Branding', 'Work-Life Balance', 'Time Management',
-    'Productivity', 'Confidence Building'
-  ] as CareerProfessionalExpertise[],
-  'Business & Entrepreneurship': [
-    'Business Start-up', 'Business Growth & Scaling', 'Strategic Planning',
-    'Sales Coaching', 'Marketing & Branding', 'Negotiation Skills',
-    'Innovation & Creativity', 'Succession Planning'
-  ] as BusinessEntrepreneurshipExpertise[],
-  'Health & Wellness': [
-    'Stress Management', 'Mindfulness & Meditation', 'Sleep Improvement',
-    'Nutrition & Healthy Eating', 'Fitness & Exercise', 'Weight Management',
-    'Chronic Illness Management', 'Mental Health & Wellbeing',
-    'Addiction Recovery', 'Grief & Loss', 'Burnout Recovery', 'Menopause & Hormonal Health'
-  ] as HealthWellnessExpertise[],
-  'Personal & Life': [
-    'Life Purpose & Meaning', 'Goal Setting & Achievement', 'Relationship Coaching',
-    'Parenting', 'Family Dynamics', 'Divorce & Separation',
-    'Self-Esteem & Confidence', 'Personal Growth', 'Spiritual Development',
-    'Retirement Planning (Life)', 'Lifestyle Design', 'Creative Expression'
-  ] as PersonalLifeExpertise[],
-  'Financial': [
-    'Financial Planning & Budgeting', 'Debt Management', 'Investment Coaching',
-    'Retirement Planning (Financial)', 'Money Mindset'
-  ] as FinancialExpertise[],
-  'Specialist Coaching': [
-    'LGBTQ+ Coaching', 'Neurodiversity (ADHD, Autism, etc.)',
-    'Youth & Students (Ages 16-25)', 'Mid-Career Professionals',
-    'Senior Professionals (50+)', 'Women in Leadership',
-    'Veterans & Military Transition', 'Expats & Relocation',
-    'Artists & Creatives', 'Athletes & Sports Performance', 'Late-Diagnosed Neurodivergent Adults'
-  ] as NicheDemographicExpertise[],
-  'Methodology & Modality': [
-    'Cognitive Behavioral Coaching (CBC)', 'Neuro-Linguistic Programming (NLP)',
-    'Solution-Focused Coaching', 'Positive Psychology', 'Ontological Coaching',
-    'Systemic Coaching', 'Gestalt Coaching', 'Psychodynamic Coaching',
-    'Narrative Coaching', 'Somatic Coaching', 'Mindfulness-Based Coaching',
-    'Acceptance and Commitment Therapy (ACT)', 'Transactional Analysis (TA)'
-  ] as MethodologyModalityExpertise[]
+  'Career & Professional Development': CAREER_PROFESSIONAL,
+  'Business & Entrepreneurship': BUSINESS_ENTREPRENEURSHIP,
+  'Health & Wellness': HEALTH_WELLNESS,
+  'Personal & Life': PERSONAL_LIFE,
+  'Financial': FINANCIAL,
+  'Specialist Coaching': NICHE_DEMOGRAPHIC,
+  'Methodology & Modality': METHODOLOGY_MODALITY,
 };
 
 

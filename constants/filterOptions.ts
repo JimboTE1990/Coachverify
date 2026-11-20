@@ -113,7 +113,8 @@ export const CAREER_PROFESSIONAL: CareerProfessionalExpertise[] = [
   'Work-Life Balance',
   'Time Management',
   'Productivity',
-  'Confidence Building'
+  'Confidence Building',
+  'Change & Project Delivery'
 ];
 
 export const BUSINESS_ENTREPRENEURSHIP: BusinessEntrepreneurshipExpertise[] = [

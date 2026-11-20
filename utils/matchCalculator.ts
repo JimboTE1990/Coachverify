@@ -1,4 +1,13 @@
 import { Coach, QuestionnaireAnswers } from '../types';
+import { EXPERTISE_CATEGORIES } from '../constants/filterOptions';
+
+// Expertise tag -> parent category name, derived from EXPERTISE_CATEGORIES so
+// it can't drift out of sync with the real subcategory lists (a hand-maintained
+// copy here previously missed Specialist Coaching and Methodology & Modality
+// entirely, and would've needed updating by hand for every new subcategory).
+const EXPERTISE_TO_CATEGORY: Record<string, string> = Object.fromEntries(
+  EXPERTISE_CATEGORIES.flatMap(cat => cat.items.map(item => [item, cat.name]))
+);
 
 /**
  * Calculate match percentage between a coach and questionnaire answers
@@ -14,63 +23,9 @@ export const calculateMatchScore = (coach: Coach, answers: QuestionnaireAnswers)
 
   // First, check if coach has selected main coaching categories (new primary field)
   if (coach.mainCoachingCategories && coach.mainCoachingCategories.length > 0 && answers.coachingExpertise && answers.coachingExpertise.length > 0) {
-    // Map the user's detailed expertise selections back to their main categories
-    const CATEGORY_MAPPING: Record<string, string> = {
-      'Career Transition': 'Career & Professional Development',
-      'Leadership Development': 'Career & Professional Development',
-      'Executive Coaching': 'Career & Professional Development',
-      'Team Coaching': 'Career & Professional Development',
-      'Performance Coaching': 'Career & Professional Development',
-      'Communication Skills': 'Career & Professional Development',
-      'Public Speaking': 'Career & Professional Development',
-      'Interview Preparation': 'Career & Professional Development',
-      'Networking': 'Career & Professional Development',
-      'Personal Branding': 'Career & Professional Development',
-      'Work-Life Balance': 'Career & Professional Development',
-      'Time Management': 'Career & Professional Development',
-      'Productivity': 'Career & Professional Development',
-      'Confidence Building': 'Career & Professional Development',
-      'Business Start-up': 'Business & Entrepreneurship',
-      'Business Growth & Scaling': 'Business & Entrepreneurship',
-      'Strategic Planning': 'Business & Entrepreneurship',
-      'Sales Coaching': 'Business & Entrepreneurship',
-      'Marketing & Branding': 'Business & Entrepreneurship',
-      'Negotiation Skills': 'Business & Entrepreneurship',
-      'Innovation & Creativity': 'Business & Entrepreneurship',
-      'Succession Planning': 'Business & Entrepreneurship',
-      'Stress Management': 'Health & Wellness',
-      'Mindfulness & Meditation': 'Health & Wellness',
-      'Sleep Improvement': 'Health & Wellness',
-      'Nutrition & Healthy Eating': 'Health & Wellness',
-      'Fitness & Exercise': 'Health & Wellness',
-      'Weight Management': 'Health & Wellness',
-      'Chronic Illness Management': 'Health & Wellness',
-      'Mental Health & Wellbeing': 'Health & Wellness',
-      'Addiction Recovery': 'Health & Wellness',
-      'Grief & Loss': 'Health & Wellness',
-      'Burnout Recovery': 'Health & Wellness',
-      'Life Purpose & Meaning': 'Personal & Life',
-      'Goal Setting & Achievement': 'Personal & Life',
-      'Relationship Coaching': 'Personal & Life',
-      'Parenting': 'Personal & Life',
-      'Family Dynamics': 'Personal & Life',
-      'Divorce & Separation': 'Personal & Life',
-      'Self-Esteem & Confidence': 'Personal & Life',
-      'Personal Growth': 'Personal & Life',
-      'Spiritual Development': 'Personal & Life',
-      'Retirement Planning (Life)': 'Personal & Life',
-      'Lifestyle Design': 'Personal & Life',
-      'Creative Expression': 'Personal & Life',
-      'Financial Planning & Budgeting': 'Financial',
-      'Debt Management': 'Financial',
-      'Investment Coaching': 'Financial',
-      'Retirement Planning (Financial)': 'Financial',
-      'Money Mindset': 'Financial'
-    };
-
     // Find which main categories the user's expertise selections belong to
     const userMainCategories = new Set(
-      answers.coachingExpertise.map(e => CATEGORY_MAPPING[e]).filter(Boolean)
+      answers.coachingExpertise.map(e => EXPERTISE_TO_CATEGORY[e]).filter(Boolean)
     );
 
     // Check if coach has any matching main categories
